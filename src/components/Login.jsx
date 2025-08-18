@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import TCCImage from "../assets/Images/TCC_bg.jpg";
-import { FiEye, FiEyeOff } from "react-icons/fi";
+import { FiEye } from "react-icons/fi";
 import logo from "../assets/SVG/logo.svg";
 import apple from "../assets/SVG/apple.svg";
 import shopify from "../assets/SVG/shopify.svg";
 import google from "../assets/SVG/google.svg";
+import EyeOff from "../assets/SVG/password-hidden.svg";
+
 import { Link } from "react-router-dom";
 
 const Login = () => {
@@ -15,11 +17,11 @@ const Login = () => {
       style={{ backgroundImage: `url(${TCCImage})` }}
     >
       <div className="w-1/2 relative flex flex-col  justify-between text-white p-5">
-        <div className="font-bold text-2xl">
+        <div className="font-bold text-2xl top-[40px] left-[40.28px]">
           <img src={logo} alt="" />
         </div>
         <div className="bg-gradient-to-b from-[#F77F00]/40 to-[#666666]/40 p-8 rounded-lg">
-          <h2 className="text-7xl  font-semibold font-Roboto Serif ">
+          <h2 className="text-7xl font-semibold font-roboto">
             <span className="text-orange-400">Grow</span> with every traveler
           </h2>
           <p className="mt-3 text-lg text-gray-200 font-inter">
@@ -28,14 +30,13 @@ const Login = () => {
           </p>
         </div>
       </div>
-      
 
       <div className="w-1/2 bg-white flex items-center justify-center">
         <div className="w-full max-w-[480px]  ">
-          <h2 className="text-4xl font-medium font-Roboto Serif text-[#232323] mb-2 flex items-center justify-center ">
+          <h2 className="text-[42px] font-medium font-roboto text-[#232323] mb-2 flex items-center justify-center leading-[130%]">
             Welcome back!
           </h2>
-          <p className="text-gray-500 text-sm mb-10 font-inter flex items-center justify-center pt-3">
+          <p className="text-[#6C6C6C] text-base mb-10 flex items-center justify-center pt-3">
             Let’s get back to your business!
           </p>
 
@@ -77,7 +78,11 @@ const Login = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
-                  {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+                  {showPassword ? (
+                    <img src={EyeOff} alt="Hide password" className="w-5 h-5" />
+                  ) : (
+                    <FiEye size={20} />
+                  )}
                 </button>
               </div>
             </div>
@@ -95,19 +100,16 @@ const Login = () => {
                checked:after:border-white checked:after:rotate-45"
                   checked
                 />
-                <span>Remember me</span>
+                <span className="fw5 text-[#6C6C6C]">Remember me</span>
               </label>
-              <a
-                href="/"
-                className="text-[#F77F00] hover:underline font-semibold"
-              >
+              <a href="/" className="text-[#F77F00] hover:underline fw5">
                 Forgot password?
               </a>
             </div>
 
             <button
               type="submit"
-              className="w-full bg-[#F77F00] text-white text-base py-4 rounded-lg transition "
+              className="w-full bg-[#F77F00] text-white text-base fw6 py-4 rounded-lg transition "
             >
               Sign in
             </button>
@@ -121,24 +123,24 @@ const Login = () => {
           <div className="space-y-3">
             <button className="w-full border border-[#D9D9D9] py-4 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50">
               <img src={google} alt="" />
-              <span className="text-base">Sign in with Google</span>
+              <span className="text-base fw6">Sign in with Google</span>
             </button>
 
             <div className="flex space-x-4">
               <button className="w-1/2 border border-[#D9D9D9] py-4 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50">
                 <img src={apple} alt="" />
-                <span className="text-base">Sign in with Apple</span>
+                <span className="text-base fw6">Sign in with Apple</span>
               </button>
               <button className="w-1/2 border border-[#D9D9D9] py-4 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50">
                 <img src={shopify} alt="" />
-                <span>Sign in with Shopify</span>
+                <span className="text-base fw6">Sign in with Shopify</span>
               </button>
             </div>
           </div>
 
           <p className="text-center text-base font-inter text-gray-600 mt-6">
             Don’t have an account?{" "}
-            <Link to="/signup" className="text-[#F77F00]   font-semibold hover:underline">
+            <Link to="/signup" className="text-[#F77F00] fw6 ">
               Sign up
             </Link>
           </p>

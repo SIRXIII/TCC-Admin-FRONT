@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import TCCImage from "../assets/Images/TCC_bg.jpg";
-import { FiEye, FiEyeOff } from "react-icons/fi";
+import { FiEye } from "react-icons/fi";
 import logo from "../assets/SVG/logo.svg";
+import EyeOff from "../assets/SVG/password-hidden.svg";
 import { Link } from "react-router-dom";
-
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -14,15 +14,15 @@ const Signup = () => {
       className="min-h-screen flex bg-contain relative"
       style={{ backgroundImage: `url(${TCCImage})` }}
     >
-      <div className="w-1/2 relative flex flex-col justify-between text-white p-5">
-        <div className="font-bold text-2xl">
+      <div className="w-1/2 relative flex flex-col  justify-between text-white p-5">
+        <div className="font-bold text-2xl top-[40px] left-[40.28px]">
           <img src={logo} alt="" />
         </div>
-        <div className="bg-gradient-to-b from-[#F77F00]/70 to-[#666666]/70 p-8 rounded-lg">
-          <h2 className="text-7xl  font-semibold ">
+        <div className="bg-gradient-to-b from-[#F77F00]/40 to-[#666666]/40 p-8 rounded-lg">
+          <h2 className="text-7xl font-semibold font-roboto">
             <span className="text-orange-400">Grow</span> with every traveler
           </h2>
-          <p className="mt-3 text-lg text-gray-200">
+          <p className="mt-3 text-lg text-gray-200 font-inter">
             Reach high-value guests where they stay. List your best pieces and
             get paid without adding headcount
           </p>
@@ -31,10 +31,10 @@ const Signup = () => {
 
       <div className="w-1/2 bg-white flex items-center justify-center">
         <div className="w-full max-w-[480px]  ">
-          <h2 className="text-4xl font-bold font-Roboto Serif text-[#232323] mb-2 flex items-center justify-center ">
+          <h2 className="text-[42px] font-medium font-roboto text-[#232323] mb-2 flex items-center justify-center leading-[130%]">
             Sign Up
           </h2>
-          <p className="text-gray-500 text-sm mb-10 flex items-center justify-center pt-3">
+          <p className="text-[#6C6C6C] text-base mb-10 flex items-center justify-center pt-3">
             Welcome to start your business!
           </p>
 
@@ -90,7 +90,11 @@ const Signup = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                 >
-                  {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+                  {showPassword ? (
+                    <img src={EyeOff} alt="Hide password" className="w-5 h-5" />
+                  ) : (
+                    <FiEye size={20} />
+                  )}
                 </button>
               </div>
               <div className="relative">
@@ -113,7 +117,7 @@ const Signup = () => {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 courser"
                 >
                   {showConfirmPassword ? (
-                    <FiEyeOff size={20} />
+                    <img src={EyeOff} alt="Hide password" className="w-5 h-5" />
                   ) : (
                     <FiEye size={20} />
                   )}
@@ -133,21 +137,27 @@ const Signup = () => {
                checked:after:border-r-2 checked:after:border-b-2 
                checked:after:border-white checked:after:rotate-45"
                 />
-                <span className="text-gray-700">I agree with the <a href="#" class="text-[#F77F00] hover:underline">terms and conditions</a>.</span>
+                <span className="text-[#6C6C6C]">
+                  I agree with the{" "}
+                  <a href="#" class="text-[#F77F00] hover:underline">
+                    terms and conditions
+                  </a>
+                  .
+                </span>
               </label>
             </div>
 
             <button
               type="submit"
-              className="w-full mt-4 bg-[#F77F00] text-white text-base py-4 rounded-lg transition "
+              className="w-full bg-[#F77F00] text-white text-base fw6 py-4 rounded-lg transition"
             >
               Sign up
             </button>
           </form>
 
-          <p className="text-center text-base text-gray-600 mt-5">
+          <p className="text-center text-base font-inter text-gray-600 mt-6">
             If you have an account?{" "}
-            <Link to="/login" className="text-[#F77F00] hover:underline">
+            <Link to="/login" className="text-[#F77F00] fw6">
               Login
             </Link>
           </p>
