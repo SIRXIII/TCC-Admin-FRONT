@@ -7,7 +7,6 @@ import shopify from "../assets/SVG/shopify.svg";
 import google from "../assets/SVG/google.svg";
 import { Link } from "react-router-dom";
 
-
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   return (
@@ -15,15 +14,15 @@ const Login = () => {
       className="min-h-screen flex bg-contain relative"
       style={{ backgroundImage: `url(${TCCImage})` }}
     >
-      <div className="w-1/2 relative flex flex-col justify-between text-white p-5">
+      <div className="w-1/2 relative flex flex-col  justify-between text-white p-5">
         <div className="font-bold text-2xl">
           <img src={logo} alt="" />
         </div>
-        <div className="bg-gradient-to-b from-[#F77F00]/70 to-[#666666]/70 p-8 rounded-lg">
-          <h2 className="text-7xl  font-semibold ">
+        <div className="bg-gradient-to-b from-[#F77F00]/40 to-[#666666]/40 p-8 rounded-lg">
+          <h2 className="text-7xl  font-semibold font-Roboto Serif ">
             <span className="text-orange-400">Grow</span> with every traveler
           </h2>
-          <p className="mt-3 text-lg text-gray-200">
+          <p className="mt-3 text-lg text-gray-200 font-inter">
             Reach high-value guests where they stay. List your best pieces and
             get paid without adding headcount
           </p>
@@ -32,10 +31,10 @@ const Login = () => {
 
       <div className="w-1/2 bg-white flex items-center justify-center">
         <div className="w-full max-w-[480px]  ">
-          <h2 className="text-4xl font-bold font-Roboto Serif text-[#232323] mb-2 flex items-center justify-center ">
+          <h2 className="text-4xl font-medium font-Roboto Serif text-[#232323] mb-2 flex items-center justify-center ">
             Welcome back!
           </h2>
-          <p className="text-gray-500 text-sm mb-10 flex items-center justify-center pt-3">
+          <p className="text-gray-500 text-sm mb-10 font-inter flex items-center justify-center pt-3">
             Let’s get back to your business!
           </p>
 
@@ -56,6 +55,7 @@ const Login = () => {
                   Email
                 </label>
               </div>
+
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -82,7 +82,6 @@ const Login = () => {
             </div>
             <div className="flex items-center justify-between text-sm mb-6">
               <label className="flex items-center space-x-2">
-               
                 <input
                   type="checkbox"
                   className="w-[18px] h-[18px] rounded-md appearance-none border border-gray-300 
@@ -97,7 +96,10 @@ const Login = () => {
                 />
                 <span>Remember me</span>
               </label>
-              <a href="/" className="text-[#F77F00] hover:underline font-semibold">
+              <a
+                href="/"
+                className="text-[#F77F00] hover:underline font-semibold"
+              >
                 Forgot password?
               </a>
             </div>
@@ -133,9 +135,9 @@ const Login = () => {
             </div>
           </div>
 
-          <p className="text-center text-base text-gray-600 mt-4">
+          <p className="text-center text-base font-inter text-gray-600 mt-6">
             Don’t have an account?{" "}
-            <Link to="/signup" className="text-[#F77F00] hover:underline">
+            <Link to="/signup" className="text-[#F77F00]   font-semibold hover:underline">
               Sign up
             </Link>
           </p>
