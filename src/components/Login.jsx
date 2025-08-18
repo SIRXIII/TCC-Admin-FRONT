@@ -28,6 +28,7 @@ const Login = () => {
           </p>
         </div>
       </div>
+      
 
       <div className="w-1/2 bg-white flex items-center justify-center">
         <div className="w-full max-w-[480px]  ">
