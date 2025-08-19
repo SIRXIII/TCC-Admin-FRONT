@@ -3,20 +3,30 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/SVG/logo-black.svg";
 import dash from "../assets/SVG/dash.svg";
 import dashwhite from "../assets/SVG/dashwhite.svg";
+import traveler from "../assets/SVG/traveler.svg";
+import travelerwhite from "../assets/SVG/travelerwhite.svg";
+import partner from "../assets/SVG/partner.svg";
+import partnerwhite from "../assets/SVG/partnerwhite.svg";
+import rider from "../assets/SVG/rider.svg";
+import riderwhite from "../assets/SVG/riderwhite.svg";
 import product from "../assets/SVG/product.svg";
 import productwhite from "../assets/SVG/productwhite.svg";
 import order from "../assets/SVG/order.svg";
 import orderwhite from "../assets/SVG/orderwhite.svg";
-import returns from "../assets/SVG/returns.svg";
-import returnswhite from "../assets/SVG/returnswhite.svg";
-import review from "../assets/SVG/review.svg";
-import reviewwhite from "../assets/SVG/reviewwhite.svg";
-import payout from "../assets/SVG/payout.svg";
-import payoutwhite from "../assets/SVG/payoutwhite.svg";
-import report from "../assets/SVG/report.svg";
-import reportwhite from "../assets/SVG/reportwhite.svg";
-import help from "../assets/SVG/help.svg";
-import helpwhite from "../assets/SVG/helpwhite.svg";
+import refund from "../assets/SVG/refund.svg";
+import refundwhite from "../assets/SVG/refundwhite.svg";
+// import returns from "../assets/SVG/returns.svg";
+// import returnswhite from "../assets/SVG/returnswhite.svg";
+// import review from "../assets/SVG/review.svg";
+// import reviewwhite from "../assets/SVG/reviewwhite.svg";
+// import payout from "../assets/SVG/payout.svg";
+// import payoutwhite from "../assets/SVG/payoutwhite.svg";
+// import report from "../assets/SVG/report.svg";
+// import reportwhite from "../assets/SVG/reportwhite.svg";
+import support from "../assets/SVG/support.svg";
+import supportwhite from "../assets/SVG/supportwhite.svg";
+// import help from "../assets/SVG/help.svg";
+// import helpwhite from "../assets/SVG/helpwhite.svg";
 import setting from "../assets/SVG/setting.svg";
 import settingwhite from "../assets/SVG/settingwhite.svg";
 import logout from "../assets/SVG/logout.svg";
@@ -28,6 +38,20 @@ const navLinks = [
     links: [
       { icon: dash, iconActive: dashwhite, label: "Dashboard", link: "/" },
       {
+        icon: traveler,
+        iconActive: travelerwhite,
+        label: "Travelers",
+        link: "/travelers",
+      },
+      {
+        icon: partner,
+        iconActive: partnerwhite,
+        label: "Partners",
+        link: "/partners",
+      },
+      { icon: rider, iconActive: riderwhite, label: "Riders", link: "/riders" },
+
+      {
         icon: product,
         iconActive: productwhite,
         label: "Products",
@@ -35,35 +59,48 @@ const navLinks = [
       },
       { icon: order, iconActive: orderwhite, label: "Orders", link: "/orders" },
       {
-        icon: returns,
-        iconActive: returnswhite,
-        label: "Returns",
-        link: "/returns",
+        icon: refund,
+        iconActive: refundwhite,
+        label: "Refund",
+        link: "/refund",
       },
-      {
-        icon: review,
-        iconActive: reviewwhite,
-        label: "Reviews",
-        link: "/reviews",
-      },
-      {
-        icon: payout,
-        iconActive: payoutwhite,
-        label: "Payouts",
-        link: "/payouts",
-      },
-      {
-        icon: report,
-        iconActive: reportwhite,
-        label: "Reports",
-        link: "/reports",
-      },
+      // {
+      //   icon: returns,
+      //   iconActive: returnswhite,
+      //   label: "Returns",
+      //   link: "/returns",
+      // },
+      // {
+      //   icon: review,
+      //   iconActive: reviewwhite,
+      //   label: "Reviews",
+      //   link: "/reviews",
+      // },
+      // {
+      //   icon: payout,
+      //   iconActive: payoutwhite,
+      //   label: "Payouts",
+      //   link: "/payouts",
+      // },
+      // {
+      //   icon: report,
+      //   iconActive: reportwhite,
+      //   label: "Reports",
+      //   link: "/reports",
+      // },
     ],
   },
   {
     title: "OTHER",
     links: [
-      { icon: help, iconActive: helpwhite, label: "Help", link: "/help" },
+      {
+        icon: support,
+        iconActive: supportwhite,
+        label: "Support",
+        link: "/support",
+      },
+
+      // { icon: help, iconActive: helpwhite, label: "Help", link: "/help" },
       {
         icon: setting,
         iconActive: settingwhite,
@@ -82,7 +119,7 @@ const navLinks = [
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
-   const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -149,7 +186,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                       key={link}
                       to={link}
                       className={commonClasses}
-                     
                       onClick={() => setIsOpen(false)}
                     >
                       <img

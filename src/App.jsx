@@ -3,18 +3,18 @@ import Login from "./components/Login";
 import Signup from "./components/Signup";
 import MainLayout from "./Layouts/MainLayout";
 import Dashboard from "./pages/Dashboard";
-// import Travelers from "./pages/Travelers";
-// import Partners from "./pages/Partners";
-// import Riders from "./pages/Riders";
+import Travelers from "./pages/Travelers";
+import Partners from "./pages/Partners";
+import Riders from "./pages/Riders";
 import Products from "./pages/Products";
 import Orders from "./pages/Orders";
-// import Refunds from "./pages/Refunds";
-import Returns from "./pages/Returns";
-import Reviews from "./pages/Reviews";
-import Payouts from "./pages/Payouts";
-import Reports from "./pages/Reports";
-// import Support from "./pages/Support";
-import Help from "./pages/Help";
+import Refunds from "./pages/Refunds";
+// import Returns from "./pages/Returns";
+// import Reviews from "./pages/Reviews";
+// import Payouts from "./pages/Payouts";
+// import Reports from "./pages/Reports";
+import Support from "./pages/Support";
+// import Help from "./pages/Help";
 import Settings from "./pages/Settings";
 import Logout from "./pages/Logout";
 
@@ -26,18 +26,18 @@ const App = () => {
 
       <Route element={<MainLayout />}>
         <Route path="/" element={<Dashboard />} />
-        {/* <Route path="/travelers" element={<Travelers />} /> */}
-        {/* <Route path="/partners" element={<Partners />} /> */}
-        {/* <Route path="/riders" element={<Riders />} /> */}
+        <Route path="/travelers" element={<Travelers />} />
+        <Route path="/partners" element={<Partners />} />
+        <Route path="/riders" element={<Riders />} />
         <Route path="/products" element={<Products />} />
         <Route path="/orders" element={<Orders />} />
-        {/* <Route path="/refunds" element={<Refunds />} /> */}
-        <Route path="/returns" element={<Returns />} />
+        <Route path="/refund" element={<Refunds />} />
+        {/* <Route path="/returns" element={<Returns />} />
         <Route path="/reviews" element={<Reviews />} />
         <Route path="/payouts" element={<Payouts />} />
-        <Route path="/reports" element={<Reports />} />
-        {/* <Route path="/support" element={<Support />} /> */}
-        <Route path="/help" element={<Help />} />
+        <Route path="/reports" element={<Reports />} /> */}
+        <Route path="/support" element={<Support />} />
+        {/* <Route path="/help" element={<Help />} /> */}
         <Route path="/settings" element={<Settings />} />
       
       </Route>
