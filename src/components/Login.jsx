@@ -6,11 +6,30 @@ import apple from "../assets/SVG/apple.svg";
 import shopify from "../assets/SVG/shopify.svg";
 import google from "../assets/SVG/google.svg";
 import EyeOff from "../assets/SVG/password-hidden.svg";
-
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const navigate = useNavigate();
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+
+  
+    if (email === "admin@test.com" && password === "123456") {
+   
+      localStorage.setItem("user", JSON.stringify({ email }));
+
+      navigate("/");
+    } else {
+      alert("Invalid email or password!");
+    }
+  };
   return (
     <div
       className="min-h-screen flex bg-contain relative"
@@ -39,14 +58,16 @@ const Login = () => {
           <p className="text-[#6C6C6C] text-base mb-10 flex items-center justify-center pt-3">
             Let’s get back to your business!
           </p>
-
-          <form className="space-y-3">
+          <form className="space-y-3" onSubmit={handleLogin}>
+          {/* <form className="space-y-3"> */}
             <div className="flex flex-col gap-y-6">
               <div className="relative">
                 <input
                   type="text"
                   id="email"
                   name="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="block p-4 pt-4 w-full text-sm text-[#202020] bg-transparent rounded-xl border-1 border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
                   placeholder=" "
                 />
@@ -63,8 +84,11 @@ const Login = () => {
                   type={showPassword ? "text" : "password"}
                   id="password"
                   name="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="block p-4 pt-4 w-full text-sm text-[#202020] bg-transparent rounded-xl border-1 border-[#D9D9D9]  focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
                   placeholder=" "
+                  required
                 />
                 <label
                   for="password"
