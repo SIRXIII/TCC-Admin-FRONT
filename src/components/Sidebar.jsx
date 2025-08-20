@@ -138,10 +138,10 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
         onClick={() => setIsOpen(false)}
       />
       <aside
-        className={`fixed top-0 left-0 z-40 pt-4 px-8 pb-8 bg-white text-[#4F4F4F] shadow-md
+        className={`fixed top-0 left-0 z-40 pt-4 px-7 pb-8 bg-white text-[#4F4F4F] shadow-md
           h-screen w-64 transform transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
-          md:translate-x-0 md:static flex flex-col`}
+          md:translate-x-0 md:static flex flex-col `}
       >
         <div className="mb-8 text-center">
           <img src={logo} alt="Logo" className="mx-auto w-14.5 h-16" />
@@ -158,11 +158,23 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                     location.pathname === link ||
                     location.pathname.startsWith(link + "/");
 
-                  const commonClasses = `flex items-center gap-3 px-4 py-4 rounded-lg text-base fw5 leading-[150%] tracking-[-0.03em] transition-colors ${
-                    isActive
-                      ? "bg-[#F77F00] text-white fw6"
-                      : "text-[#4F4F4F] hover:bg-[#F77F00] hover:text-white"
-                  }`;
+                  // const commonClasses = `flex items-center gap-3 px-4 py-4 rounded-lg text-base fw5 leading-[150%] tracking-[-0.03em] transition-colors ${
+                  //   isActive
+                  //     ? "bg-[#F77F00] text-white fw6"
+                  //     : "text-[#4F4F4F] hover:bg-[#F77F00]/60 hover:text-white"
+                  // }`;
+                 const commonClasses = `
+                      relative flex items-center gap-3 px-4 py-4 rounded-lg text-base fw5
+                      mx-1 leading-[150%] tracking-[-0.03em] overflow-hidden
+                      text-[#4F4F4F] transition-all duration-500 ease-out
+                      hover:shadow-lg hover:-translate-y-1 origin-center hover:text-white
+                      before:absolute before:inset-0 before:bg-[#F77F00]/70 before:scale-x-0 before:origin-left
+                      before:transition-transform before:duration-500 before:ease-out before:z-0
+                      hover:before:scale-x-100 before:rounded-lg
+                      [&>*]:relative [&>*]:z-10
+                      ${isActive ? "bg-[#F77F00] text-white fw6 shadow-md scale-[1.02]" : ""}
+                    `;
+
 
                   if (label === "Logout") {
                     return (
@@ -193,7 +205,7 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                         alt={label}
                         className="w-5 h-5"
                       />
-                      {label}
+                      <span className="relative z-10 ">{label}</span>
                     </Link>
                   );
                 })}
