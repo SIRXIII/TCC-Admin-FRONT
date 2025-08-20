@@ -10,10 +10,7 @@ const Header = ({ toggleSidebar }) => {
   const toggleDropdown = () => setShowDropdown(!showDropdown);
 
     const { user, logout } = useAuth();
-
-    // console.log("first user:", user);
-  
-
+    
   const notifications = 4;
 
   return (
