@@ -17,31 +17,34 @@ import Support from "./pages/Support";
 // import Help from "./pages/Help";
 import Settings from "./pages/Settings";
 import Logout from "./pages/Logout";
+import { AuthProvider } from "./context/AuthContext";
 
 const App = () => {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
+    <AuthProvider>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
 
-      <Route element={<MainLayout />}>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/travelers" element={<Travelers />} />
-        <Route path="/partners" element={<Partners />} />
-        <Route path="/riders" element={<Riders />} />
-        <Route path="/products" element={<Products />} />
-        <Route path="/orders" element={<Orders />} />
-        <Route path="/refund" element={<Refunds />} />
-        {/* <Route path="/returns" element={<Returns />} />
+        <Route element={<MainLayout />}>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/travelers" element={<Travelers />} />
+          <Route path="/partners" element={<Partners />} />
+          <Route path="/riders" element={<Riders />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/orders" element={<Orders />} />
+          <Route path="/refund" element={<Refunds />} />
+          {/* <Route path="/returns" element={<Returns />} />
         <Route path="/reviews" element={<Reviews />} />
         <Route path="/payouts" element={<Payouts />} />
         <Route path="/reports" element={<Reports />} /> */}
-        <Route path="/support" element={<Support />} />
-        {/* <Route path="/help" element={<Help />} /> */}
-        <Route path="/settings" element={<Settings />} />
-      
-      </Route>
-    </Routes>
+          <Route path="/support" element={<Support />} />
+          {/* <Route path="/help" element={<Help />} /> */}
+          <Route path="/settings" element={<Settings />} />
+
+        </Route>
+      </Routes>
+    </AuthProvider>
   );
 };
 
