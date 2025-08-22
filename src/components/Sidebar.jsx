@@ -31,6 +31,7 @@ import setting from "../assets/SVG/setting.svg";
 import settingwhite from "../assets/SVG/settingwhite.svg";
 import logout from "../assets/SVG/logout.svg";
 import logoutwhite from "../assets/SVG/logoutwhite.svg";
+import { useAuth } from "../context/AuthContext";
 
 const navLinks = [
   {
@@ -121,20 +122,21 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const { logout } = useAuth();
+
+
   const handleLogout = () => {
-    localStorage.removeItem("user");
+    logout();
 
     setIsOpen(false);
 
-    navigate("/login");
   };
 
   return (
     <>
       <div
-        className={`fixed inset-0 bg-black bg-opacity-50 z-30 transition-opacity md:hidden ${
-          isOpen ? "block" : "hidden"
-        }`}
+        className={`fixed inset-0 bg-black bg-opacity-50 z-30 transition-opacity md:hidden ${isOpen ? "block" : "hidden"
+          }`}
         onClick={() => setIsOpen(false)}
       />
       <aside
@@ -158,11 +160,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                     location.pathname === link ||
                     location.pathname.startsWith(link + "/");
 
-                  // const commonClasses = `flex items-center gap-3 px-4 py-4 rounded-lg text-base fw5 leading-[150%] tracking-[-0.03em] transition-colors ${
-                  //   isActive
-                  //     ? "bg-[#F77F00] text-white fw6"
-                  //     : "text-[#4F4F4F] hover:bg-[#F77F00]/60 hover:text-white"
-                  // }`;
+
+
                  const commonClasses = `
                       relative flex items-center gap-3 px-4 py-4 rounded-lg text-base fw5
                       mx-1 leading-[150%] tracking-[-0.03em] overflow-hidden
@@ -174,7 +173,6 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                       [&>*]:relative [&>*]:z-10
                       ${isActive ? "bg-[#F77F00] text-white fw6 shadow-md scale-[1.02]" : ""}
                     `;
-
 
                   if (label === "Logout") {
                     return (

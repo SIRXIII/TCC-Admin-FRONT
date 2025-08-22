@@ -2,12 +2,15 @@ import React, { useState } from "react";
 import { Menu, Bell, Search, ChevronDown } from "lucide-react";
 import profile from "../assets/SVG/img.svg";
 import bell from "../assets/SVG/bell.svg";
+import { useAuth } from "../context/AuthContext";
 
 const Header = ({ toggleSidebar }) => {
   const [showDropdown, setShowDropdown] = useState(false);
 
   const toggleDropdown = () => setShowDropdown(!showDropdown);
 
+    const { user, logout } = useAuth();
+    
   const notifications = 4;
 
   return (
@@ -49,9 +52,9 @@ const Header = ({ toggleSidebar }) => {
             />
             
             <span className="text-base font-medium text-left text-[#232323] hidden md:inline leading-[150%]">
-              Shawn Obrain <br />
+              {user?.name} <br />
               <span className="text-xs font-medium text-[#9A9A9A] hidden md:inline leading-[150%]">
-                shawnobrain@mail.com
+                {user?.email}
               </span>
             </span>
             <ChevronDown className="w-4.5 h-4.5 text-gray-600" strokeWidth={2.5} />
@@ -67,6 +70,7 @@ const Header = ({ toggleSidebar }) => {
               </a>
               <a
                 href="#"
+                onClick={() => { logout(); setShowDropdown(false); }}  
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
                 Logout
