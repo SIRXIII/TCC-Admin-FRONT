@@ -1,0 +1,49 @@
+const travelers = [
+  {
+    id: 1,
+    name: "Guinever Cassi",
+    email: "guinevercassi@mail.com",
+    country: "US",
+    orders: 12,
+    lastActive: "2 days ago",
+    status: "Active",
+  },
+  {
+    id: 2,
+    name: "Hans Jensen",
+    email: "guinevercassi@mail.com",
+    country: "UAE",
+    orders: 9,
+    lastActive: "2 days ago",
+    status: "Active",
+  },
+  {
+    id: 3,
+    name: "Mariah Admir",
+    email: "mariahadmir@mail.com",
+    country: "Brazil",
+    orders: 10,
+    lastActive: "2 days ago",
+    status: "Active",
+  },
+  {
+    id: 4,
+    name: "Thorfinn Odd",
+    email: "thorffinnodd@mail.com",
+    country: "UK",
+    orders: 6,
+    lastActive: "2 days ago",
+    status: "Inactive",
+  },
+  {
+    id: 5,
+    name: "Thor Odinson",
+    email: "thordinson@mail.com",
+    country: "US",
+    orders: 1,
+    lastActive: "2 days ago",
+    status: "Inactive",
+  },
+];
+
+export default travelers

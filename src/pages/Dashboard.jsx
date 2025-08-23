@@ -1,11 +1,25 @@
-import React from 'react'
-
+import React from "react";
+import WelcomeCard from "../components/Dashboard/WelcomeCard";
+import Widgets from "../components/Dashboard/Widgets";
+import Travel from "../components/Dashboard/Travel";
+import PartnersBySale from "../components/Dashboard/PartnersBySale";
+import AlertPlane from "../components/Dashboard/AlertPlane";
 const Dashboard = () => {
   return (
-    <div>Dashboard
+   <div className=" flex flex-col top-[120px] left-[281px] gap-6">
 
-    </div>
-  )
-}
+    <WelcomeCard />
 
-export default Dashboard
+      <Widgets />
+
+      <Travel />
+      
+      <PartnersBySale />
+
+      <AlertPlane />
+   </div>
+
+  );
+};
+
+export default Dashboard;

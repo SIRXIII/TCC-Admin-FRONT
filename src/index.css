@@ -10,6 +10,8 @@
   --font-roboto: "Roboto serif", serif;
 
   --bg-orange: #F77F00;
+
+  --border-color: #BBBBBB;
 }
 
 body {
@@ -22,6 +24,10 @@ body {
 
 .bg-orange {
   background-color: var(--bg-orange);
+}
+
+.border-color {
+  border: 0.5px solid var(--border-color);
 }
 
 button {
