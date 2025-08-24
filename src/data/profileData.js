@@ -1,12 +1,18 @@
   const profileData = {
     name: "Jack Paul",
-    email: "jackpaul@mail.com",
-    country: "Rivals",
-    phone: "+38 (0) 80-739-24-45",
-    lastOrder: "7 days ago #BPM",
-    totalSpent: "$14,950",
-    emailMarketingDate: "December 31, 2022",
-    emailMarketingStatus: "Subscribed",
+  email: "Jackpaul@mail.com",
+  details: [
+    { label: "Full Name", value: "Jack Paul" },
+    { label: "Email", value: "Jackpaul@mail.com" },
+    { label: "Country", value: "Russia" },
+    { label: "Phone", value: "+38 (094) 730-24-25" }
+  ],
+  stats: [
+    { label: "Last Order", value: "7 days ago #1374" },
+    { label: "Total Spent", value: "$34,980" },
+    { label: "Registered", value: "December 31, 2022" },
+    { label: "Email Marketing", value: "Subscribed" }
+  ],
     shippingAddress: {
       name: "Jack Paul",
       country: "Rivals",
