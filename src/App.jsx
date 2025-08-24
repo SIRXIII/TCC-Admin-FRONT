@@ -17,6 +17,7 @@ import Support from "./pages/Support";
 // import Help from "./pages/Help";
 import Settings from "./pages/Settings";
 import Logout from "./pages/Logout";
+import Profile from "./pages/Travelers/Profile";
 import { AuthProvider } from "./context/AuthContext";
 
 const App = () => {
@@ -41,6 +42,9 @@ const App = () => {
           <Route path="/support" element={<Support />} />
           {/* <Route path="/help" element={<Help />} /> */}
           <Route path="/settings" element={<Settings />} />
+
+
+          <Route path="/travelers/profile/:id" element={<Profile />} />
 
         </Route>
       </Routes>

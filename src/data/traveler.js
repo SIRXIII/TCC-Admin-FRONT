@@ -7,6 +7,7 @@ const travelers = [
     orders: 12,
     lastActive: "2 days ago",
     status: "Active",
+    statuses: "Active",
   },
   {
     id: 2,
@@ -16,6 +17,7 @@ const travelers = [
     orders: 9,
     lastActive: "2 days ago",
     status: "Active",
+    statuses: "Active",
   },
   {
     id: 3,
@@ -25,6 +27,7 @@ const travelers = [
     orders: 10,
     lastActive: "2 days ago",
     status: "Active",
+    statuses: "Active",
   },
   {
     id: 4,
@@ -34,6 +37,8 @@ const travelers = [
     orders: 6,
     lastActive: "2 days ago",
     status: "Inactive",
+    statuses: "Suspended",
+
   },
   {
     id: 5,
@@ -43,6 +48,7 @@ const travelers = [
     orders: 1,
     lastActive: "2 days ago",
     status: "Inactive",
+    statuses: "Suspended",
   },
 ];
 
