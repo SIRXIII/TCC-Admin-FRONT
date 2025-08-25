@@ -3,7 +3,7 @@ import Login from "./components/Login";
 import Signup from "./components/Signup";
 import MainLayout from "./Layouts/MainLayout";
 import Dashboard from "./pages/Dashboard";
-import Travelers from "./pages/Travelers";
+import Travelers from "./pages/Travelers/Travelers";
 import Partners from "./pages/Partners";
 import Riders from "./pages/Riders";
 import Products from "./pages/Products";
@@ -17,12 +17,17 @@ import Support from "./pages/Support";
 // import Help from "./pages/Help";
 import Settings from "./pages/Settings";
 import Logout from "./pages/Logout";
-import Profile from "./pages/Travelers/Profile";
+import TravelerProfile from "./pages/Travelers/TravelerProfile";
 import { AuthProvider } from "./context/AuthContext";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+
+const queryClient = new QueryClient();
 
 const App = () => {
   return (
     <AuthProvider>
+        <QueryClientProvider client={queryClient}>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
@@ -44,10 +49,11 @@ const App = () => {
           <Route path="/settings" element={<Settings />} />
 
 
-          <Route path="/travelers/profile/:id" element={<Profile />} />
+          <Route path="/travelers/profile/:id" element={<TravelerProfile />} />
 
         </Route>
       </Routes>
+      </QueryClientProvider>
     </AuthProvider>
   );
 };
