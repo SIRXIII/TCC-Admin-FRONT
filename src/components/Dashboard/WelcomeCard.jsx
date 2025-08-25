@@ -3,6 +3,9 @@ import Image from "../../assets/Images/bg_dash1.jpg";
 import calendar from '../../assets/SVG/calendar.svg'
 
 const WelcomeCard = () => {
+  const today = new Date();
+  const options = { year: "numeric", month: "short", day: "2-digit" };
+  const formattedDate = today.toLocaleDateString("en-US", options);
   return (
    <div
      className="w-full lg:min-w-[1135px] h-[221px] rounded-lg border border-[#D5D7DA] mx-auto relative"
@@ -28,7 +31,7 @@ const WelcomeCard = () => {
           
            <div className="flex items-center gap-2 text-xs fw5 text-gray-200 mb-2 sm:mb-3">
              <img src={calendar} alt="" />
-             <span>Jun 25, 2025</span>
+             <span>{formattedDate}</span>
            </div>
    
           

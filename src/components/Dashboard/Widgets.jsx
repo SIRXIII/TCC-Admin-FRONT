@@ -1,7 +1,16 @@
 import React from "react";
-import widgetData from '../../data/widgetData.js'; 
+import { useWidgets } from "../../hooks/useDashboard";
+// import widgetData from '../../data/widgetData.js'; 
 
 const Widgets = () => {
+
+  
+    const { data: widgetData, isLoading, error } = useWidgets();
+  
+    if (isLoading) return <p>Loading States...</p>;
+    if (error) return <p>Error loading States</p>;
+
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-6 h-[130px]">
       {widgetData.map((item) => (
