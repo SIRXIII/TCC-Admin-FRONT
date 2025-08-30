@@ -20,39 +20,47 @@ import Logout from "./pages/Logout";
 import TravelerProfile from "./pages/Travelers/TravelerProfile";
 import { AuthProvider } from "./context/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
+import AddPartners from "./components/Partners/AddPartners";
+import PartnerProfile from "./components/Partners/PartnerProfile";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   return (
     <AuthProvider>
-        <QueryClientProvider client={queryClient}>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+      <QueryClientProvider client={queryClient}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
 
-        <Route element={<MainLayout />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/travelers" element={<Travelers />} />
-          <Route path="/partners" element={<Partners />} />
-          <Route path="/riders" element={<Riders />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/refund" element={<Refunds />} />
-          {/* <Route path="/returns" element={<Returns />} />
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/travelers" element={<Travelers />} />
+            <Route path="/partners" element={<Partners />} />
+            <Route path="/riders" element={<Riders />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/refund" element={<Refunds />} />
+            {/* <Route path="/returns" element={<Returns />} />
         <Route path="/reviews" element={<Reviews />} />
         <Route path="/payouts" element={<Payouts />} />
         <Route path="/reports" element={<Reports />} /> */}
-          <Route path="/support" element={<Support />} />
-          {/* <Route path="/help" element={<Help />} /> */}
-          <Route path="/settings" element={<Settings />} />
+            <Route path="/support" element={<Support />} />
+            {/* <Route path="/help" element={<Help />} /> */}
+            <Route path="/settings" element={<Settings />} />
 
+            <Route
+              path="/travelers/profile/:id"
+              element={<TravelerProfile />}
+            />
 
-          <Route path="/travelers/profile/:id" element={<TravelerProfile />} />
+            <Route path="/partners/add-partner" element={<AddPartners />} />
+            <Route path="/partners/profile/:id" element={<PartnerProfile />} />
 
-        </Route>
-      </Routes>
+          </Route>
+
+          
+        </Routes>
       </QueryClientProvider>
     </AuthProvider>
   );

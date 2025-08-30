@@ -3,8 +3,18 @@ import React from "react";
 const MonthlyOrdersTrend = () => {
   const ordersData = [5, 10, 15, 18, 22, 18, 14, 17, 20, 16, 23, 21, 24];
   const months = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
   ];
   const yAxisValues = [25, 20, 15, 10, 5];
   const chartHeight = 314;

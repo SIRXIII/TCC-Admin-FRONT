@@ -2,15 +2,18 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { FiMoreVertical, FiChevronDown } from "react-icons/fi";
 import { Search } from "lucide-react";
 import { Link } from "react-router-dom";
-import arrow_left from '../../assets/SVG/arrow-left.svg'
-import arrow_right from '../../assets/SVG/arrow-right.svg'
-import { useTravelers, useBulkUpdateTravelers, useExportTravelers  } from "../../hooks/useTravelers";
+import arrow_left from "../../assets/SVG/arrow-left.svg";
+import arrow_right from "../../assets/SVG/arrow-right.svg";
+import {
+  useTravelers,
+  useBulkUpdateTravelers,
+  useExportTravelers,
+} from "../../hooks/useTravelers";
 import DefaultProfile from "../../assets/Images/trv_profile.jpg";
-
 
 const Travelers = () => {
   const { data: travelers = [], isLoading, isError } = useTravelers();
-    const { mutate: bulkUpdate } = useBulkUpdateTravelers();
+  const { mutate: bulkUpdate } = useBulkUpdateTravelers();
   const { mutate: exportData } = useExportTravelers();
 
   const dropdownRef = useRef(null);
@@ -37,7 +40,9 @@ const Travelers = () => {
     let temp = [...travelers];
 
     if (status !== "Status") {
-      temp = temp.filter((t) => t.status.toLowerCase() === status.toLowerCase());
+      temp = temp.filter(
+        (t) => t.status.toLowerCase() === status.toLowerCase()
+      );
     }
 
     if (searchTerm.trim() !== "") {
@@ -77,20 +82,19 @@ const Travelers = () => {
 
   const handleBulkAction = (action) => {
     console.log("Bulk action:", action, selected);
-     if (action === "Activate" || action === "Deactivate") {
-    bulkUpdate({ ids: selected, status: action });
-  }
+    if (action === "Activate" || action === "Deactivate") {
+      bulkUpdate({ ids: selected, status: action });
+    }
 
-  if (action === "Export CSV") {
-    exportData(selected);
-  }
+    if (action === "Export CSV") {
+      exportData(selected);
+    }
 
     setBulk(action);
-    setBulkOpen(false); 
-
+    setBulkOpen(false);
   };
 
-    useEffect(() => {
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setBulkOpen(false);
@@ -103,9 +107,11 @@ const Travelers = () => {
     };
   }, []);
 
+  const [open, setOpen] = useState(false);
+  const options = [5, 10, 25, 50];
+
   return (
     <div className="gap-6 mb-10">
-
       <div className="flex flex-col p-3 gap-4">
         <div className="flex items-center text-xs leading-[150%] tracking-[-3%]">
           <p className="text-[#6C6C6C]">Dashboard</p>
@@ -124,7 +130,6 @@ const Travelers = () => {
 
       <div className="bg-[#FFFFFF] rounded-lg border-color p-6">
         <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
-
           <div className="relative text-[#9A9A9A] px-4 py-2 gap-3 text-xs leading-[150%] tracking-[-3%]">
             <span className="absolute inset-y-0 left-0 flex items-center pl-6">
               <Search size={16} />
@@ -138,9 +143,7 @@ const Travelers = () => {
             />
           </div>
 
-
           <div className="flex items-center gap-3">
-
             <div className="relative">
               <button
                 onClick={() => setStatusOpen(!statusOpen)}
@@ -154,7 +157,7 @@ const Travelers = () => {
                   {["Status", "Active", "Suspended"].map((s) => (
                     <p
                       key={s}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                      className="px-4 py-2 hover:bg-[#FEF2E6] cursor-pointer text-sm"
                       onClick={() => {
                         setStatus(s);
                         setStatusOpen(false);
@@ -168,15 +171,15 @@ const Travelers = () => {
             </div>
 
             <div className="relative" ref={dropdownRef}>
-             
               <button
                 onClick={() => selected.length > 0 && setBulkOpen(!bulkOpen)}
                 disabled={selected.length === 0}
                 className={`flex items-center justify-between border rounded-md px-4 py-2 text-xs w-[127px] h-[42px]
-      ${selected.length === 0
-                    ? "bg-[#FEF2E6] text-[#F77F00] cursor-not-allowed"
-                    : "bg-[#FEF2E6] text-[#F77F00] cursor-pointer"
-                  }`}
+      ${
+        selected.length === 0
+          ? "bg-[#FEF2E6] text-[#F77F00] cursor-not-allowed"
+          : "bg-[#FEF2E6] text-[#F77F00] cursor-pointer "
+      }`}
               >
                 {bulk}
                 <FiChevronDown size={18} />
@@ -186,7 +189,7 @@ const Travelers = () => {
                   {["Activate", "Deactivate", "Export CSV"].map((b) => (
                     <p
                       key={b}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                      className="px-4 py-2 hover:bg-[#FEF2E6] cursor-pointer text-sm"
                       onClick={() => handleBulkAction(b)}
                     >
                       {b}
@@ -220,7 +223,7 @@ const Travelers = () => {
                 <th className="px-4 py-3 text-right">Action</th>
               </tr>
             </thead>
-            <tbody>
+            {/* <tbody>
               {paginatedTravelers.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="text-center py-4">
@@ -310,21 +313,132 @@ const Travelers = () => {
                   </tr>
                 ))
               )}
+            </tbody> */}
+
+            <tbody>
+              {paginatedTravelers.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-4">
+                    No travelers found.
+                  </td>
+                </tr>
+              ) : (
+                paginatedTravelers.map((t) => (
+                  <tr
+                    key={t.id}
+                    onClick={() => navigate(`/travelers/profile/${t.id}`)}
+                    className="text-sm bg-[#FFFFFF] hover:bg-[#FEF2E6] cursor-pointer transition-colors"
+                  >
+                    <td
+                      className="px-4 py-3"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <input
+                        type="checkbox"
+                        className="w-4 h-4 rounded-lg"
+                        checked={selected.includes(t.id)}
+                        onChange={() => handleSelectOne(t.id)}
+                      />
+                    </td>
+
+                    <td className="px-4 py-3 flex gap-2.5 items-center">
+                      <img
+                        src={t.profile_photo}
+                        alt="Traveler"
+                        className="w-6 h-6 rounded-xl object-cover object-center"
+                        onError={(e) => {
+                          e.currentTarget.src = DefaultProfile;
+                        }}
+                      />
+                      <div>
+                        <p className="text-[#4F4F4F] text-sm">{t.name}</p>
+                        <p className="text-[#6C6C6C] text-xs">{t.email}</p>
+                      </div>
+                    </td>
+
+                    <td className="px-4 py-3 text-[#232323]">{t.phone}</td>
+                    <td className="px-4 py-3 text-[#232323]">
+                      {t.order ? t.order.length : 0}
+                    </td>
+                    <td className="px-4 py-3 text-[#232323]">
+                      <span
+                        className={`px-2 py-1 rounded-md text-xs font-medium ${
+                          statusColors[t.status.toLowerCase()]
+                        }`}
+                      >
+                        {t.status}
+                      </span>
+                    </td>
+
+                    <td
+                      className="px-4 py-3 text-right relative overflow-visible"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="inline-block relative">
+                        <button
+                          className="p-1.5 rounded-lg border bg-[#FCECD6] text-[#CA4E2E]"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActionOpen(actionOpen === t.id ? null : t.id);
+                          }}
+                        >
+                          <FiMoreVertical size={16} />
+                        </button>
+                        {actionOpen === t.id && (
+                          <div
+                            className={`absolute w-32 bg-white border border-[#D9D9D9] rounded-md shadow-lg z-40 
+                ${
+                  [
+                    paginatedTravelers[paginatedTravelers.length - 1].id,
+                    paginatedTravelers[paginatedTravelers.length - 2].id,
+                  ].includes(t.id)
+                    ? "bottom-full mb-0.5"
+                    : "top-full mt-0.5"
+                }
+                right-0`}
+                          >
+                            <Link
+                              to={`/travelers/profile/${t.id}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="block w-full text-left px-4 py-2 text-sm text-[#4F4F4F] hover:bg-[#FEF2E6]"
+                            >
+                              View Profile
+                            </Link>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-[#4F4F4F] hover:bg-[#FEF2E6]"
+                            >
+                              Suspend
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-[#4F4F4F] hover:bg-[#FEF2E6]"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
 
-
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mt-6 text-[#6C6C6C] h-10">
-
           <p className="text-sm h-10 flex items-center">
             Showing {(page - 1) * perPage + 1} to{" "}
-            {Math.min(page * perPage, filteredTravelers.length)} of {filteredTravelers.length} entries
+            {Math.min(page * perPage, filteredTravelers.length)} of{" "}
+            {filteredTravelers.length} entries
           </p>
 
           <div className="flex items-center gap-2 h-10">
-
-
             <button
               className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300  transition"
               onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
@@ -332,20 +446,19 @@ const Travelers = () => {
               <img src={arrow_left} alt="Prev" className="w-4 h-4" />
             </button>
 
-
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
               <button
                 key={num}
-                className={`w-10 h-10 flex items-center justify-center rounded-lg font-medium text-sm transition ${num === page
-                  ? "bg-[#F77F00] text-white border border-[#F77F00]"
-                  : ""
-                  }`}
+                className={`w-10 h-10 flex items-center justify-center rounded-lg font-medium text-sm transition ${
+                  num === page
+                    ? "bg-[#F77F00] text-white border border-[#F77F00]"
+                    : "border border-[#FEF2E6] hover:bg-[#FEF2E6] hover:text-[#232323]"
+                }`}
                 onClick={() => setPage(num)}
               >
                 {num}
               </button>
             ))}
-
 
             <button
               className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300  transition"
@@ -355,25 +468,32 @@ const Travelers = () => {
             </button>
           </div>
 
-
           <div className="flex items-center gap-2 h-10">
             <span className="text-[#232323] text-xs">Show</span>
             <div className="relative w-[62px]">
-              <select
-                className="appearance-none w-full h-10 px-3 border border-[#D9D9D9] rounded-lg text-sm text-[#232323] bg-white focus:outline-none cursor-pointer"
-                value={perPage}
-                onChange={(e) => {
-                  setPerPage(Number(e.target.value));
-                  setPage(1);
-                }}
-                aria-label="Select number of entries per page"
+              <button
+                onClick={() => setOpen(!open)}
+                className="w-full h-10 px-3 border border-[#D9D9D9] rounded-lg text-sm text-[#232323] bg-white text-left"
               >
-                {[5, 10, 25, 50].map((n) => (
-                  <option key={n} value={n}>
-                    {n}
-                  </option>
-                ))}
-              </select>
+                {perPage}
+              </button>
+
+              {open && (
+                <div className="absolute bottom-full mb-1 w-full bg-white border border-[#D9D9D9] rounded-lg shadow-lg z-10">
+                  {options.map((n) => (
+                    <div
+                      key={n}
+                      onClick={() => {
+                        setPerPage(n);
+                        setOpen(false);
+                      }}
+                      className="px-3 py-2 text-sm text-[#232323] hover:bg-[#FEF2E6] cursor-pointer"
+                    >
+                      {n}
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <img
                 src={arrow_right}
@@ -383,9 +503,7 @@ const Travelers = () => {
             </div>
             <span className="text-[#232323] text-xs">entries</span>
           </div>
-
         </div>
-
       </div>
     </div>
   );
