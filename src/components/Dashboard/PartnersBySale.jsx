@@ -2,9 +2,12 @@ import React from "react";
 import rating from '../../assets/SVG/rating.svg'
 import { useTopPartners } from "../../hooks/useDashboard";
 import DefaultProfile from "../../assets/Images/trv_profile.jpg";
+import { useNavigate } from "react-router-dom";
 
 
 const PartnersBySale = () => {
+
+  const navigate = useNavigate();
 
 
   const { data: topPartners, isLoading, error } = useTopPartners();
@@ -30,7 +33,7 @@ const PartnersBySale = () => {
         </thead>
         <tbody className="text-sm  leading-[150%] tracking-[-3%] items-center bg-[#FFFFFF]">
           {topPartners.map((t) => (
-            <tr key={t.id} className="">
+            <tr key={t.id} onClick={() => navigate(`/partners/profile/${t.id}`)} className="text-sm bg-[#FFFFFF] hover:bg-[#FEF2E6] cursor-pointer transition-colors">
               <td className="p-4 flex items-center gap-3">
                 <div><img src={t.profile_photo} alt="adasda" className="w-6 h-6 object-cover object-center rounded-full" onError={(e) => {e.currentTarget.src = DefaultProfile;}}/></div>
                 <div>

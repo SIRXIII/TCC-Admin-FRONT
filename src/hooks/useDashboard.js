@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getTravelers, getTopPartners, getStates } from "../services/dashboardService";
+import { getTopTravelers, getTopPartners, getStates } from "../services/dashboardService";
 
 export const useWidgets = () => {
   return useQuery({
@@ -12,10 +12,10 @@ export const useWidgets = () => {
 
 
 
-export const useTravelers = () => {
+export const useTopTravelers = () => {
   return useQuery({
-    queryKey: ["travelers"],
-    queryFn: getTravelers,
+    queryKey: ["topTravelers"],
+    queryFn: getTopTravelers,
     select: (res) => res.data,
   });
 };

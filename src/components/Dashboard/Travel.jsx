@@ -1,16 +1,18 @@
 import React from "react";
-import { useTravelers } from "../../hooks/useDashboard";
+import { useTopTravelers } from "../../hooks/useDashboard";
 import DefaultProfile from "../../assets/Images/trv_profile.jpg";
+import { useNavigate } from "react-router-dom";
 
 
 const Travel = () => {
 
-  const { data: travelers, isLoading, error } = useTravelers();
+  const navigate = useNavigate();
+  const { data: topTravelers, isLoading, error } = useTopTravelers();
 
   if (isLoading) return <p>Loading travelers...</p>;
   if (error) return <p>Error loading travelers</p>;
 
-  console.log("first travelers data", travelers)
+
 
   return (
     <div className="justify-center border-color rounded-lg p-6 flex flex-col gap-6 bg-white">
@@ -28,8 +30,8 @@ const Travel = () => {
           </tr>
         </thead>
         <tbody className="text-sm  leading-[150%] tracking-[-3%] items-center bg-[#FFFFFF]">
-          {travelers.map((t) => (
-            <tr key={t.id} className="">
+          {topTravelers.map((t) => (
+            <tr key={t.id} onClick={() => navigate(`/travelers/profile/${t.id}`)} className="text-sm bg-[#FFFFFF] hover:bg-[#FEF2E6] cursor-pointer transition-colors">
               <td className="p-4 flex items-center gap-3">
                     <div><img src={t?.profile_photo} alt={t.name} className="w-6 h-6 object-cover object-center rounded-full" onError={(e) => {e.currentTarget.src = DefaultProfile;}}/></div>
                 <div>

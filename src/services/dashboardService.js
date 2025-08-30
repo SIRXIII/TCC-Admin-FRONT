@@ -8,7 +8,7 @@ export const getStates = async () => {
 };
 
 
-export const getTravelers = async () => {
+export const getTopTravelers = async () => {
   const response = await API.get("/dashboard/travelers");
   return response.data;
 };

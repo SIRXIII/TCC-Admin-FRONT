@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { FiMoreVertical, FiChevronDown } from "react-icons/fi";
 import { Search } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import arrow_left from "../../assets/SVG/arrow-left.svg";
 import arrow_right from "../../assets/SVG/arrow-right.svg";
 import {
@@ -15,6 +15,9 @@ const Travelers = () => {
   const { data: travelers = [], isLoading, isError } = useTravelers();
   const { mutate: bulkUpdate } = useBulkUpdateTravelers();
   const { mutate: exportData } = useExportTravelers();
+
+const navigate = useNavigate();
+
 
   const dropdownRef = useRef(null);
   const [filteredTravelers, setFilteredTravelers] = useState([]);
@@ -223,97 +226,6 @@ const Travelers = () => {
                 <th className="px-4 py-3 text-right">Action</th>
               </tr>
             </thead>
-            {/* <tbody>
-              {paginatedTravelers.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="text-center py-4">
-                    No travelers found.
-                  </td>
-                </tr>
-              ) : (
-                paginatedTravelers.map((t) => (
-                  <tr key={t.id} className="text-sm bg-[#FFFFFF]">
-                    <td className="px-4 py-3">
-                      <input
-                        type="checkbox"
-                        className="w-4 h-4 rounded-lg"
-                        checked={selected.includes(t.id)}
-                        onChange={() => handleSelectOne(t.id)}
-                      />
-                    </td>
-                    <td className="px-4 py-3 leading-[150%] tracking-[-3%] flex gap-2.5 items-center">
-                      <img
-                        src={t.profile_photo}
-                        alt="Traveler"
-                        className="w-6 h-6 rounded-xl object-cover object-center"
-                        onError={(e) => {
-                          e.currentTarget.src = DefaultProfile;
-                        }}
-                      />
-                      <div className="fw4">
-                        <p className="text-[#4F4F4F] text-sm">{t.name}</p>
-                        <p className="text-[#6C6C6C] text-xs">{t.email}</p>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-[#232323] leading-[150%] tracking-[-3%]">
-                      {t.phone}
-                    </td>
-                    <td className="px-4 py-3 text-[#232323] leading-[150%] tracking-[-3%]">
-                      {t.order ? t.order.length : 0}
-                    </td>
-                    <td className="px-4 py-3 text-[#232323] leading-[150%] tracking-[-3%]">
-                      <span
-                        className={`px-2 py-1 rounded-md text-xs font-medium ${statusColors[t.status.toLowerCase()]
-                          }`}
-                      >
-                        {t.status}
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-3 text-right relative overflow-visible">
-                      <div className="inline-block relative">
-                        <button
-                          className="p-1.5 rounded-lg border bg-[#FCECD6] text-[#CA4E2E]"
-                          onClick={() =>
-                            setActionOpen(actionOpen === t.id ? null : t.id)
-                          }
-                        >
-                          <FiMoreVertical size={16} />
-                        </button>
-                        {actionOpen === t.id && (
-                          <div
-                            className={`absolute w-40 bg-[#FFFFFF] border border-[#D9D9D9] rounded-md shadow-lg z-50
-                            ${[paginatedTravelers[paginatedTravelers.length - 1].id, paginatedTravelers[paginatedTravelers.length - 2].id].includes(t.id)
-                                ? "bottom-full mb-0.5"
-                                : "top-full mt-0.5"
-                              }
-                            right-0
-                          `}
-                          >
-
-                            <Link
-                              to={`/travelers/profile/${t.id}`}
-                              className="block w-full text-left px-4 py-2 text-sm text-[#4F4F4F] hover:bg-gray-100"
-                            >
-                              View Profile
-                            </Link>
-                            <button className="block w-full text-left px-4 py-2 text-sm text-[#4F4F4F] hover:bg-gray-100">
-                              Suspend
-                            </button>
-                            <button className="block w-full text-left px-4 py-2 text-sm text-[#4F4F4F] hover:bg-gray-100">
-                              Delete
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </td>
-
-
-
-                  </tr>
-                ))
-              )}
-            </tbody> */}
 
             <tbody>
               {paginatedTravelers.length === 0 ? (
