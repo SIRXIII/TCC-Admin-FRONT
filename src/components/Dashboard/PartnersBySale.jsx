@@ -37,7 +37,7 @@ const PartnersBySale = () => {
               <td className="p-4 flex items-center gap-3">
                 <div><img src={t.profile_photo} alt="adasda" className="w-6 h-6 object-cover object-center rounded-full" onError={(e) => {e.currentTarget.src = DefaultProfile;}}/></div>
                 <div>
-                  <div className=" text-[#4F4F4F] fw4">{t.first_name} {t.last_name}</div>
+                  <div className=" text-[#4F4F4F] fw4">{t.name}</div>
                   <div className="text-[#6C6C6C] text-xs fw4">{t.email}</div>
                 </div>
               </td>

@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getTravelers,   bulkUpdateTravelers, exportTravelers  } from "../services/travelerService";
+import { getTravelers, bulkUpdateTravelers, exportTravelers, deleteTraveler  } from "../services/travelerService";
 
 
 export const useTravelers = () => {
@@ -10,6 +10,17 @@ export const useTravelers = () => {
   });
 };
 
+
+export const useDeleteTravelers = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => deleteTraveler(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["travelers"]);
+    },
+  });
+};
 
 export const useBulkUpdateTravelers = () => {
   const queryClient = useQueryClient();
@@ -46,3 +57,5 @@ export const useExportTravelers = () => {
     },
   });
 };
+
+

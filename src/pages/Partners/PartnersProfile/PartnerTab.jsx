@@ -1,11 +1,12 @@
 import React from "react";
 
-const PartnerTabs = ({ activeTab, setActiveTab }) => {
-  const tabs = [
-    { key: "details", label: "Details" },
-    { key: "products", label: "Products (18)" },
-    { key: "orders", label: "Orders (145)" },
-  ];
+const PartnerTabs = ({ activeTab, setActiveTab, partner }) => {
+
+const tabs = [
+  { key: "details", label: "Details" },
+  { key: "products", label: `Products (${partner?.products?.length || 0})` },
+  { key: "orders", label: `Orders (${partner?.order?.length || 0})` },
+];
 
   return (
     <div className="flex gap-2 bg-[#FEECD9] rounded-lg p-2 w-fit">
@@ -15,7 +16,7 @@ const PartnerTabs = ({ activeTab, setActiveTab }) => {
           onClick={() => setActiveTab(tab.key)}
           className={`px-4 py-2 rounded-md text-sm font-medium transition ${
             activeTab === tab.key
-              ? "bg-[#F77F00] text-white shadow"
+              ? "bg-orange text-white shadow"
               : "text-[#4F4F4F]"
           }`}
         >

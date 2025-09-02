@@ -1,6 +1,9 @@
-import React from "react";
 
-const PartnerInfo = ({ items }) => {
+import { useDownloadPartnersZip } from "../../../hooks/usePartners";
+
+const PartnerInfo = ({ items, partnerId }) => {
+
+  const { mutate: downloadZip, isLoading } = useDownloadPartnersZip();
   return (
     <div className="flex flex-col gap-4 ">
       {items.map((item, idx) => {
@@ -14,7 +17,9 @@ const PartnerInfo = ({ items }) => {
                   className="w-14 h-14 rounded-xl object-cover"
                 />
                 <div>
-                  <p className="text-lg font-medium text-[#232323]">{item.value}</p>
+                  <p className="text-lg font-medium text-[#232323]">
+                    {item.value}
+                  </p>
                   {item.email && (
                     <p className="text-xs text-[#6C6C6C]">{item.email}</p>
                   )}
@@ -39,19 +44,38 @@ const PartnerInfo = ({ items }) => {
         }
 
         return (
-          <div key={idx} className="flex items-center justify-between fw5 gap-2">
-            <div className="flex items-center gap-2 text-xs">
+          <div
+            key={idx}
+            className="flex items-center justify-between fw5 gap-2"
+          >
+            <div className="flex  gap-2 text-xs">
               <span className="w-40 text-[#6C6C6C]">{item.label}</span>
-              <span className="text-[#9A9A9A] text-sm"> : </span>
-
-              <span className="text-[#232323]">{item.value}</span>
+              <span className=" text-[#9A9A9A] text-sm"> : </span>
+              <span className="w-70 text-[#232323]">{item.value}</span>
             </div>
 
-            {item.actions && (
+             {item.actions && item.actions.length > 0 && (
               <div className="flex gap-2">
                 {item.actions.map((action, i) => (
-                  <button key={i} className="text-[#F77F00] text-xs fw6">
-                    {action}
+                  <button
+                    key={i}
+                    disabled={isLoading}
+                    className="border border-[#F77F00] bg-[#F77F00] rounded-lg px-4 py-2 text-sm text-[#FEF2E6] disabled:opacity-50"
+                    onClick={() => {
+                      if (!item.docUrl || item.docUrl.length === 0) return;
+
+                      if (action === "View") {
+                       
+                        item.docUrl.forEach((url) =>
+                          window.open(url, "_blank")
+                        );
+                      } else if (action === "Download") {
+                       
+                        downloadZip(partnerId);
+                      }
+                    }}
+                  >
+                    {isLoading && action === "Download" ? "Downloading..." : action}
                   </button>
                 ))}
               </div>

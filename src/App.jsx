@@ -4,24 +4,19 @@ import Signup from "./components/Signup";
 import MainLayout from "./Layouts/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import Travelers from "./pages/Travelers/Travelers";
-import Partners from "./pages/Partners";
+import Partners from "./pages/Partners/Partners";
 import Riders from "./pages/Riders";
 import Products from "./pages/Products";
 import Orders from "./pages/Orders";
 import Refunds from "./pages/Refunds";
-// import Returns from "./pages/Returns";
-// import Reviews from "./pages/Reviews";
-// import Payouts from "./pages/Payouts";
-// import Reports from "./pages/Reports";
 import Support from "./pages/Support";
-// import Help from "./pages/Help";
 import Settings from "./pages/Settings";
-import Logout from "./pages/Logout";
 import TravelerProfile from "./pages/Travelers/TravelerProfile";
 import { AuthProvider } from "./context/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import AddPartners from "./components/Partners/AddPartners";
-import PartnerProfile from "./components/Partners/PartnerProfile";
+import PartnerProfile from "./pages/Partners/PartnerProfile";
+import AddPartners from "./pages/Partners/AddPartners";
+
 
 const queryClient = new QueryClient();
 
@@ -41,12 +36,9 @@ const App = () => {
             <Route path="/products" element={<Products />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/refund" element={<Refunds />} />
-            {/* <Route path="/returns" element={<Returns />} />
-        <Route path="/reviews" element={<Reviews />} />
-        <Route path="/payouts" element={<Payouts />} />
-        <Route path="/reports" element={<Reports />} /> */}
+          
             <Route path="/support" element={<Support />} />
-            {/* <Route path="/help" element={<Help />} /> */}
+           
             <Route path="/settings" element={<Settings />} />
 
             <Route
