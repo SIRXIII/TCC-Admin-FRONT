@@ -34,7 +34,7 @@ const Header = ({ toggleSidebar }) => {
         <button className="relative text-[#9A9A9A] w-6 h-6 ">
           <img src={bell} alt="bell" />
           {notifications > 0 && (
-            <span className="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-[#F77F00] rounded-full">
+            <span className="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 text-[10px] font-bold text-white bg-orange rounded-full">
               {notifications}
             </span>
           )}

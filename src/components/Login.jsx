@@ -168,7 +168,7 @@ const Login = () => {
 
             <button
               type="submit"
-              className="w-full bg-[#F77F00] text-white text-base fw6 py-4 rounded-lg transition "
+              className="w-full bg-orange text-white text-base fw6 py-4 rounded-lg transition "
             >
               Sign in
             </button>
