@@ -22,6 +22,8 @@ import { AuthProvider } from "./context/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import AddPartners from "./components/Partners/AddPartners";
 import PartnerProfile from "./components/Partners/PartnerProfile";
+import AddRiders from "./pages/Riders/AddRiders";
+import RiderProfile from "./pages/Riders/RiderProfile";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +58,10 @@ const App = () => {
 
             <Route path="/partners/add-partner" element={<AddPartners />} />
             <Route path="/partners/profile/:id" element={<PartnerProfile />} />
+
+            {/* <Route path="/riders/add-rider" element={<AddRiders />} /> */}
+            <Route path="/riders/add-rider" element={<AddRiders />} />
+            <Route path="/riders/profile/:id" element={<RiderProfile />} />
 
           </Route>
 
