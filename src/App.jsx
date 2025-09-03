@@ -49,6 +49,10 @@ const App = () => {
             <Route path="/partners/add-partner" element={<AddPartners />} />
             <Route path="/partners/profile/:id" element={<PartnerProfile />} />
 
+            {/* <Route path="/riders/add-rider" element={<AddRiders />} /> */}
+            <Route path="/riders/add-rider" element={<AddRiders />} />
+            <Route path="/riders/profile/:id" element={<RiderProfile />} />
+
           </Route>
 
           
