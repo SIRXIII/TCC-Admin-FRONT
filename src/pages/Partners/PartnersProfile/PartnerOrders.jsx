@@ -1,28 +1,32 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Search } from "lucide-react";
-// import arrow_left from "../../../assets/SVG/arrow_left.svg";
-// import arrow_right from "../../../assets/SVG/arrow_right.svg";
 import DefaultProfile from "../../../assets/Images/trv_profile.jpg";
+import Pagination from "../../../components/Pagination";
 
-const PartnerOrders = ({ traveler }) => {
-  if (!traveler) return <p className="text-center py-4">No traveler selected.</p>;
+const PartnerOrders = ({partner}) => {
+  if (!partner) return <p className="text-center py-4">No partner data found.</p>;
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const orders = traveler.order || [];
+  const orders = partner.order || [];
 
   const statusColors = {
-    active: "bg-[#E7F7ED] text-[#088B3A]",
-    suspended: "bg-[#FCECD6] text-[#CA4E2E]",
-  };
+  pending: "bg-[#E1FDFD] text-[#3E77B0]",
+  delivered: "bg-[#E7F7ED] text-[#088B3A]",
+  shipped: "bg-[#FEFCDD] text-[#B2A23F]",
+  cancelled: "bg-[#FCECD6] text-[#CA4E2E]",
+};
+
 
   const filteredOrders = useMemo(() => {
     return orders.filter((o) =>
-      o.id.toLowerCase().includes(searchTerm.toLowerCase())
+      o.id.toString().includes(searchTerm.toLowerCase())
     );
   }, [orders, searchTerm]);
+
+  
 
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
 
@@ -41,11 +45,8 @@ const PartnerOrders = ({ traveler }) => {
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold text-[#232323]">Orders</h2>
           <span className="text-sm text-[#9A9A9A]">
-            Total spent{" "}
-            <span className="text-[#4F4F4F] font-medium">
-              ${traveler.spent_amount || 0}
-            </span>{" "}
-            on {orders.length} orders
+            Total orders{" "}
+            <span className="fw6 text-[#232323]">{orders.length}</span>
           </span>
         </div>
 
@@ -62,7 +63,7 @@ const PartnerOrders = ({ traveler }) => {
           />
         </div>
 
-        <div className="overflow-x-auto overflow-y-auto max-h-[400px]">
+        <div className="overflow-x-auto overflow-y-auto min-h-[200px]">
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="bg-[#F9F9F9] uppercase text-[#6C6C6C]">
@@ -87,12 +88,12 @@ const PartnerOrders = ({ traveler }) => {
                     <td className="px-4 py-3">{o.id}</td>
                     <td className="px-4 py-3 flex items-center gap-2">
                       <img
-                        src={traveler.profile_photo || DefaultProfile}
-                        alt={traveler.name || "-"}
+                        src={partner.profile_photo || DefaultProfile}
+                        alt={partner.name || "-"}
                         className="w-6 h-6 rounded-full object-cover"
                         onError={(e) => (e.currentTarget.src = DefaultProfile)}
                       />
-                      <span>{traveler.name || "-"}</span>
+                      <span>{partner.name || "-"}</span>
                     </td>
                     <td className="px-4 py-3">{o.created_at}</td>
                     <td className="px-4 py-3">{o.items_count}</td>
@@ -103,7 +104,7 @@ const PartnerOrders = ({ traveler }) => {
                           statusColors[o.status?.toLowerCase()] || "bg-gray-100 text-gray-600"
                         }`}
                       >
-                        {o.status}
+                        {o.status === "shipped" ? "In Progress" : o.status}
                       </span>
                     </td>
                   </tr>
@@ -112,67 +113,16 @@ const PartnerOrders = ({ traveler }) => {
             </tbody>
           </table>
         </div>
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mt-6 text-[#6C6C6C] h-10">
-          <p className="text-sm flex items-center">
-            Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-            {Math.min(currentPage * itemsPerPage, filteredOrders.length)} of{" "}
-            {filteredOrders.length} entries
-          </p>
-
-          <div className="flex items-center gap-2 h-10">
-            <button
-              className={`w-10 h-10 flex items-center justify-center rounded-lg border border-[#D9D9D9] ${
-                currentPage === 1 ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
-            >
-              <img src={arrow_left} alt="Prev" className="w-4 h-4" />
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-              <button
-                key={num}
-                className={`w-10 h-10 flex items-center justify-center rounded-lg font-medium text-sm transition ${
-                  num === currentPage
-                    ? "bg-[#F77F00] text-white border border-[#F77F00]"
-                    : "border border-[#FEF2E6] hover:bg-[#FEF2E6]"
-                }`}
-                onClick={() => setCurrentPage(num)}
-              >
-                {num}
-              </button>
-            ))}
-            <button
-              className={`w-10 h-10 flex items-center justify-center rounded-lg border border-[#D9D9D9] ${
-                currentPage === totalPages ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              onClick={() =>
-                currentPage < totalPages && setCurrentPage(currentPage + 1)
-              }
-            >
-              <img src={arrow_right} alt="Next" className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2 h-10">
-            <span className="text-[#232323] text-xs">Show</span>
-            <select
-              value={itemsPerPage}
-              onChange={(e) => {
-                setItemsPerPage(Number(e.target.value));
-                setCurrentPage(1);
-              }}
-              className="appearance-none w-[62px] h-10 px-3 border border-[#D9D9D9] rounded-lg text-sm text-[#232323]"
-            >
-              {[10, 25, 50].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-                
-              ))}
-            </select>
-            <span className="text-[#232323] text-xs">entries</span>
-          </div>
-        </div>
+       
+         <Pagination
+          page={currentPage}
+          setPage={setCurrentPage}
+          perPage={itemsPerPage}
+          setPerPage={setItemsPerPage}
+          totalItems={filteredOrders.length}
+          options={[5, 10, 25, 50]}
+          fullWidth={true}
+        />
       </div>
     </div>
   );

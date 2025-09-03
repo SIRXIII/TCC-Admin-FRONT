@@ -3,11 +3,8 @@ import { useParams } from "react-router-dom";
 import { Search } from "lucide-react";
 import { getTravelerById } from "../../services/travelerService";
 import DefaultProfile from "../../assets/Images/trv_profile.jpg";
-import arrow_left from '../../assets/SVG/arrow-left.svg'
-import arrow_right from '../../assets/SVG/arrow-right.svg'
-import { FiMoreVertical, FiChevronDown } from "react-icons/fi";
+import Pagination from "../../components/Pagination";
 
-// import your service
 
 const TravelerProfile = () => {
   const { id } = useParams();
@@ -28,16 +25,10 @@ const TravelerProfile = () => {
     fetchTraveler();
   }, [id]);
 
-
-  console.log("traveler profile", traveler)
-
   if (!traveler) return <p>Loading...</p>;
 
-  const totalPages = Math.ceil(traveler.order.length / itemsPerPage);
-  const currentPageData = traveler.order.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
+
+
 
   const statusColors = {
     pending: "bg-[#E1FDFD] text-[#3E77B0]",
@@ -58,6 +49,12 @@ const TravelerProfile = () => {
     order.status.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+  const currentPageData = filteredOrders.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const shippingAddress = traveler.addresses.find(a => a.type === "shipping");
   const billingAddress = traveler.addresses.find(a => a.type === "billing");
@@ -245,7 +242,7 @@ const TravelerProfile = () => {
               />
             </div>
 
-           
+
             <div className="overflow-x-auto">
               <table className="w-full border-collapse">
                 <thead>
@@ -275,10 +272,10 @@ const TravelerProfile = () => {
 
                         </td>
                         <td className="px-4 py-3 text-[#232323] leading-[150%] tracking-[-3%] h-[48px] flex gap-2.5">
-                          <div><img src={t?.partner_photo} alt={t.partner_name || '-'} className="w-6 h-6 rounded-full object-cover object-center" onError={(e) => {e.currentTarget.src = DefaultProfile;}} /></div>
+                          <div><img src={t?.partner_photo} alt={t.partner_name || '-'} className="w-6 h-6 rounded-full object-cover object-center" onError={(e) => { e.currentTarget.src = DefaultProfile; }} /></div>
                           <div>
 
-                          {t.partner_name || '-'}
+                            {t.partner_name || '-'}
                           </div>
                         </td>
                         <td className="px-4 py-3 text-[#232323] leading-[150%] tracking-[-3%] h-[48px]">
@@ -307,66 +304,15 @@ const TravelerProfile = () => {
             </div>
 
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mt-6 text-[#6C6C6C] h-10">
-              <p className="text-sm h-10 flex items-center">
-                Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
-                {Math.min(currentPage * itemsPerPage, filteredOrders.length)} of {filteredOrders.length} entries
-              </p>
 
-              <div className="flex items-center gap-2 h-10">
-                <button
-                  className={`w-10 h-10 flex items-center justify-center rounded-lg border border-[#D9D9D9] transition ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                  onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
-                >
-                  <img src={arrow_left} alt="Prev" className="w-4 h-4" />
-                </button>
-                {getVisiblePages().map((num) => (
-                  <button
-                    key={num}
-                    className={`w-10 h-10 flex items-center justify-center rounded-lg font-medium text-sm transition ${num === currentPage ? 'bg-[#F77F00] text-white border border-[#F77F00]' : ''
-                      }`}
-                    onClick={() => setCurrentPage(num)}
-                  >
-                    {num}
-                  </button>
-                ))}
-                <button
-                  className={`w-10 h-10 flex items-center justify-center rounded-lg border border-[#D9D9D9] transition ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                  onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
-                >
-                  <img src={arrow_right} alt="Next" className="w-4 h-4" />
-                </button>
-              </div>
-
-              <div className="flex items-center gap-2 h-10">
-                <span className="text-[#232323] text-xs">Show</span>
-                <div className="relative w-[62px]">
-                  <select
-                    className="appearance-none w-full h-10 px-3 border border-[#D9D9D9] rounded-lg text-sm text-[#232323] bg-white focus:outline-none cursor-pointer"
-                    value={itemsPerPage}
-                    onChange={(e) => {
-                      setItemsPerPage(Number(e.target.value));
-                      setCurrentPage(1);
-                    }}
-                    aria-label="Select number of entries per page"
-                  >
-                    {[10, 25, 50].map((n) => (
-                      <option key={n} value={n}>
-                        {n}
-                      </option>
-                    ))}
-                  </select>
-                  <img
-                    src={arrow_right}
-                    alt="Dropdown arrow"
-                    className="pointer-events-none absolute right-2 top-1/2 w-4 h-4 -translate-y-1/2 rotate-90"
-                  />
-                </div>
-                <span className="text-[#232323] text-xs">entries</span>
-              </div>
-            </div>
+            <Pagination
+              page={currentPage}
+              setPage={setCurrentPage}
+              perPage={itemsPerPage}
+              setPerPage={setItemsPerPage}
+              totalItems={filteredOrders.length}
+              fullWidth={true}
+            />
           </div>
         </div>
       </div>

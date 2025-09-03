@@ -1,8 +1,15 @@
 import React, { useState } from "react";
 import { FiMoreHorizontal } from "react-icons/fi";
-import ActionMenu from "./ActionMenu";
+import ActionMenu from "../../components/Partners/ActionMenu";
+import { useNavigate } from "react-router-dom";
+import { useStatusUpdatePartner } from "../../hooks/usePartners";
 
-const ApprovedPartners = ({ paginatedPartners, openActionId, setOpenActionId }) => {
+const SuspendedPartners = ({ paginatedPartners, openActionId, setOpenActionId }) => {
+  const navigate = useNavigate();
+
+    const { mutate: statusUpdate } = useStatusUpdatePartner();
+  
+
   const [selected, setSelected] = useState([]);
 
   const handleSelectAll = (e) => {
@@ -19,15 +26,10 @@ const ApprovedPartners = ({ paginatedPartners, openActionId, setOpenActionId }) 
     );
   };
 
-  const handleSuspend = async (partner) => {
-    try {
-      console.log("Suspending partner:", partner.id);
-      alert(`Partner ${partner.businessName} suspended successfully!`);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to suspend partner.");
-    }
-  };
+    const handleActivePartner = (id) => {
+    statusUpdate({id: id, status: "accept" });
+    
+  } 
 
   return (
     <table className="w-full text-left text-sm leading-[150%] tracking-[-3%]">
@@ -54,7 +56,7 @@ const ApprovedPartners = ({ paginatedPartners, openActionId, setOpenActionId }) 
       </thead>
       <tbody className="bg-[#FFFFFF] fw4 text-[#232323]">
         {paginatedPartners.map((partner) => (
-          <tr key={partner.id} className="hover:bg-[#FEF2E6]">
+          <tr key={partner.id} onClick={() => navigate(`/partners/profile/${partner.id}`)} className="text-sm bg-[#FFFFFF] hover:bg-[#FEF2E6] cursor-pointer transition-colors">
             <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
               <input
                 type="checkbox"
@@ -65,7 +67,7 @@ const ApprovedPartners = ({ paginatedPartners, openActionId, setOpenActionId }) 
             </td>
             <td className="px-4 py-3 text-[#4F4F4F]">{partner.name}</td>
             <td className="px-4 py-3">{partner.category}</td>
-            <td className="px-4 py-3">{partner.products}</td>
+            <td className="px-4 py-3">{partner.products?.length || 0}</td>
             <td className="px-4 py-3">{partner.location}</td>
             <td className="px-4 py-3">
               <span
@@ -81,13 +83,13 @@ const ApprovedPartners = ({ paginatedPartners, openActionId, setOpenActionId }) 
             <td className="px-4 py-3 relative">
               <div className="inline-block relative">
                 <button
-                  className="p-1.5 rounded-lg border bg-[#FEF2E6] text-[#CA4E2E]"
+                  className="p-1.5 rounded-lg border bg-[#FEF2E6] text-[#CA4E2E] w-[34px] h-[34px]"
                   onClick={(e) => {
                     e.stopPropagation();
                     setOpenActionId(openActionId === partner.id ? null : partner.id);
                   }}
                 >
-                  <FiMoreHorizontal size={24} />
+                  <FiMoreHorizontal size={20} />
                 </button>
                 <ActionMenu
                   partner={partner}
@@ -101,8 +103,8 @@ const ApprovedPartners = ({ paginatedPartners, openActionId, setOpenActionId }) 
                       to: `/partners/profile/${partner.id}`,
                     },
                     {
-                      label: "Suspend",
-                      onClick: handleSuspend,
+                      label: "Active",
+                      onClick: () => handleActivePartner(partner.id),
                     },
                   ]}
                 />
@@ -115,4 +117,4 @@ const ApprovedPartners = ({ paginatedPartners, openActionId, setOpenActionId }) 
   );
 };
 
-export default ApprovedPartners;
+export default SuspendedPartners;

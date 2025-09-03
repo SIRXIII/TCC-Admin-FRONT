@@ -1,14 +1,23 @@
 import React, { useState } from "react";
 import { FiMoreHorizontal } from "react-icons/fi";
-import ActionMenu from "./ActionMenu";
-import { Link } from "react-router-dom";
+import ActionMenu from "../../components/Partners/ActionMenu";
+import { Link, useNavigate } from "react-router-dom";
+import { useStatusUpdatePartner } from "../../hooks/usePartners";
+import RequestInformation from "../../components/Dialogs/RequestInformation";
 
 const PendingPartners = ({
   paginatedPartners,
   openActionId,
   setOpenActionId,
 }) => {
+  const navigate = useNavigate();
+
+  const { mutate: statusUpdate } = useStatusUpdatePartner();
+
   const [selected, setSelected] = useState([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedPartner, setSelectedPartner] = useState(null);
+
   const handleSelectAll = (e) => {
     if (e.target.checked) {
       setSelected(paginatedPartners.map((p) => p.id));
@@ -24,6 +33,11 @@ const PendingPartners = ({
       setSelected([...selected, id]);
     }
   };
+
+  const handleSuspendPartner = (id, status) => {
+    statusUpdate({ id: id, status: status });
+
+  }
 
   return (
     <table className="w-full text-left text-sm leading-[150%] tracking-[-3%]">
@@ -50,7 +64,7 @@ const PendingPartners = ({
       </thead>
       <tbody className="bg-[#FFFFFF] fw4 text-[#232323] ">
         {paginatedPartners.map((partner) => (
-          <tr key={partner.id} className="hover:bg-[#FEF2E6]">
+          <tr key={partner.id} onClick={() => navigate(`/partners/profile/${partner.id}`)} className="text-sm bg-[#FFFFFF] hover:bg-[#FEF2E6] cursor-pointer transition-colors">
             <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
               <input
                 type="checkbox"
@@ -71,12 +85,12 @@ const PendingPartners = ({
               </Link>
             </td>
 
-            <td className="px-4 py-3">{partner.dateApplied}</td>
+            <td className="px-4 py-3">{partner.created_at}</td>
 
             <td className="px-4 py-3 relative">
               <div className="inline-block relative">
                 <button
-                  className="p-1.5 rounded-lg border bg-[#FCECD6] text-[#CA4E2E]"
+                  className="p-1.5 rounded-lg border bg-[#FCECD6] text-[#CA4E2E]  w-[34px] h-[34px]"
                   onClick={(e) => {
                     e.stopPropagation();
                     setOpenActionId(
@@ -84,7 +98,7 @@ const PendingPartners = ({
                     );
                   }}
                 >
-                  <FiMoreHorizontal size={24} />
+                  <FiMoreHorizontal size={20} />
                 </button>
                 <ActionMenu
                   partner={partner}
@@ -94,17 +108,27 @@ const PendingPartners = ({
                   items={[
                     {
                       label: "Accept",
-                      onClick: (p) => console.log("Accept", p),
+                      onClick: () => handleSuspendPartner(partner.id, "accept"),
                     },
                     {
                       label: "Reject",
-                      onClick: (p) => console.log("Reject", p),
+                      onClick: () => handleSuspendPartner(partner.id, "reject"),
                     },
                     {
                       label: "Request Information",
-                      onClick: (p) => console.log("Request Info", p),
+                      onClick: (partner) => {
+                        setSelectedPartner(partner);
+                        setIsDialogOpen(true);
+                      },
+
                     },
                   ]}
+                />
+                <RequestInformation
+                  isOpen={isDialogOpen}
+                  onClose={() => setIsDialogOpen(false)}
+                  onSend={() => setIsDialogOpen(false)}
+                  partner={selectedPartner}
                 />
               </div>
             </td>

@@ -2,24 +2,28 @@ import React, { useState, useEffect, useMemo, useRef } from "react";
 import { FiMoreVertical, FiChevronDown } from "react-icons/fi";
 import { Search } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import arrow_left from "../../assets/SVG/arrow-left.svg";
-import arrow_right from "../../assets/SVG/arrow-right.svg";
 import {
   useTravelers,
   useBulkUpdateTravelers,
   useExportTravelers,
+  useDeleteTravelers,
 } from "../../hooks/useTravelers";
 import DefaultProfile from "../../assets/Images/trv_profile.jpg";
+import DeleteButton from "../../components/Dialogs/DeleteButton";
+import Pagination from "../../components/Pagination";
 
 const Travelers = () => {
-  const { data: travelers = [], isLoading, isError } = useTravelers();
+  const navigate = useNavigate();
+  const { data: travelers = [], isLoading, isError } = useTravelers();    
   const { mutate: bulkUpdate } = useBulkUpdateTravelers();
   const { mutate: exportData } = useExportTravelers();
+  const {mutate: deleteTraveler} = useDeleteTravelers()
 
-const navigate = useNavigate();
 
 
   const dropdownRef = useRef(null);
+  const statusRef = useRef(null);
+  const actionRefs = useRef({});
   const [filteredTravelers, setFilteredTravelers] = useState([]);
   const [selected, setSelected] = useState([]);
   const [actionOpen, setActionOpen] = useState(null);
@@ -83,6 +87,16 @@ const navigate = useNavigate();
     }
   };
 
+
+  const suspendedTraveler = (id) => {
+    bulkUpdate({ids: [id], status: "Deactivate" });
+    
+  } 
+
+  const handledeleteTraveler = (id) => {
+
+    deleteTraveler(id);
+  }
   const handleBulkAction = (action) => {
     console.log("Bulk action:", action, selected);
     if (action === "Activate" || action === "Deactivate") {
@@ -102,13 +116,25 @@ const navigate = useNavigate();
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setBulkOpen(false);
       }
+
+       if (statusRef.current && !statusRef.current.contains(event.target)) {
+      setStatusOpen(false);
+    }
+
+       if (
+      actionOpen &&
+      actionRefs.current[actionOpen] &&
+      !actionRefs.current[actionOpen].contains(event.target)
+    ) {
+      setActionOpen(null);
+    }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [actionOpen]);
 
   const [open, setOpen] = useState(false);
   const options = [5, 10, 25, 50];
@@ -147,7 +173,7 @@ const navigate = useNavigate();
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="relative">
+            <div className="relative" ref={statusRef}>
               <button
                 onClick={() => setStatusOpen(!statusOpen)}
                 className="flex items-center justify-between border border-[#23232333] rounded-md px-3 py-0.5 text-xs text-[#9A9A9A] min-w-[79px] max-w-[110px] h-[36px]"
@@ -178,11 +204,11 @@ const navigate = useNavigate();
                 onClick={() => selected.length > 0 && setBulkOpen(!bulkOpen)}
                 disabled={selected.length === 0}
                 className={`flex items-center justify-between border rounded-md px-4 py-2 text-xs w-[127px] h-[42px]
-      ${
-        selected.length === 0
-          ? "bg-[#FEF2E6] text-[#F77F00] cursor-not-allowed"
-          : "bg-[#FEF2E6] text-[#F77F00] cursor-pointer "
-      }`}
+                  ${
+                    selected.length === 0
+                      ? "bg-[#FEF2E6] text-[#F77F00] cursor-not-allowed"
+                      : "bg-[#FEF2E6] text-[#F77F00] cursor-pointer "
+                  }`}
               >
                 {bulk}
                 <FiChevronDown size={18} />
@@ -283,7 +309,8 @@ const navigate = useNavigate();
                     </td>
 
                     <td
-                      className="px-4 py-3 text-right relative overflow-visible"
+                      className="px-4 py-3 text-right relative overflow-visible" 
+                      ref={(el) => (actionRefs.current[t.id] = el)}
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div className="inline-block relative">
@@ -316,22 +343,21 @@ const navigate = useNavigate();
                             >
                               View Profile
                             </Link>
+                            {t.status === "Active" && (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
+                                suspendedTraveler(t.id);
+                                setActionOpen(null);
+
                               }}
-                              className="block w-full text-left px-4 py-2 text-sm text-[#4F4F4F] hover:bg-[#FEF2E6]"
+                              className={`block w-full text-left px-4 py-2 text-sm text-[#4F4F4F] hover:bg-[#FEF2E6] `}
                             >
                               Suspend
                             </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                              }}
-                              className="block w-full text-left px-4 py-2 text-sm text-[#4F4F4F] hover:bg-[#FEF2E6]"
-                            >
-                              Delete
-                            </button>
+                            )}
+                           
+                            <DeleteButton onDelete={() => handledeleteTraveler(t.id)} />
                           </div>
                         )}
                       </div>
@@ -343,79 +369,15 @@ const navigate = useNavigate();
           </table>
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mt-6 text-[#6C6C6C] h-10">
-          <p className="text-sm h-10 flex items-center">
-            Showing {(page - 1) * perPage + 1} to{" "}
-            {Math.min(page * perPage, filteredTravelers.length)} of{" "}
-            {filteredTravelers.length} entries
-          </p>
-
-          <div className="flex items-center gap-2 h-10">
-            <button
-              className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300  transition"
-              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-            >
-              <img src={arrow_left} alt="Prev" className="w-4 h-4" />
-            </button>
-
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-              <button
-                key={num}
-                className={`w-10 h-10 flex items-center justify-center rounded-lg font-medium text-sm transition ${
-                  num === page
-                    ? "bg-[#F77F00] text-white border border-[#F77F00]"
-                    : "border border-[#FEF2E6] hover:bg-[#FEF2E6] hover:text-[#232323]"
-                }`}
-                onClick={() => setPage(num)}
-              >
-                {num}
-              </button>
-            ))}
-
-            <button
-              className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300  transition"
-              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-            >
-              <img src={arrow_right} alt="Next" className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2 h-10">
-            <span className="text-[#232323] text-xs">Show</span>
-            <div className="relative w-[62px]">
-              <button
-                onClick={() => setOpen(!open)}
-                className="w-full h-10 px-3 border border-[#D9D9D9] rounded-lg text-sm text-[#232323] bg-white text-left"
-              >
-                {perPage}
-              </button>
-
-              {open && (
-                <div className="absolute bottom-full mb-1 w-full bg-white border border-[#D9D9D9] rounded-lg shadow-lg z-10">
-                  {options.map((n) => (
-                    <div
-                      key={n}
-                      onClick={() => {
-                        setPerPage(n);
-                        setOpen(false);
-                      }}
-                      className="px-3 py-2 text-sm text-[#232323] hover:bg-[#FEF2E6] cursor-pointer"
-                    >
-                      {n}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <img
-                src={arrow_right}
-                alt="Dropdown arrow"
-                className="pointer-events-none absolute right-2 top-1/2 w-4 h-4 -translate-y-1/2 rotate-90"
-              />
-            </div>
-            <span className="text-[#232323] text-xs">entries</span>
-          </div>
-        </div>
+     
+        <Pagination
+  page={page}
+  setPage={setPage}
+  perPage={perPage}
+  setPerPage={setPerPage}
+  totalItems={filteredTravelers.length}
+  fullWidth={true}
+/>
       </div>
     </div>
   );
