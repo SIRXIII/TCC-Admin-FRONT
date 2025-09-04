@@ -5,9 +5,9 @@ import MainLayout from "./Layouts/MainLayout";
 import Dashboard from "./pages/Dashboard";
 import Travelers from "./pages/Travelers/Travelers";
 import Partners from "./pages/Partners/Partners";
-import Riders from "./pages/Riders";
+import Riders from "./pages/Riders/Riders";
 import Products from "./pages/Products";
-import Orders from "./pages/Orders";
+import Orders from "./pages/Orders/Orders";
 import Refunds from "./pages/Refunds";
 import Support from "./pages/Support";
 import Settings from "./pages/Settings";
@@ -16,7 +16,10 @@ import { AuthProvider } from "./context/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import PartnerProfile from "./pages/Partners/PartnerProfile";
 import AddPartners from "./pages/Partners/AddPartners";
-
+import AddRiders from "./pages/Riders/AddRiders";
+import RiderProfile from "./pages/Riders/RiderProfile";
+import OrdersDetail from "./pages/Orders/OrdersDetail";
+import AssignRider from "./pages/Orders/AssignRider";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +55,10 @@ const App = () => {
             {/* <Route path="/riders/add-rider" element={<AddRiders />} /> */}
             <Route path="/riders/add-rider" element={<AddRiders />} />
             <Route path="/riders/profile/:id" element={<RiderProfile />} />
+            
+            <Route path="/orders/ordersdetail/" element={<OrdersDetail />} />
+            <Route path="/orders/assignrider/" element={<AssignRider />} />
+
 
           </Route>
 

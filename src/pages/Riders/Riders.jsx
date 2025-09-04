@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import Plus from "../assets/SVG/Plus.svg";
+import Plus from "../../assets/SVG/Plus.svg";
 import { FiChevronDown } from "react-icons/fi";
 import { Search } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import arrow_left from "../assets/SVG/arrow-left.svg";
-import arrow_right from "../assets/SVG/arrow-right.svg";
-import DefaultProfile from "../assets/Images/trv_profile.jpg";
-import ridersData from "../data/RidersData";
-import Rating from "../assets/SVG/rating.svg";
-import Eye from "../assets/SVG/eye.svg";
-import Edit from "../assets/SVG/edit.svg";
+import arrow_left from "../../assets/SVG/arrow-left.svg";
+import arrow_right from "../../assets/SVG/arrow-right.svg";
+import DefaultProfile from "../../assets/Images/trv_profile.jpg";
+import ridersData from "../../data/RidersData";
+import Rating from "../../assets/SVG/rating.svg";
+import Eye from "../../assets/SVG/eye.svg";
+import Edit from "../../assets/SVG/edit.svg";
 
 
 const Riders = () => {
