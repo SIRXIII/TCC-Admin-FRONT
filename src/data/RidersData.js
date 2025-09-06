@@ -8,6 +8,7 @@ const ridersData = [
     order: [101, 102], 
     rating: 4.5, 
     currentOrders: 2,
+    eta: "2hrs",
     profile_photo: "" 
   },
   { 
@@ -19,6 +20,7 @@ const ridersData = [
     order: [103], 
     rating: 4.2, 
     currentOrders: 1,
+    eta: "2hrs",
     profile_photo: "" 
   },
   { 
@@ -30,6 +32,7 @@ const ridersData = [
     order: [104, 105, 106], 
     rating: 4.8, 
     currentOrders: 3,
+    eta: "2hrs",
     profile_photo: "" 
   },
 ];
