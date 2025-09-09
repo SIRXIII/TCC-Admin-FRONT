@@ -62,11 +62,12 @@ const TravelerProfile = () => {
 
 
   const lastOrder = traveler.order[traveler.order.length - 1];
-  const lastOrderDate = lastOrder.created_at ? new Date(lastOrder.created_at) : null;
-  const lastOrderId = lastOrder.id || "N/A";
+  const lastOrderDate = lastOrder?.created_at ? new Date(lastOrder.created_at) : null;
+  const lastOrderId = lastOrder?.id || "N/A";
 
 
-  let daysAgo = "N/A";
+
+  let daysAgo = "";
   if (lastOrderDate) {
     const now = new Date();
     const diffTime = Math.abs(now - lastOrderDate);
@@ -141,11 +142,11 @@ const TravelerProfile = () => {
             <div className="grid grid-cols-2">
               <div className="flex flex-col gap-2">
                 <p className="text-sm fw6">Last Order</p>
-                <p className="fw5 text-xs text-[#9A9A9A]">{daysAgo} <span className="text-[#F77F00]">#1374</span></p>
+                <p className="fw5 text-xs text-[#9A9A9A]">{daysAgo} <span className="text-[#F77F00]">{lastOrderId ?? "#"+lastOrderId}</span></p>
               </div>
               <div className="flex flex-col gap-2">
                 <p className="text-sm fw6">Total Spent</p>
-                <p className="fw5 text-xs text-[#9A9A9A]">$34,980.</p>
+                <p className="fw5 text-xs text-[#9A9A9A]">${traveler.total_amount_spent}</p>
               </div>
             </div>
 
@@ -223,7 +224,7 @@ const TravelerProfile = () => {
                 Orders
               </h2>
               <span className="text-sm text-[#9A9A9A] ml-2">
-                Total spent <span className="text-[#4F4F4F] fw6">${traveler.spent_amount}</span> on {traveler.order.length} orders
+                Total spent <span className="text-[#4F4F4F] fw6">${traveler.total_amount_spent}</span> on {traveler.order.length} orders
               </span>
             </div>
 
@@ -268,7 +269,7 @@ const TravelerProfile = () => {
 
                         <td className="px-4 py-3 leading-[150%] tracking-[-3%] h-[48px]">
 
-                          <p className="text-[#6C6C6C] text-xs">{t.id}</p>
+                          <p className="text-[#F77F00] text-xs ">#{t.id}</p>
 
                         </td>
                         <td className="px-4 py-3 text-[#232323] leading-[150%] tracking-[-3%] h-[48px] flex gap-2.5">

@@ -9,6 +9,7 @@ import backward from "../../assets/SVG/backward.svg";
 import { getPartnerById } from "../../services/partnerService";
 import { useStatusUpdatePartner } from "../../hooks/usePartners";
 import { toast } from "react-toastify";
+import Orders from "../../components/Orders";
 
 const PartnerProfile = () => {
   const { id } = useParams();
@@ -108,7 +109,7 @@ useEffect(() => {
 
       {activeTab === "details" && <Details partner={partner} />}
       {activeTab === "products" && <PartnerProducts partner={partner} />}
-      {activeTab === "orders" && <PartnerOrders partner={partner} />}
+      {activeTab === "orders" && <Orders order={partner} />}
     </div>
   );
 };

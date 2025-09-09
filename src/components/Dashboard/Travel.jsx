@@ -47,7 +47,7 @@ const Travel = () => {
               <td className="px-2.5 py-4">
                 <span
                   className={`px-3 py-1 rounded-md text-xs fw5  ${
-                    t.status === "active"
+                    t.status === "Active"
                       ? "bg-[#E7F7ED] text-[#088B3A]"
                       : "bg-[#FCECD6] text-[#ED6C3C]"
                   }`}

@@ -21,6 +21,7 @@ import RiderProfile from "./pages/Riders/RiderProfile";
 import OrdersDetail from "./pages/Orders/OrdersDetail";
 import AssignRider from "./pages/Orders/AssignRider";
 import ProductsDetail from "./pages/Products/ProductsDetail";
+import UpdateRider from "./pages/Riders/UpdateRider";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +57,7 @@ const App = () => {
             {/* <Route path="/riders/add-rider" element={<AddRiders />} /> */}
             <Route path="/riders/add-rider" element={<AddRiders />} />
             <Route path="/riders/profile/:id" element={<RiderProfile />} /> 
+            <Route path="/riders/update-rider/:id" element={<UpdateRider />} /> 
             
             <Route path="/orders/ordersdetail/" element={<OrdersDetail />} />
             <Route path="/orders/assignrider/" element={<AssignRider />} />

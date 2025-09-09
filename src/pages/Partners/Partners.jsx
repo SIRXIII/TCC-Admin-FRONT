@@ -60,7 +60,7 @@ const Partners = () => {
 
 
   const filteredPartners = (currentData || []).filter((partner) => {
-    const fullName = `${partner.first_name ?? ""} ${partner.last_name ?? ""}`.toLowerCase();
+    const fullName = `${partner.name ?? ""}`.toLowerCase();
     return (
       fullName.includes(search.toLowerCase()) ||
       partner.email?.toLowerCase().includes(search.toLowerCase())

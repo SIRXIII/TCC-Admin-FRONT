@@ -370,14 +370,14 @@ const Travelers = () => {
         </div>
 
      
-        <Pagination
-  page={page}
-  setPage={setPage}
-  perPage={perPage}
-  setPerPage={setPerPage}
-  totalItems={filteredTravelers.length}
-  fullWidth={true}
-/>
+          <Pagination
+    page={page}
+    setPage={setPage}
+    perPage={perPage}
+    setPerPage={setPerPage}
+    totalItems={filteredTravelers.length}
+    fullWidth={true}
+  />
       </div>
     </div>
   );
