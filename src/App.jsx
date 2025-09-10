@@ -9,7 +9,7 @@ import Riders from "./pages/Riders/Riders";
 import Products from "./pages/Products/Products";
 import Orders from "./pages/Orders/Orders";
 import Refunds from "./pages/Refunds";
-import Support from "./pages/Support";
+import Support from "./pages/Support/Support";
 import Settings from "./pages/Settings";
 import TravelerProfile from "./pages/Travelers/TravelerProfile";
 import { AuthProvider } from "./context/AuthContext";
@@ -21,6 +21,7 @@ import RiderProfile from "./pages/Riders/RiderProfile";
 import OrdersDetail from "./pages/Orders/OrdersDetail";
 import AssignRider from "./pages/Orders/AssignRider";
 import ProductsDetail from "./pages/Products/ProductsDetail";
+import ChatSupport from "./pages/Support/ChatSupport";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +62,7 @@ const App = () => {
             <Route path="/orders/assignrider/" element={<AssignRider />} />
 
             <Route path="/products/productsdetail/" element={<ProductsDetail />} />
+            <Route path="/support/chatsupport/" element={<ChatSupport />} />
 
 
 
