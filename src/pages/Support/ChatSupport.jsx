@@ -56,7 +56,7 @@ const ChatSupport = () => {
 
       <div className="flex gap-2 items-center">
         <img src={backward} alt="backward" className="w-6 h-6" />
-        <h2 className="text-xl font-semibold text-[#232323]">TCK-2001</h2>
+        <h2 className="text-xl fw6 font-roboto text-[#232323]">TCK-2001</h2>
       </div>
 
       <div className="bg-[#FFFFFF] rounded-lg border  border-[#00000033] p-4 flex flex-col gap-3  leading-[150%] tracking-[-3%]  ">
