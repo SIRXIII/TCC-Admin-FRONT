@@ -24,22 +24,13 @@ const AssignedOrders = ({ orders = [] }) => {
     switch (status) {
       case "Delivered":
         return "bg-[#E7F7ED] text-[#088B3A]";
-      case "In Transit":
+      case "Shipped":
         return "bg-[#FEFCDD] text-[#B2A23F]";
       case "Cancelled":
         return "bg-[#FCECD6] text-[#CA4E2E]";
+      default:
+        return "bg-[#E1FDFD] text-[#3E77B0]";
     }
-  };
-
-  const handleRowClick = (e, orderId) => {
-    if (
-      e.target.tagName === "INPUT" ||
-      e.target.tagName === "BUTTON" ||
-      e.target.closest("button")
-    ) {
-      return;
-    }
-    navigate(`/orders/ordersdetail`);
   };
 
 
@@ -71,7 +62,7 @@ const AssignedOrders = ({ orders = [] }) => {
           <tr
             key={order.id}
             className="text-sm hover:bg-[#FEF2E6] cursor-pointer transition-colors"
-            onClick={(e) => handleRowClick(e, order.id)}
+            onClick={() => navigate(`/orders/ordersdetail/${order.id}`)}
           >
             <td className="px-4 py-3 align-middle">
               <input
@@ -81,27 +72,49 @@ const AssignedOrders = ({ orders = [] }) => {
                 onChange={() => handleSelectOne(order.id)}
               />
             </td>
-            <td className="px-4 py-3 align-middle">{order.orderId}</td>
-
-            <td className="px-4 py-3 align-middle">
-              <div>
-                <span className="text-[#232323] block">{order.traveler?.name}</span>
-                <span className="text-xs text-[#6C6C6C] block">
-                  {order.traveler?.email}
-                </span>
-              </div>
-            </td>
-            <td className="px-4 py-3 items-center">
-              <div>
-                <span className="text-[#232323] block">{order.rider?.name}</span>
-                <span className="text-xs text-[#6C6C6C] block">
-                  {order.rider?.email}
-                </span>
-              </div>
-            </td>
-
-            <td className="px-4 py-3 align-middle">{order.eta || "-"}</td>
-            <td className="px-4 py-3 align-middle">{order.date}</td>
+            <td className="px-4 py-3 text-[#F77F00] fw5">#ODR-{order.id}</td>
+            
+                        <td className="px-4 py-3">
+            
+                          <div className="flex gap-2.5">
+                            <img
+                              src={order?.traveler?.profile_photo}
+                              alt="Traveler"
+                              className="w-6 h-6 rounded-xl object-cover object-center"
+                              onError={(e) => {
+                                e.currentTarget.src = DefaultProfile;
+                              }}
+                            />
+                            <div>
+                              <p className="text-[#4F4F4F] text-sm">{order.traveler?.name}</p>
+                              <p className="text-[#6C6C6C] text-xs">{order.traveler?.email}</p>
+                            </div>
+            
+            
+                          </div>
+                        </td>
+            
+                        <td className="px-4 py-3">
+                          <div className="flex gap-2.5">
+                            <img
+                              src={order?.partner?.profile_photo}
+                              alt="Partner"
+                              className="w-6 h-6 rounded-xl object-cover object-center"
+                              onError={(e) => {
+                                e.currentTarget.src = DefaultProfile;
+                              }}
+                            />
+                            <div>
+                              <p className="text-[#4F4F4F] text-sm">{order.partner?.name}</p>
+                              <p className="text-[#6C6C6C] text-xs">{order.partner?.email}</p>
+                            </div>
+            
+            
+                          </div>
+                        </td>
+            
+                        <td className="px-4 py-3">{order.eta || "-"}</td>
+                        <td className="px-4 py-3">{order.created_at}</td>
             <td className="px-4 py-3 align-middle">
               <span
                 className={`px-3 py-1 text-xs fw5 rounded-md ${getStatusClass(
@@ -111,11 +124,13 @@ const AssignedOrders = ({ orders = [] }) => {
                 {order.status}
               </span>
             </td>
-            <td className="px-4 py-3 align-middle">${order.total}</td>
+                <td className="px-4 py-3">${order.total_price}</td>
             <td className="px-4 py-3 align-middle">
               <button
                 className="p-2 rounded-lg border bg-[#FEF2E6] text-[#CA4E2E]"
-                onClick={() => navigate(`//orders/ordersdetail`)}
+              
+            onClick={() => navigate(`/orders/ordersdetail/${order.id}`)}
+
               >
                 <img src={Eye} alt="" />
               </button>

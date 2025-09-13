@@ -4,51 +4,85 @@ import ApprovedProducts from "./ApprovedProducts";
 import PendingProducts from "./PendingProducts";
 import Pagination from "../../components/Pagination";
 import productsData from "../../data/ProductsData";
+import { useProducts } from "../../hooks/useProducts";
 
 const Products = () => {
+
+
+    const { data: products = { approved: [], suspended: [], pending: [] }, isLoading, isError } = useProducts();
+  
   const [activeTab, setActiveTab] = useState("approved");
   const [search, setSearch] = useState("");
   const [pageApproved, setPageApproved] = useState(1);
   const [pagePending, setPagePending] = useState(1);
+  const [pageSuspended, setPageSuspended] = useState(1);
   const [perPageApproved, setPerPageApproved] = useState(10);
   const [perPagePending, setPerPagePending] = useState(10);
+  const [perPageSuspended, setPerPageSuspended] = useState(10);
+
+
   const [openActionId, setOpenActionId] = useState(null);
 
-  const approvedData = Array.isArray(productsData?.approved)
-    ? productsData.approved
-    : [];
-  const pendingData = Array.isArray(productsData?.pending)
-    ? productsData.pending
-    : [];
+  // const approvedData = Array.isArray(productsData?.approved)
+  //   ? productsData.approved
+  //   : [];
+  // const pendingData = Array.isArray(productsData?.pending)
+  //   ? productsData.pending
+  //   : [];
 
-  const currentData = activeTab === "approved" ? approvedData : pendingData;
+  console.log("Products Data:", products);
+  const currentData = products?.[activeTab];
 
-  const page = activeTab === "approved" ? pageApproved : pagePending;
-  const perPage = activeTab === "approved" ? perPageApproved : perPagePending;
-  const setPage = activeTab === "approved" ? setPageApproved : setPagePending;
+  
+  const page =
+    activeTab === "approved"
+      ? pageApproved
+      : activeTab === "pending"
+        ? pagePending
+        : pageSuspended;
+
+  const perPage =
+    activeTab === "approved"
+      ? perPageApproved
+      : activeTab === "pending"
+        ? perPagePending
+        : perPageSuspended;
+
+  const setPage =
+    activeTab === "approved"
+      ? setPageApproved
+      : activeTab === "pending"
+        ? setPagePending
+        : setPageSuspended;
+
   const setPerPage =
-    activeTab === "approved" ? setPerPageApproved : setPerPagePending;
+    activeTab === "approved"
+      ? setPerPageApproved
+      : activeTab === "pending"
+        ? setPerPagePending
+        : setPerPageSuspended;
 
   const filteredProducts = currentData.filter((p) => {
     const name = p.productName?.toLowerCase() || "";
     const partner = p.partnerName?.toLowerCase() || "";
-    const email = p.email?.toLowerCase() || "";
     return (
       name.includes(search.toLowerCase()) ||
-      partner.includes(search.toLowerCase()) ||
-      email.includes(search.toLowerCase())
+      partner.includes(search.toLowerCase())
     );
   });
 
-  const paginatedProducts = useMemo(() => {
-    const start = (page - 1) * perPage;
-    return filteredProducts.slice(start, start + perPage);
-  }, [filteredProducts, page, perPage]);
 
-  console.log("Active Tab:", activeTab);
-  console.log("Current Data:", currentData);
-  console.log("Filtered Products:", filteredProducts);
-  console.log("Paginated Products:", paginatedProducts);
+    const paginatedProducts = useMemo(() => {
+      const start = (page - 1) * perPage;
+      return filteredProducts.slice(start, start + perPage);
+    }, [filteredProducts, page, perPage]);
+
+
+
+  // console.log("Active Tab:", activeTab);
+  // console.log("Current Data:", currentData);
+  // console.log("Filtered Products:", filteredProducts);
+  // console.log("Paginated Products:", paginatedProducts);
 
   return (
     <div className="flex flex-col gap-6 p-3">
@@ -67,7 +101,7 @@ const Products = () => {
       </div>
 
       <div className="flex gap-4 bg-[#FEECD9] rounded-lg p-2 w-fit">
-        <button
+        {/* <button
           onClick={() => setActiveTab("approved")}
           className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
             activeTab === "approved"
@@ -86,10 +120,37 @@ const Products = () => {
           }`}
         >
           Pending ({pendingData.length})
+        </button> */}
+         <button
+          onClick={() => setActiveTab("approved")}
+          className={`px-3 py-1.5 rounded-md text-sm fw5 transition ${activeTab === "approved"
+              ? "bg-orange text-white shadow"
+              : "text-gray-600"
+            }`}
+        >
+          Approved ({products.approved.length})
+        </button>
+        <button
+          onClick={() => setActiveTab("pending")}
+          className={`px-3 py-1.5 rounded-md text-sm fw5 transition ${activeTab === "pending"
+              ? "bg-orange text-white shadow"
+              : "text-gray-600"
+            }`}
+        >
+          Pending ({products.pending.length})
+        </button>
+        <button
+          onClick={() => setActiveTab("suspended")}
+          className={`px-3 py-1.5 rounded-md text-sm fw5 transition ${activeTab === "suspended"
+              ? "bg-orange text-white shadow"
+              : "text-gray-600"
+            }`}
+        >
+          Suspended ({products.suspended.length})
         </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow border p-3 overflow-x-auto">
+      <div className="bg-white rounded-lg shadow border-color p-3 overflow-x-auto">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4">
           <div className="relative text-[#9A9A9A]">
             <span className="absolute inset-y-0 left-0 flex items-center pl-5">
@@ -106,21 +167,24 @@ const Products = () => {
               className="pl-9 pr-2 px-4 py-2 border border-gray-300 rounded-xl text-base w-[320px] focus:outline-none"
             />
           </div>
-          <button className="flex items-center justify-between border border-[#23232333] rounded-lg px-3 py-0.5 text-sm text-[#9A9A9A] gap-3 max-w-[127px] h-[42px]">
-            Status
-            <FiChevronDown size={16} />
-          </button>
+         
         </div>
 
-        {activeTab === "approved" ? (
+         {activeTab === "approved" ? (
           <ApprovedProducts
-            products={paginatedProducts}
+            paginatedProducts={paginatedProducts}
+            openActionId={openActionId}
+            setOpenActionId={setOpenActionId}
+          />
+        ) : activeTab === "suspended" ? (
+          <ApprovedProducts
+            paginatedProducts={paginatedProducts}
             openActionId={openActionId}
             setOpenActionId={setOpenActionId}
           />
         ) : (
-          <PendingProducts
-            products={paginatedProducts}
+          <ApprovedProducts
+            paginatedProducts={paginatedProducts}
             openActionId={openActionId}
             setOpenActionId={setOpenActionId}
           />

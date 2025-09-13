@@ -1,14 +1,23 @@
 import React, { useState } from "react";
 import { FiMoreHorizontal } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import ProductReqInfo from "../../components/Dialogs/ProductReqInfo";
+import ActionMenu from "../../components/Partners/ActionMenu";
+import { useStatusUpdateProduct } from "../../hooks/useProducts";
 
-const ApprovedProducts = ({ products = [], openActionId, setOpenActionId }) => {
+const ApprovedProducts = ({ paginatedProducts = [], openActionId, setOpenActionId }) => {
   const navigate = useNavigate();
   const [selected, setSelected] = useState([]);
+    const [selectedProduct, setSelectedProduct] = useState(null);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+      const { mutate: statusUpdate } = useStatusUpdateProduct();
+    
+  
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
-      setSelected(products.map((p) => p.id));
+      setSelected(paginatedProducts.map((p) => p.id));
     } else {
       setSelected([]);
     }
@@ -20,6 +29,18 @@ const ApprovedProducts = ({ products = [], openActionId, setOpenActionId }) => {
     );
   };
 
+    const handleSuspendProduct = (id, status) => {
+    statusUpdate({ id: id, status: status });
+
+  }
+
+    const statusColors = {
+  Pending: "bg-[#E1FDFD] text-[#3E77B0]",
+  Active: "bg-[#E7F7ED]  text-[#088B3A]",
+  Suspended: "bg-[#FCECD6] text-[#CA4E2E]",
+};
+  
+
   return (
     <table className="w-full text-left text-sm border-collapse leading-[150%] tracking-[-3%]">
       <thead className="bg-[#F9F9F9] text-[#6C6C6C]">
@@ -30,14 +51,14 @@ const ApprovedProducts = ({ products = [], openActionId, setOpenActionId }) => {
               className="w-4 h-4 rounded border-gray-400"
               onChange={handleSelectAll}
               checked={
-                selected.length === products.length && products.length > 0
+                selected.length === paginatedProducts.length && paginatedProducts.length > 0
               }
             />
           </th>
           <th className="px-4 py-3">Product ID</th>
           <th className="px-4 py-3">Product</th>
           <th className="px-4 py-3">Partner Name</th>
-          <th className="px-4 py-3">Category</th>
+          <th className="px-4 py-3">Grade</th>
           <th className="px-4 py-3">Stock</th>
           <th className="px-4 py-3">Status</th>
           <th className="px-4 py-3">Price</th>
@@ -45,18 +66,18 @@ const ApprovedProducts = ({ products = [], openActionId, setOpenActionId }) => {
         </tr>
       </thead>
       <tbody className="bg-white text-[#232323]">
-        {products.length === 0 ? (
+        {paginatedProducts.length === 0 ? (
           <tr>
             <td colSpan="9" className="text-center py-6 text-gray-500">
               No approved products found.
             </td>
           </tr>
         ) : (
-          products.map((p) => (
+          paginatedProducts.map((p) => (
             <tr
               key={p.id}
               className="hover:bg-[#FEF2E6] cursor-pointer transition-colors"
-              onClick={() => navigate(`/products/productsdetail`)}
+              onClick={() => navigate(`/products/productsdetail/${p.id}`)}
             >
               <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                 <input
@@ -67,51 +88,49 @@ const ApprovedProducts = ({ products = [], openActionId, setOpenActionId }) => {
                 />
               </td>
 
-              <td className="px-4 py-3 text-[#4F4F4F]">{p.productId}</td>
+              <td className="px-4 py-3 text-[#4F4F4F]">{p.product_id}</td>
 
               <td className="px-4 py-3 flex items-center gap-2">
                 <img
-                  src={p.image}
-                  alt={p.productName}
+                  src={p.primary_image}
+                  alt={p.name}
                   className="w-10 h-10 rounded object-cover"
                 />
-                <span>{p.productName}</span>
+                <span>{p.name}</span>
               </td>
 
               <td className="px-4 py-3">
                 <div className="flex items-center gap-2">
                   <img
-                    src={p.partnerAvatar}
-                    alt={p.partnerName}
+                    src={p.partner?.profile_photo}
+                    alt={p.partner?.name}
                     className="w-8 h-8 rounded-full"
                   />
                   <div>
-                    <p className="font-medium text-sm">{p.partnerName}</p>
-                    <p className="text-xs text-gray-500">{p.email}</p>
+                    <p className="font-medium text-sm">{p.partner?.name}</p>
+                    <p className="text-xs text-gray-500">{p.partner?.email}</p>
                   </div>
                 </div>
               </td>
 
               <td className="px-4 py-3   ">
                 <div className=" rounded-md bg-[#F9F9F9] gap-2.5 px-3 py-1 flex justify-center ">
-                  {p.category}
+                  {p.condition_grade}
                 </div>
               </td>
               <td className="px-4 py-3">{p.stock}</td>
 
               <td className="px-4 py-3">
                 <span
-                  className={`px-3 py-1 text-xs fw5 rounded-md ${
-                    p.status === "Active"
-                      ? "bg-[#E7F7ED] text-[#088B3A]"
-                      : ""
-                  }`}
+                  className={`px-2 py-1 rounded-md text-xs font-medium ${
+                          statusColors[p.status] || "bg-gray-100 text-gray-600"
+                        }`}
                 >
                   {p.status}
                 </span>
               </td>
 
-              <td className="px-4 py-3">${p.price}</td>
+              <td className="px-4 py-3">${p.buy_price}</td>
 
               <td
                 className="px-4 py-3 relative"
@@ -127,27 +146,42 @@ const ApprovedProducts = ({ products = [], openActionId, setOpenActionId }) => {
                     <FiMoreHorizontal size={20} />
                   </button>
 
-                  {openActionId === p.id && (
-                    <div className="absolute right-0 mt-2 w-40 bg-[#FFFFFF] border rounded-lg border-[#00000033] gap-6 z-20 ">
-                      <ul className="py-1 text-sm text-[#6C6C6C]">
-                        <li
-                          className="px-4 py-2 hover:bg-[#FEF2E6] cursor-pointer"
-                          onClick={() => navigate(`/products/productsdetail`)}
-                        >
-                          View
-                        </li>
-                        <li className="px-4 py-2 hover:bg-[#FEF2E6] cursor-pointer">
-                          Approve
-                        </li>
-                        <li className="px-4 py-2 hover:bg-[#FEF2E6] cursor-pointer">
-                          Reject
-                        </li>
-                        <li className="px-4 py-2 hover:bg-[#FEF2E6]  cursor-pointer">
-                          Request Info
-                        </li>
-                      </ul>
-                    </div>
-                  )}
+                   <ActionMenu
+                  partner={p}
+                  isOpen={openActionId === p.id}
+                  setOpenActionId={setOpenActionId}
+                  paginatedPartners={paginatedProducts}
+                  items={[
+                   
+                     {
+                      label: "View",
+                      type: "link",
+                      to: `/products/productsdetail/${p.id}`,
+                    },
+                    {
+                      label: "Accept",
+                      onClick: () => handleSuspendProduct(p.id, "accept"),
+                    },
+                    {
+                      label: "Reject",
+                      onClick: () => handleSuspendProduct(p.id, "reject"),
+                    },
+                    {
+                      label: "Request Information",
+                      onClick: (p) => {
+                        setSelectedProduct(p);
+                        setIsDialogOpen(true);
+                      },
+
+                    },
+                  ]}
+                />
+                   <ProductReqInfo
+                  isOpen={isDialogOpen}
+                  onClose={() => setIsDialogOpen(false)}
+                  onSend={() => setIsDialogOpen(false)}
+                  product={selectedProduct}
+                />
                 </div>
               </td>
             </tr>

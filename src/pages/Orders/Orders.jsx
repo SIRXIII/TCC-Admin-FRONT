@@ -1,80 +1,38 @@
 import React, { useState, useMemo } from "react";
-import { FiSearch , FiChevronDown} from "react-icons/fi";
+import { FiSearch, FiChevronDown } from "react-icons/fi";
 import AssignedOrders from "./AssignedOrders";
 import PendingOrders from "./PendingOrders";
 import Pagination from "../../components/Pagination";
+import { useOrders } from "../../hooks/useOrder";
 
 const Orders = () => {
-  const [activeTab, setActiveTab] = useState("pending");
+
+  const { data: orders = { pending: [], approved: [] }, isLoading, isError } = useOrders();
+
+  const [activeTab, setActiveTab] = useState("assigned");
   const [search, setSearch] = useState("");
   const [pagePending, setPagePending] = useState(1);
-  const [pageAssigned, setPageAssigned] = useState(1);
-  const [perPagePending, setPerPagePending] = useState(5);
-  const [perPageAssigned, setPerPageAssigned] = useState(5);
+  const [pageAssigned, setPageAssigned] = useState(1); 
+  const [perPagePending, setPerPagePending] = useState(10);
+  const [perPageAssigned, setPerPageAssigned] = useState(10);
 
-  // Dummy Data
-  const pendingOrders = [
-    {
-      id: 1,
-      orderId: "ORD-1001",
-      traveler: { name: "Ali Khan", email: "ali@example.com" },
-      partner: { name: "Luxury Rentals", email: "rentals@example.com" },
-      eta: "2 days",
-      date: "2025-09-04",
-      total: 120,
-    },
-    {
-      id: 2,
-      orderId: "ORD-1002",
-      traveler: { name: "Sara Malik", email: "sara@example.com" },
-      partner: { name: "Art Gallery", email: "art@example.com" },
-      eta: "1 day",
-      date: "2025-09-05",
-      total: 80,
-    },
-  ];
 
-  const assignedOrders = [
-    {
-      id: 1,
-      orderId: "ORD-2001",
-      traveler: { name: "Ali Khan", email: "ali@example.com" },
-      rider: { name: "Rider One", email: "rider1@example.com" },
-      eta: "",
-      date: "2025-09-04",
-      status: "In Transit",
-      total: 150,
-    },
-    {
-      id: 2,
-      orderId: "ORD-2002",
-      traveler: { name: "Sara Malik", email: "sara@example.com" },
-      rider: { name: "Rider Two", email: "rider2@example.com" },
-      eta: "1hrs",
-      date: "2025-09-05",
-      status: "Delivered",
-      total: 220,
-    },
-  ];
 
-  // Switch between pending & assigned
-  const data = activeTab === "pending" ? pendingOrders : assignedOrders;
+
+  const data = activeTab === "pending" ? orders?.pending : orders?.approved;
   const page = activeTab === "pending" ? pagePending : pageAssigned;
   const perPage = activeTab === "pending" ? perPagePending : perPageAssigned;
   const setPage = activeTab === "pending" ? setPagePending : setPageAssigned;
   const setPerPage =
     activeTab === "pending" ? setPerPagePending : setPerPageAssigned;
 
-  // Filter
-  const filteredOrders = data.filter((o) =>
-    `${o.orderId} ${o.traveler?.name || ""} ${o.partner?.name || ""} ${
-      o.rider?.name || ""
-    }`
+  const filteredOrders = data?.filter((o) =>
+    `${o.orderId} ${o.traveler?.name || ""} ${o.partner?.name || ""} ${o.rider?.name || ""
+      }`
       .toLowerCase()
       .includes(search.toLowerCase())
   );
 
-  const totalPages = Math.ceil(filteredOrders.length / perPage);
 
   const paginatedOrders = useMemo(() => {
     const start = (page - 1) * perPage;
@@ -102,25 +60,24 @@ const Orders = () => {
       </div>
 
       <div className="flex gap-4 bg-[#FEECD9] rounded-lg p-2 w-fit">
-        <button
-          onClick={() => setActiveTab("pending")}
-          className={`px-3 py-1.5 rounded-md text-sm fw5 transition ${
-            activeTab === "pending"
-              ? "bg-orange text-white shadow"
-              : "text-gray-600"
-          }`}
-        >
-          Pending ({pendingOrders.length})
-        </button>
+       
         <button
           onClick={() => setActiveTab("assigned")}
-          className={`px-3 py-1.5 rounded-md text-sm fw5 transition ${
-            activeTab === "assigned"
+          className={`px-3 py-1.5 rounded-md text-sm fw5 transition ${activeTab === "assigned"
               ? "bg-orange text-white shadow"
               : "text-gray-600"
-          }`}
+            }`}
         >
-          Assigned ({assignedOrders.length})
+          Assigned ({orders.approved.length})
+        </button>
+         <button
+          onClick={() => setActiveTab("pending")}
+          className={`px-3 py-1.5 rounded-md text-sm fw5 transition ${activeTab === "pending"
+              ? "bg-orange text-white shadow"
+              : "text-gray-600"
+            }`}
+        >
+          Pending ({orders.pending.length})
         </button>
       </div>
 
@@ -142,11 +99,11 @@ const Orders = () => {
             />
           </div>
           <button
-                className="flex items-center justify-between border border-[#23232333] rounded-lg px-3 py-0.5 text-sm text-[#9A9A9A] gap-3 max-w-[127px] h-[42px]"
-              >
-                Status
-                <FiChevronDown size={16} />
-              </button>
+            className="flex items-center justify-between border border-[#23232333] rounded-lg px-3 py-0.5 text-sm text-[#9A9A9A] gap-3 max-w-[127px] h-[42px]"
+          >
+            Status
+            <FiChevronDown size={16} />
+          </button>
         </div>
 
         {activeTab === "pending" ? (
