@@ -8,8 +8,11 @@ import Partners from "./pages/Partners/Partners";
 import Riders from "./pages/Riders/Riders";
 import Products from "./pages/Products/Products";
 import Orders from "./pages/Orders/Orders";
+
+import Support from "./pages/Support/Support";
+
 import Refunds from "./pages/Refunds/Refunds";
-import Support from "./pages/Support";
+
 import Settings from "./pages/Settings";
 import TravelerProfile from "./pages/Travelers/TravelerProfile";
 import { AuthProvider } from "./context/AuthContext";
@@ -21,6 +24,7 @@ import RiderProfile from "./pages/Riders/RiderProfile";
 import OrdersDetail from "./pages/Orders/OrdersDetail";
 import AssignRider from "./pages/Orders/AssignRider";
 import ProductsDetail from "./pages/Products/ProductsDetail";
+import ChatSupport from "./pages/Support/ChatSupport";
 
 import RefundsDetail from "./pages/Refunds/RefundsDetail";
 
@@ -69,7 +73,8 @@ const App = () => {
 
             <Route path="/refund/refundsdetail/" element={<RefundsDetail />} />
 
-
+//             <Route path="/products/productsdetail/" element={<ProductsDetail />} />
+            <Route path="/support/chatsupport/" element={<ChatSupport />} />
 
 
 
