@@ -60,7 +60,9 @@ const Partners = () => {
 
 
   const filteredPartners = (currentData || []).filter((partner) => {
+
     const fullName = `${partner.name ?? ""}`.toLowerCase();
+
     return (
       fullName.includes(search.toLowerCase()) ||
       partner.email?.toLowerCase().includes(search.toLowerCase())
@@ -72,7 +74,7 @@ const Partners = () => {
   const paginatedPartners = useMemo(() => {
     const start = (page - 1) * perPage;
     return filteredPartners.slice(start, start + perPage);
-  }, [filteredPartners, page, perPage]);
+  }, [filteredPartners, page, perPage]);``
 
   return (
     <div className="flex flex-col top-[120px] left-[281px] gap-6 p-3">

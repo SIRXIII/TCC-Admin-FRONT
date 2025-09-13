@@ -14,12 +14,10 @@ import Pagination from "../../components/Pagination";
 
 const Travelers = () => {
   const navigate = useNavigate();
-  const { data: travelers = [], isLoading, isError } = useTravelers();    
+  const { data: travelers = [], isLoading, isError } = useTravelers();
   const { mutate: bulkUpdate } = useBulkUpdateTravelers();
   const { mutate: exportData } = useExportTravelers();
-  const {mutate: deleteTraveler} = useDeleteTravelers()
-
-
+  const { mutate: deleteTraveler } = useDeleteTravelers();
 
   const dropdownRef = useRef(null);
   const statusRef = useRef(null);
@@ -87,16 +85,13 @@ const Travelers = () => {
     }
   };
 
-
   const suspendedTraveler = (id) => {
-    bulkUpdate({ids: [id], status: "Deactivate" });
-    
-  } 
+    bulkUpdate({ ids: [id], status: "Deactivate" });
+  };
 
   const handledeleteTraveler = (id) => {
-
     deleteTraveler(id);
-  }
+  };
   const handleBulkAction = (action) => {
     console.log("Bulk action:", action, selected);
     if (action === "Activate" || action === "Deactivate") {
@@ -117,17 +112,17 @@ const Travelers = () => {
         setBulkOpen(false);
       }
 
-       if (statusRef.current && !statusRef.current.contains(event.target)) {
-      setStatusOpen(false);
-    }
+      if (statusRef.current && !statusRef.current.contains(event.target)) {
+        setStatusOpen(false);
+      }
 
-       if (
-      actionOpen &&
-      actionRefs.current[actionOpen] &&
-      !actionRefs.current[actionOpen].contains(event.target)
-    ) {
-      setActionOpen(null);
-    }
+      if (
+        actionOpen &&
+        actionRefs.current[actionOpen] &&
+        !actionRefs.current[actionOpen].contains(event.target)
+      ) {
+        setActionOpen(null);
+      }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -309,7 +304,7 @@ const Travelers = () => {
                     </td>
 
                     <td
-                      className="px-4 py-3 text-right relative overflow-visible" 
+                      className="px-4 py-3 text-right relative overflow-visible"
                       ref={(el) => (actionRefs.current[t.id] = el)}
                       onClick={(e) => e.stopPropagation()}
                     >
@@ -344,20 +339,21 @@ const Travelers = () => {
                               View Profile
                             </Link>
                             {t.status === "Active" && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                suspendedTraveler(t.id);
-                                setActionOpen(null);
-
-                              }}
-                              className={`block w-full text-left px-4 py-2 text-sm text-[#4F4F4F] hover:bg-[#FEF2E6] `}
-                            >
-                              Suspend
-                            </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  suspendedTraveler(t.id);
+                                  setActionOpen(null);
+                                }}
+                                className={`block w-full text-left px-4 py-2 text-sm text-[#4F4F4F] hover:bg-[#FEF2E6] `}
+                              >
+                                Suspend
+                              </button>
                             )}
-                           
-                            <DeleteButton onDelete={() => handledeleteTraveler(t.id)} />
+
+                            <DeleteButton
+                              onDelete={() => handledeleteTraveler(t.id)}
+                            />
                           </div>
                         )}
                       </div>
@@ -369,6 +365,7 @@ const Travelers = () => {
           </table>
         </div>
 
+
      
           <Pagination
     page={page}
@@ -378,6 +375,7 @@ const Travelers = () => {
     totalItems={filteredTravelers.length}
     fullWidth={true}
   />
+
       </div>
     </div>
   );

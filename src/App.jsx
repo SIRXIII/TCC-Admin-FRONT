@@ -8,7 +8,7 @@ import Partners from "./pages/Partners/Partners";
 import Riders from "./pages/Riders/Riders";
 import Products from "./pages/Products/Products";
 import Orders from "./pages/Orders/Orders";
-import Refunds from "./pages/Refunds";
+import Refunds from "./pages/Refunds/Refunds";
 import Support from "./pages/Support";
 import Settings from "./pages/Settings";
 import TravelerProfile from "./pages/Travelers/TravelerProfile";
@@ -21,6 +21,9 @@ import RiderProfile from "./pages/Riders/RiderProfile";
 import OrdersDetail from "./pages/Orders/OrdersDetail";
 import AssignRider from "./pages/Orders/AssignRider";
 import ProductsDetail from "./pages/Products/ProductsDetail";
+
+import RefundsDetail from "./pages/Refunds/RefundsDetail";
+
 import UpdateRider from "./pages/Riders/UpdateRider";
 
 const queryClient = new QueryClient();
@@ -63,6 +66,11 @@ const App = () => {
             <Route path="/orders/assignrider/:id" element={<AssignRider />} />
 
             <Route path="/products/productsdetail/:id" element={<ProductsDetail />} />
+
+            <Route path="/refund/refundsdetail/" element={<RefundsDetail />} />
+
+
+
 
 
 
