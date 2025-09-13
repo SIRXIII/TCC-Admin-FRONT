@@ -5,77 +5,90 @@ import PartnerInfo from "./PartnerInfo";
 const Details = ({ partner }) => {
 
 
-   if (!partner) return <div>Loading partner details...</div>;
+  if (!partner) return <div>Loading partner details...</div>;
 
-   const activeProducts = partner.products.filter(p => p.status === "active").length;
+  const activeProducts = partner.products.filter(p => p.status === "active").length;
   const pendingProducts = partner.products.filter(p => p.status === "inactive").length;
 
-    const totalRevenue = partner.order
-    .filter(o => o.status === "delivered")
-    .reduce((sum, o) => sum + parseFloat(o.total_price), 0);
+  // const totalRevenue = partner.order
+  // .filter(o => o.status === "delivered")
+  // .reduce((sum, o) => sum + parseFloat(o.total_price), 0);
 
-  const partnerInfo= {
-      items: [
-        {
-          value: partner?.name,
-          email: partner?.email,
-          status: partner?.status,
-          image: partner?.profile_photo,
-        },
-        { label: "Business Name", value: partner?.business_name },
-        { label: "Email", value: partner?.email },
-        { label: "Owner", value: partner?.name },
-        { label: "Address", value: partner?.address },
-        { label: "Phone", value: partner?.phone },
-        { label: "Store Timing", value: partner?.store_available_days + " " + partner?.store_available_time },
-      ],
-    };
+  const partnerInfo = {
+    items: [
+      {
+        value: partner?.name,
+        email: partner?.email,
+        status: partner?.status,
+        image: partner?.profile_photo,
+      },
+      { label: "Business Name", value: partner?.business_name },
+      { label: "Email", value: partner?.email },
+      { label: "Owner", value: partner?.name },
+      { label: "Address", value: partner?.address },
+      { label: "Phone", value: partner?.phone },
+      { label: "Store Timing", value: partner?.store_available_days + " " + partner?.store_available_time },
+    ],
+  };
 
-    const businessDetails = {
+  const businessDetails = {
 
-       items: [
+    items: [
       { label: "Business Type", value: partner.category },
       { label: "Registered Since", value: partner.created_at },
-      { label: "Total Products", value: partner.products.length  },
-      { label: "Active Products", value: activeProducts  },
+      { label: "Total Products", value: partner.products.length },
+      { label: "Active Products", value: activeProducts },
       { label: "Pending Approval", value: pendingProducts },
       { label: "Total Orders", value: partner.order.length },
-      { label: "Revenue", value: `$${totalRevenue.toFixed(2)}` },
+      { label: "Revenue", value: "$" + partner?.total_sales },
     ],
 
-    };
+  };
 
-      const verification = {
-  items: [
-    {
-      label: "Business License",
-      value: partner.documents?.license?.length > 0 ? "Uploaded" : "No document found",
-      actions: partner.documents?.license?.length > 0 ? ["View", "Download"] : [],
-       docUrl: partner.documents?.license?.map(doc => doc.file_path) || [],
-    },
-    {
-      label: "Tax ID",
-      value: partner.tax_id || "Not Available",
-    },
-    {
-      label: "Owner Name",
-      value: partner.name || "Not Available",
-    },
-    {
-      label: "ID Proof",
-      value: partner.documents?.owner_id_card?.length > 0 ? "Driver’s License - Verified" : "Driver’s License - Not Verified",
-      
-    },
-    {
-      label: "Inspection Status",
-      value: partner.status === 'active' ? "Completed" : "Not Completed",
-    },
-    {
-      label: "Store Timing",
-      value: partner.store_available_days + " " + partner.store_available_time,
-    },
-  ],
-};
+  const verification = {
+    items: [
+      {
+        label: "Business License",
+        value: partner.documents?.license?.length > 0 ? "Uploaded" : "No document found",
+        actions: partner.documents?.license?.length > 0 ? ["View", "Download"] : [],
+        docUrl: partner.documents?.license?.map(doc => doc.file_path) || [],
+      },
+      {
+        label: "Tax ID",
+        value: partner.tax_id || "Not Available",
+      },
+      {
+        label: "Owner Name",
+        value: partner.name || "Not Available",
+      },
+      {
+        label: "ID Proof",
+        value: partner.documents?.owner_id_card?.length > 0 ? "Driver’s License - Verified" : "Driver’s License - Not Verified",
+
+      },
+      {
+        label: "Inspection Status",
+        value: partner.status === 'active' ? "Completed" : "Not Completed",
+      },
+      {
+        label: "Store Timing",
+        value: partner.store_available_days + " " + partner.store_available_time,
+      },
+    ],
+  };
+
+  const supportRating = {
+    items: [
+      {
+        label: "Rating",
+        value: partner.average_rating
+          ? `${partner.average_rating} / 5 (${partner.reviews_count} reviews)`
+          : "No reviews yet",
+      },
+      { label: "Common Complaints", value: partner?.latest_complaint?.message },
+
+    ],
+  };
 
   return (
 
@@ -89,14 +102,14 @@ const Details = ({ partner }) => {
 
         <div className="bg-[#FFFFFF]  shadow rounded-lg p-6 flex flex-col gap-6">
           <h3 className="text-lg fw6">Support & Rating</h3>
-          <PartnerInfo items={partnerDetails.supportRating.items} partnerId={partner.id} />
+          <PartnerInfo items={supportRating.items} partnerId={partner.id} />
         </div>
 
-       
+
       </div>
       <div className="flex flex-col flex-1 gap-6">
-        
-         <div className="bg-[#FFFFFF] shadow rounded-lg p-6 flex flex-col gap-6">
+
+        <div className="bg-[#FFFFFF] shadow rounded-lg p-6 flex flex-col gap-6">
           <h3 className="text-lg fw6">Business Details</h3>
           <PartnerInfo items={businessDetails.items} partnerId={partner.id} />
         </div>

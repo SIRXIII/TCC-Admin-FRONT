@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Assigned from "../../assets/SVG/assigned.svg";
+import DefaultProfile from "../../assets/Images/trv_profile.jpg";
+
 
 const PendingOrders = ({ orders = [] }) => {
   const navigate = useNavigate();
   const [selected, setSelected] = useState([]);
+
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
@@ -28,7 +31,7 @@ const PendingOrders = ({ orders = [] }) => {
     ) {
       return;
     }
-    navigate(`/orders/assignrider`);
+    navigate(`/orders/ordersdetail/{orderId}`);
   };
 
   return (
@@ -58,7 +61,8 @@ const PendingOrders = ({ orders = [] }) => {
           <tr
             key={order.id}
             className="text-sm hover:bg-[#FEF2E6] transition-colors cursor-pointer"
-            onClick={(e) => handleRowClick(e, order.id)}
+
+            onClick={() => navigate(`/orders/ordersdetail/${order.id}`)}
           >
             <td className="px-4 py-3">
               <input
@@ -69,39 +73,64 @@ const PendingOrders = ({ orders = [] }) => {
               />
             </td>
 
-            <td className="px-4 py-3">{order.orderId}</td>
+            <td className="px-4 py-3 text-[#F77F00] fw5">#ODR-{order.id}</td>
 
             <td className="px-4 py-3">
-              <div>
-                <span className="block text-[#232323]">{order.traveler?.name}</span>
-                <span className="block text-xs text-[#6C6C6C]">
-                  {order.traveler?.email}
-                </span>
+
+              <div className="flex gap-2.5">
+                <img
+                  src={order?.traveler?.profile_photo}
+                  alt="Traveler"
+                  className="w-6 h-6 rounded-xl object-cover object-center"
+                  onError={(e) => {
+                    e.currentTarget.src = DefaultProfile;
+                  }}
+                />
+                <div>
+                  <p className="text-[#4F4F4F] text-sm">{order.traveler?.name}</p>
+                  <p className="text-[#6C6C6C] text-xs">{order.traveler?.email}</p>
+                </div>
+
+
               </div>
             </td>
 
             <td className="px-4 py-3">
-              <div>
-                <span className="block text-[#232323]">{order.partner?.name}</span>
-                <span className="block text-xs text-[#6C6C6C]">
-                  {order.partner?.email}
-                </span>
+              <div className="flex gap-2.5">
+                <img
+                  src={order?.partner?.profile_photo}
+                  alt="Partner"
+                  className="w-6 h-6 rounded-xl object-cover object-center"
+                  onError={(e) => {
+                    e.currentTarget.src = DefaultProfile;
+                  }}
+                />
+                <div>
+                  <p className="text-[#4F4F4F] text-sm">{order.partner?.name}</p>
+                  <p className="text-[#6C6C6C] text-xs">{order.partner?.email}</p>
+                </div>
+
+
               </div>
             </td>
 
             <td className="px-4 py-3">{order.eta || "-"}</td>
-            <td className="px-4 py-3">{order.date}</td>
-            <td className="px-4 py-3">${order.total}</td>
+            <td className="px-4 py-3">{order.created_at}</td>
+            <td className="px-4 py-3">${order.total_price}</td>
 
             <td className="px-4 py-3">
               <button
                 className="flex gap-2 p-2.5 rounded-lg border bg-[#FEF2E6] border-[#F77F00] text-[#F77F00] hover:bg-[#f1e8e1] transition"
-                onClick={() => navigate(`/orders/assignrider`)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/orders/assignrider/${order.id}`);
+                }}
               >
                 <img src={Assigned} alt="Assigned" />
                 Assign Rider
               </button>
             </td>
+
           </tr>
         ))}
       </tbody>

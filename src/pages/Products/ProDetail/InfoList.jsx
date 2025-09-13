@@ -1,6 +1,13 @@
 import React from "react";
 
 const InfoList = ({ items }) => {
+
+  const statusColors = {
+    Pending: "bg-[#E1FDFD] text-[#3E77B0]",
+    Active: "bg-[#E7F7ED]  text-[#088B3A]",
+    Suspended: "bg-[#FCECD6] text-[#CA4E2E]",
+  };
+
   return (
     <div className="flex flex-col gap-3 ">
       {items.map((item, idx) => {
@@ -29,13 +36,9 @@ const InfoList = ({ items }) => {
 
               {item.status && (
                 <span
-                  className={`  rounded-md text-xs fw5 ${
-                    item.status === "Available"
-                      ? "bg-[#E7F7ED] text-[#088B3A]"
-                      : item.status === "Out of Stock"
-                      ? "bg-red-100 text-red-600"
-                      : "bg-gray-100 text-gray-600"
-                  }`}
+                 className={`px-2 py-1 rounded-md text-xs font-medium ${
+                          statusColors[item.status] || "bg-gray-100 text-gray-600"
+                        }`}
                 >
                   {item.status}
                 </span>
@@ -61,13 +64,12 @@ const InfoList = ({ items }) => {
                 </span>
               ) : item.label === "Product Verification Status" ? (
                 <span
-                  className={` py-1 text-xs fw5${
-                    item.value === "Verified"
+                  className={` py-1 text-xs fw5${item.value === "Verified"
                       ? " text-[#088B3A]"
                       : item.value === "Pending"
-                      ? "bg-yellow-100 text-yellow-600"
-                      : "bg-red-100 text-red-600"
-                  }`}
+                        ? "bg-yellow-100 text-yellow-600"
+                        : "bg-red-100 text-red-600"
+                    }`}
                 >
                   {item.value}
                 </span>

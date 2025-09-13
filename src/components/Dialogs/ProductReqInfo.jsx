@@ -4,26 +4,16 @@ import infoLogo from "../../assets/Images/request_info.png";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import { toast } from "react-toastify";
 
-const RequestInformation = ({ isOpen, partner, onClose, onSend }) => {
+const ProductReqInfo = ({ isOpen, product, onClose, onSend }) => {
   if (!isOpen) return null;
+
 
   const [formData, setFormData] = useState({
     message: "",
-    deadline: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  const documents = [
-    {
-      label: "Business Registration Certificate",
-      isPresent: partner.documents?.license?.length > 0 || partner.documents?.owner_id_card?.length > 0,
-    },
-    {
-      label: "Tax Identification Number",
-      isPresent: partner.tax_id != null && partner.tax_id !== "",
-    },
-  ];
 
   const handleClickInside = (e) => {
     e.stopPropagation();
@@ -45,10 +35,9 @@ const RequestInformation = ({ isOpen, partner, onClose, onSend }) => {
 
     try {
       await API.post("/partners/request-information", {
-        to: partner.email, 
-        businessName: partner.business_name,
+        to: product?.partner?.email, 
+        businessName: product?.partner?.business_name,
         message: formData.message,
-        deadline: formData.deadline,
       });
 
       onSend();
@@ -66,6 +55,7 @@ const RequestInformation = ({ isOpen, partner, onClose, onSend }) => {
       className="fixed inset-0 flex items-center justify-center bg-black/10 z-50"
       onClick={handleOverlayClick}
     >
+       
       <div
         className="flex flex-col bg-white p-10 rounded-lg shadow-lg w-[503px] gap-8"
         onClick={handleClickInside}
@@ -91,43 +81,6 @@ const RequestInformation = ({ isOpen, partner, onClose, onSend }) => {
           </p>
         </div>
 
-        <div className="flex flex-col gap-3">
-          {[
-            { label: "Business Name", value: partner.business_name },
-            { label: "Category", value: partner.category },
-            { label: "Location", value: partner.location },
-            { label: "Date Applied", value: partner.created_at },
-          ].map((item) => (
-            <div className="flex text-xs gap-3" key={item.label}>
-              <p className="text-[#9A9A9A] w-1/3">{item.label}</p>
-              <p className="text-[#9A9A9A]">:</p>
-              <p className="text-[#232323] w-2/3">{item.value}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex flex-col gap-3">
-          <h4 className="text-base font-medium text-[#232323]">Documents Checklist</h4>
-          {documents.map((doc) => (
-            <label key={doc.label} className="flex items-center gap-3 cursor-pointer">
-              <div
-                className={`w-5 h-5 flex items-center justify-center rounded-full border-2 ${
-                  doc.isPresent ? "border-green-600" : "border-red-600"
-                }`}
-              >
-                {doc.isPresent ? (
-                  <FaCheck className="text-green-600 text-xs" />
-                ) : (
-                  <FaTimes className="text-red-600 text-xs" />
-                )}
-              </div>
-              <span className={`${doc.isPresent ? "text-green-600" : "text-red-600"} text-sm`}>
-                {doc.label}
-              </span>
-            </label>
-          ))}
-        </div>
-
         <div className="flex flex-col gap-6">
           <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
             <div className="relative">
@@ -149,37 +102,13 @@ const RequestInformation = ({ isOpen, partner, onClose, onSend }) => {
               </label>
             </div>
 
-            <div className="relative">
-              <select
-                id="deadline"
-                name="deadline"
-                value={formData.deadline}
-                onChange={handleInputChange}
-                className="peer block w-full rounded-md border border-gray-300 bg-white px-3 pt-6 pb-2 text-sm text-gray-900 focus:border-blue-500 focus:ring focus:ring-blue-200 focus:outline-none appearance-none"
-                onClick={handleClickInside}
-              >
-                <option value="" disabled hidden>
-                  Select Deadline
-                </option>
-                <option value="today">Today</option>
-                <option value="tomorrow">Tomorrow</option>
-                <option value="next_week">Next Week</option>
-              </select>
-              <label
-                htmlFor="deadline"
-                className="absolute left-3 top-1.5 text-gray-500 text-xs transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-placeholder-shown:text-gray-400 peer-focus:top-1.5 peer-focus:text-xs peer-focus:text-gray-700"
-              >
-                Deadline
-              </label>
-            </div>
-
             {error && <p className="text-red-600 text-sm">{error}</p>}
 
             <div className="flex flex-col gap-3">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`w-full bg-orange text-white py-3 rounded-md transition font-medium text-sm ${
+                className={`w-full bg-orange text-white py-3 rounded-md  transition font-medium text-sm ${
                   isSubmitting ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
@@ -203,4 +132,4 @@ const RequestInformation = ({ isOpen, partner, onClose, onSend }) => {
   );
 };
 
-export default RequestInformation;
+export default ProductReqInfo;

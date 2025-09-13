@@ -59,10 +59,10 @@ const App = () => {
             <Route path="/riders/profile/:id" element={<RiderProfile />} /> 
             <Route path="/riders/update-rider/:id" element={<UpdateRider />} /> 
             
-            <Route path="/orders/ordersdetail/" element={<OrdersDetail />} />
-            <Route path="/orders/assignrider/" element={<AssignRider />} />
+            <Route path="/orders/ordersdetail/:id" element={<OrdersDetail />} />
+            <Route path="/orders/assignrider/:id" element={<AssignRider />} />
 
-            <Route path="/products/productsdetail/" element={<ProductsDetail />} />
+            <Route path="/products/productsdetail/:id" element={<ProductsDetail />} />
 
 
 
