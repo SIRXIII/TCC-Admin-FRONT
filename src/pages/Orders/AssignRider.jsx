@@ -1,24 +1,35 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { FiChevronDown } from "react-icons/fi";
 import { Search } from "lucide-react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useParams } from "react-router-dom";
 import ridersData from "../../data/RidersData";
 import DefaultProfile from "../../assets/Images/trv_profile.jpg";
 import Rating from "../../assets/SVG/rating.svg";
 import backward from "../../assets/SVG/backward.svg";
+import { useRiders } from "../../hooks/useRiders";
+import Pagination from "../../components/Pagination";
+import API from "../../services/api";
+import { toast } from "react-toastify";
 
 const AssignRider = () => {
   const navigate = useNavigate();
 
+  const { id } = useParams();
+
+  const { data: riders = [], isLoading, isError } = useRiders();
+
+  const statusRef = useRef(null);
+
   const [filteredRiders, setFilteredRiders] = useState([]);
-  const [selected, setSelected] = useState([]);
+  const [selected, setSelected] = useState(null);
 
   const [status, setStatus] = useState("Status");
   const [statusOpen, setStatusOpen] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
-  const perPage = 5;
+  const [perPage, setPerPage] = useState(5);
+
 
   const statusColors = {
     Online: "bg-[#E7F7ED] text-[#088B3A]",
@@ -26,11 +37,12 @@ const AssignRider = () => {
   };
 
   useEffect(() => {
-    let temp = [...ridersData];
+    if (!riders || riders.length === 0) return;
+    let temp = [...riders];
 
     if (status !== "Status") {
       temp = temp.filter(
-        (r) => r.status.toLowerCase() === status.toLowerCase()
+        (r) => r.availability_status.toLowerCase() === status.toLowerCase()
       );
     }
 
@@ -45,7 +57,7 @@ const AssignRider = () => {
 
     setFilteredRiders(temp);
     setPage(1);
-  }, [searchTerm, status]);
+  }, [searchTerm, status, riders]);
 
   const totalPages = Math.ceil(filteredRiders.length / perPage);
   const paginatedRiders = useMemo(() => {
@@ -57,16 +69,48 @@ const AssignRider = () => {
     if (e.target.checked) {
       setSelected(paginatedRiders.map((r) => r.id));
     } else {
-      setSelected([]);
+      setSelected(null);
     }
   };
 
   const handleSelectOne = (id) => {
-    setSelected(
-      selected.includes(id)
-        ? selected.filter((s) => s !== id)
-        : [...selected, id]
-    );
+    setSelected(selected === id ? null : id);
+  };
+
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+
+
+      if (statusRef.current && !statusRef.current.contains(event.target)) {
+        setStatusOpen(false);
+      }
+
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleAssign = async () => {
+    if (!selected) {
+      alert("Please select a rider");
+      return;
+    }
+
+    console.log("Assigning rider:", selected, "to order:", id);
+
+    try {
+      await API.post("/orders/assign-rider", {
+        order_id: id,
+        rider_id: selected,
+      });
+
+      toast.success("Rider assigned successfully");
+      navigate("/orders");
+    } catch (error) {
+      console.error(error);
+      alert("Failed to assign rider");
+    }
   };
 
   return (
@@ -107,7 +151,7 @@ const AssignRider = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div className="relative">
+          <div className="relative" ref={statusRef}>
             <button
               onClick={() => setStatusOpen(!statusOpen)}
               className="flex items-center justify-between border border-[#23232333] rounded-md px-3 py-0.5 text-xs text-[#9A9A9A] min-w-[79px] h-[36px]"
@@ -116,7 +160,7 @@ const AssignRider = () => {
               <FiChevronDown size={12} />
             </button>
             {statusOpen && (
-              <div className="absolute mt-1 bg-white border-color rounded-lg shadow-lg w-28 z-20">
+              <div className="absolute bg-white border-color rounded-lg shadow-lg w-28 z-20">
                 {["Online", "Offline"].map((s) => (
                   <p
                     key={s}
@@ -168,7 +212,7 @@ const AssignRider = () => {
                       <input
                         type="checkbox"
                         className="w-4 h-4 rounded-lg"
-                        checked={selected.includes(r.id)}
+                        checked={selected === r.id}
                         onChange={() => handleSelectOne(r.id)}
                       />
                     </td>
@@ -191,16 +235,15 @@ const AssignRider = () => {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-[#232323]">
-                      {r.currentOrders}
+                      {r.current_assigned_orders}
                     </td>
                     <td className="px-4 py-3 text-[#232323] ">{r.eta}</td>
                     <td className="px-4 py-3 text-[#232323]">
                       <span
-                        className={`px-3 py-1 rounded-md text-xs fw5 ${
-                          statusColors[r.status] || ""
-                        }`}
+                        className={`px-3 py-1 rounded-md text-xs fw5 ${statusColors[r.availability_status] || ""
+                          }`}
                       >
-                        {r.status}
+                        {r.availability_status}
                       </span>
                     </td>
                   </tr>
@@ -209,12 +252,20 @@ const AssignRider = () => {
             </tbody>
           </table>
         </div>
+        <Pagination
+          page={page}
+          setPage={setPage}
+          perPage={perPage}
+          setPerPage={setPerPage}
+          totalItems={filteredRiders.length}
+          fullWidth={true}
+        />
       </div>
-      <div className="fixed bottom-0 left-0 right-0 bg-[#FFFFFF]  px-6 py-6 flex justify-end gap-3">
-        <button className="px-4 py-3 text-sm border border-[#F77F00] bg-[#FEF2E6] text-[#F77F00]  rounded-lg hover:bg-[#F77F00] hover:text-[#FFFFFF]">
+      <div className="relative bottom-0 left-0 right-0 bg-[#FFFFFF]  px-6 py-6 flex justify-end gap-3">
+        <button onClick={() => navigate('/orders')} className="px-4 py-3 text-sm border border-[#F77F00] bg-[#FEF2E6] text-[#F77F00]  rounded-lg hover:bg-[#F77F00] hover:text-[#FFFFFF]">
           Cancel
         </button>
-        <button className="px-4 py-3 text-sm border border-[#F77F00] bg-[#FEF2E6] text-[#F77F00]  rounded-lg hover:bg-[#F77F00] hover:text-[#FFFFFF]">
+        <button  onClick={handleAssign} className="px-4 py-3 text-sm border border-[#F77F00] bg-[#FEF2E6] text-[#F77F00]  rounded-lg hover:bg-[#F77F00] hover:text-[#FFFFFF]">
           Assign
         </button>
       </div>

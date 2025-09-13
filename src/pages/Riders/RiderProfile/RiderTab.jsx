@@ -1,9 +1,9 @@
 import React from "react";
 
-const RiderTabs = ({ activeTab, setActiveTab }) => {
+const RiderTabs = ({ activeTab, setActiveTab, rider }) => {
   const tabs = [
     { key: "details", label: "Details" },
-    { key: "orders", label: "Orders (145)" },
+    { key: "orders", label: `Orders (${rider?.order?.length || 0})` },
   ];
 
   return (

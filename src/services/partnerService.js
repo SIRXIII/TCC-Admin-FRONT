@@ -14,7 +14,6 @@ export const statusUpdatePartner = (partnersId, status) => {
 };
 
 
-// Accepts partnerId so we can request that partner's documents
 export const downloadPartners = (partnerId) =>
   API.get(`/partners/${partnerId}/documents/download`, {
     responseType: "blob",
