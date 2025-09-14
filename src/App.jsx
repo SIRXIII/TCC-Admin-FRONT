@@ -10,7 +10,7 @@ import Products from "./pages/Products/Products";
 import Orders from "./pages/Orders/Orders";
 import Refunds from "./pages/Refunds";
 import Support from "./pages/Support";
-import Settings from "./pages/Settings";
+import Settings from "./pages/Settings/Settings";
 import TravelerProfile from "./pages/Travelers/TravelerProfile";
 import { AuthProvider } from "./context/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

@@ -115,7 +115,7 @@ const AssignedOrders = ({ orders = [] }) => {
             <td className="px-4 py-3 align-middle">
               <button
                 className="p-2 rounded-lg border bg-[#FEF2E6] text-[#CA4E2E]"
-                onClick={() => navigate(`//orders/ordersdetail`)}
+                onClick={() => navigate(`/orders/ordersdetail`)}
               >
                 <img src={Eye} alt="" />
               </button>
