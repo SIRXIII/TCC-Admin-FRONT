@@ -17,12 +17,19 @@ const RiderOrders = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const statusColors = {
-    pending: "bg-[#E1FDFD] text-[#3E77B0]",
-    delivered: "bg-[#E7F7ED] text-[#088B3A]",
-    inprogress: "bg-[#FEFCDD] text-[#B2A23F]",
-    cancelled: "bg-[#FCECD6] text-[#CA4E2E]",
-  };
+  // const statusColors = {
+  //   pending: "bg-[#E1FDFD] text-[#3E77B0]",
+  //   delivered: "bg-[#E7F7ED] text-[#088B3A]",
+  //   inprogress: "bg-[#FEFCDD] text-[#B2A23F]",
+  //   cancelled: "bg-[#FCECD6] text-[#CA4E2E]",
+  // };
+
+    const statusColors = {
+  pending: "bg-[#E1FDFD] text-[#3E77B0]",
+  delivered: "bg-[#E7F7ED] text-[#088B3A]",
+  shipped: "bg-[#FEFCDD] text-[#B2A23F]",
+  cancelled: "bg-[#FCECD6] text-[#CA4E2E]",
+};
 
   const filteredOrders = useMemo(() => {
     return orders.filter((o) =>

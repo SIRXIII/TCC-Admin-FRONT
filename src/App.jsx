@@ -8,9 +8,14 @@ import Partners from "./pages/Partners/Partners";
 import Riders from "./pages/Riders/Riders";
 import Products from "./pages/Products/Products";
 import Orders from "./pages/Orders/Orders";
-import Refunds from "./pages/Refunds";
-import Support from "./pages/Support";
+
 import Settings from "./pages/Settings/Settings";
+
+
+import Support from "./pages/Support/Support";
+
+import Refunds from "./pages/Refunds/Refunds";
+
 import TravelerProfile from "./pages/Travelers/TravelerProfile";
 import { AuthProvider } from "./context/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -21,6 +26,11 @@ import RiderProfile from "./pages/Riders/RiderProfile";
 import OrdersDetail from "./pages/Orders/OrdersDetail";
 import AssignRider from "./pages/Orders/AssignRider";
 import ProductsDetail from "./pages/Products/ProductsDetail";
+import ChatSupport from "./pages/Support/ChatSupport";
+
+import RefundsDetail from "./pages/Refunds/RefundsDetail";
+
+import UpdateRider from "./pages/Riders/UpdateRider";
 
 const queryClient = new QueryClient();
 
@@ -56,11 +66,18 @@ const App = () => {
             {/* <Route path="/riders/add-rider" element={<AddRiders />} /> */}
             <Route path="/riders/add-rider" element={<AddRiders />} />
             <Route path="/riders/profile/:id" element={<RiderProfile />} /> 
+            <Route path="/riders/update-rider/:id" element={<UpdateRider />} /> 
             
-            <Route path="/orders/ordersdetail/" element={<OrdersDetail />} />
-            <Route path="/orders/assignrider/" element={<AssignRider />} />
+            <Route path="/orders/ordersdetail/:id" element={<OrdersDetail />} />
+            <Route path="/orders/assignrider/:id" element={<AssignRider />} />
+
+            <Route path="/products/productsdetail/:id" element={<ProductsDetail />} />
+
+            <Route path="/refund/refundsdetail/:id" element={<RefundsDetail />} />
 
             <Route path="/products/productsdetail/" element={<ProductsDetail />} />
+            <Route path="/support/chatsupport/:id" element={<ChatSupport />} />
+
 
 
 

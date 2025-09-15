@@ -60,7 +60,7 @@ const Pagination = ({
 
       {/* Per Page Dropdown */}
       <div className="flex items-center gap-2 h-10">
-        <span className="text-[#232323] text-xs">Show</span>
+        <span className="text-[#232323] fw5 text-xs">Show</span>
         <div className="relative w-[62px]">
           <button
             onClick={() => setOpen(!open)}
@@ -92,7 +92,7 @@ const Pagination = ({
             className="pointer-events-none absolute right-2 top-1/2 w-4 h-4 -translate-y-1/2 rotate-90"
           />
         </div>
-        <span className="text-[#232323] text-xs">entries</span>
+        <span className="text-[#232323] fw5 text-xs">entries</span>
       </div>
     </div>
   );

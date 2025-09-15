@@ -10,11 +10,17 @@ import ridersData from "../../data/RidersData";
 import Rating from "../../assets/SVG/rating.svg";
 import Eye from "../../assets/SVG/eye.svg";
 import Edit from "../../assets/SVG/edit.svg";
+import { useRiders } from "../../hooks/useRiders";
+import Pagination from "../../components/Pagination";
 
 
 const Riders = () => {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
+  const statusRef = useRef(null);
+
+  const { data: riders = [], isLoading, isError } = useRiders();
+
 
   const [filteredRiders, setFilteredRiders] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -24,7 +30,7 @@ const Riders = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(5);
+  const [perPage, setPerPage] = useState(10);
 
   const statusColors = {
     Online: "bg-[#E7F7ED] text-[#088B3A]",
@@ -32,11 +38,12 @@ const Riders = () => {
   };
 
   useEffect(() => {
-    let temp = [...ridersData];
+    let temp = [...riders];
 
     if (status !== "Status") {
+      // console.log("r.status.toLowerCase()", r.status.toLowerCase());
       temp = temp.filter(
-        (r) => r.status.toLowerCase() === status.toLowerCase()
+        (r) => r.availability_status.toLowerCase() === status.toLowerCase()
       );
     }
 
@@ -45,15 +52,14 @@ const Riders = () => {
         (r) =>
           r.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           r.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          r.phone.includes(searchTerm)
+          r.rider_id.includes(searchTerm)
       );
     }
 
     setFilteredRiders(temp);
     setPage(1);
-  }, [searchTerm, status]);
+  }, [searchTerm, status, riders]);
 
-  const totalPages = Math.ceil(filteredRiders.length / perPage);
   const paginatedRiders = useMemo(() => {
     const start = (page - 1) * perPage;
     return filteredRiders.slice(start, start + perPage);
@@ -86,13 +92,18 @@ const Riders = () => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setBulkOpen(false);
       }
+
+       if (statusRef.current && !statusRef.current.contains(event.target)) {
+      setStatusOpen(false);
+    }
+
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const [open, setOpen] = useState(false);
-  const options = [5, 10, 25, 50];
+  // const [open, setOpen] = useState(false);
+  // const options = [5, 10, 25, 50];
 
   return (
     <div className="gap-6 p-2">
@@ -139,7 +150,7 @@ const Riders = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="relative">
+            <div className="relative" ref={statusRef}>
               <button
                 onClick={() => setStatusOpen(!statusOpen)}
                 className="flex items-center justify-between border border-[#23232333] rounded-md px-3 py-0.5 text-xs text-[#9A9A9A] min-w-[79px] max-w-[110px] h-[36px]"
@@ -217,7 +228,7 @@ const Riders = () => {
                       />
                     </td>
 
-                    <td className="px-4 py-3">{r.id}</td>
+                    <td className="px-4 py-3">{r.rider_id}</td>
 
                     <td className="px-4 py-3 flex gap-2.5 items-center">
                       <img
@@ -239,16 +250,15 @@ const Riders = () => {
                     </td>
 
                     <td className="px-4 py-3 text-[#232323]">
-                      {r.currentOrders}
+                      {r.current_assigned_orders}
                     </td>
 
                     <td className="px-4 py-3 text-[#232323]">
                       <span
-                        className={`px-2 py-1 rounded-md text-xs font-medium ${
-                          statusColors[r.status] || ""
-                        }`}
+                        className={`px-2 py-1 rounded-md text-xs font-medium ${statusColors[r.availability_status] || ""
+                          }`}
                       >
-                        {r.status}
+                        {r.availability_status}
                       </span>
                     </td>
                     <td
@@ -262,7 +272,7 @@ const Riders = () => {
                         <img src={Eye} alt="" />
                       </button>
                       <button
-                        onClick={() => navigate(`/riders/edit/${r.id}`)}
+                        onClick={() => navigate(`/riders/update-rider/${r.id}`)}
                         className="p-1.5 rounded-lg border bg-[#FEF2E6] border-[#F77F00] hover:bg-[#f8ca99]"
                       >
                         <img src={Edit} alt="" />
@@ -275,77 +285,16 @@ const Riders = () => {
           </table>
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mt-6 text-[#6C6C6C] h-10">
-          <p className="text-sm h-10 flex items-center">
-            Showing {(page - 1) * perPage + 1} to{" "}
-            {Math.min(page * perPage, filteredRiders.length)} of{" "}
-            {filteredRiders.length} entries
-          </p>
+        <Pagination
+          page={page}
+          setPage={setPage}
+          perPage={perPage}
+          setPerPage={setPerPage}
+          totalItems={filteredRiders.length}
+          fullWidth={true}
+        />
 
-          <div className="flex items-center gap-2 h-10">
-            <button
-              className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300"
-              onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-            >
-              <img src={arrow_left} alt="Prev" className="w-4 h-4" />
-            </button>
 
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-              <button
-                key={num}
-                className={`w-10 h-10 flex items-center justify-center rounded-lg font-medium text-sm transition ${
-                  num === page
-                    ? "bg-[#F77F00] text-white border border-[#F77F00]"
-                    : "border border-[#FEF2E6] hover:bg-[#FEF2E6] hover:text-[#232323]"
-                }`}
-                onClick={() => setPage(num)}
-              >
-                {num}
-              </button>
-            ))}
-
-            <button
-              className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300"
-              onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
-            >
-              <img src={arrow_right} alt="Next" className="w-4 h-4" />
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2 h-10">
-            <span className="text-[#232323] text-xs">Show</span>
-            <div className="relative w-[62px]">
-              <button
-                onClick={() => setOpen(!open)}
-                className="w-full h-10 px-3 border border-[#D9D9D9] rounded-lg text-sm text-[#232323] bg-white text-left"
-              >
-                {perPage}
-              </button>
-              {open && (
-                <div className="absolute bottom-full mb-1 w-full bg-white border border-[#D9D9D9] rounded-lg shadow-lg z-10">
-                  {options.map((n) => (
-                    <div
-                      key={n}
-                      onClick={() => {
-                        setPerPage(n);
-                        setOpen(false);
-                      }}
-                      className="px-3 py-2 text-sm text-[#232323] hover:bg-[#FEF2E6] cursor-pointer"
-                    >
-                      {n}
-                    </div>
-                  ))}
-                </div>
-              )}
-              <img
-                src={arrow_right}
-                alt="Dropdown arrow"
-                className="pointer-events-none absolute right-2 top-1/2 w-4 h-4 -translate-y-1/2 rotate-90"
-              />
-            </div>
-            <span className="text-[#232323] text-xs">entries</span>
-          </div>
-        </div>
       </div>
     </div>
   );

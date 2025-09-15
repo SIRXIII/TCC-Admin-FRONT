@@ -1,49 +1,118 @@
-import React from "react";
+import React, { useEffect } from "react";
 import backward from "../../assets/SVG/backward.svg";
 import InfoList from "./ProDetail/InfoList";
 import productDetailData from "../../data/ProductDetailData";
+import { useParams } from "react-router-dom";
+import { getProductById } from "../../services/productService";
+import ProductVideo from "../../components/ProductVideo";
+import { useStatusUpdateProduct } from "../../hooks/useProducts";
+import { toast } from "react-toastify";
 
 const ProductsDetail = () => {
-  const data = productDetailData;
+  const { id } = useParams()
+  const [product, setProduct] = React.useState(null);
+  const { mutate: statusUpdate } = useStatusUpdateProduct();
+
+  const fetchProduct = async () => {
+    try {
+      const res = await getProductById(id);
+      setProduct(res.data.data);
+    } catch (error) {
+      console.error("Error fetching product data:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      fetchProduct();
+    }
+  }, [id]);
+
+  
+    const handleProductStatus = (product) => {
+
+      console.log("product", product);
+      const newStatus = product.status === "Active" ? "suspended" : "accept";
+  
+      statusUpdate(
+        { id: product.id, status: newStatus },
+        {
+          onSuccess: () => {
+            toast.success(
+              `Product ${newStatus === "accept" ? "suspended" : "activated"} successfully!`
+            );
+            fetchProduct();
+          },
+          onError: () => {
+            toast.error("Failed to update product status");
+          },
+        }
+      
+      );
+    };
 
   const productDetails = {
     overview: {
       title: "Product Overview",
       items: [
         {
-          image: data.images[0],
-          value: data.name,
-          sub: data.category,
-          status: data.availability,
+          image: product?.primary_image,
+          value: product?.name,
+          sub: product?.category,
+          status: product?.status,
         },
-        { label: "Product Category", value: data.category },
-        { label: "Product Type", value: data.type },
-        { label: "Price", value: data.price },
-        { label: "Security Deposit", value: data.deposit },
-        { label: "Partner Store", value: data.partnerStore },
+        { label: "Product Category", value: product?.category },
+        { label: "Product Type", value: product?.type },
+        { label: "Price", value: product?.buy_price },
+        { label: "Security Deposit", value: product?.deposit },
+        { label: "Availablity", value: product?.stock > 0 ? "In Stock" : "Out of Stock" },
+        { label: "Partner Store", value: product?.partner?.business_name },
       ],
     },
 
-    rental: {
-      title: "Rental Parameters",
-      items: [
-        {
-          label: "Rental Duration Options",
-          value: data.rentalParams.durationOptions,
+
+    rental:
+      product?.type == "Rental"
+        ? {
+          title: "Rental Parameters",
+          items: [
+            {
+              label: "Rental Duration Options",
+              value:
+                product?.min_rental + " to " + product?.max_rental + " days",
+            },
+            {
+              label: "Late Fee",
+              value: "$" + product?.late_fee + "/day after return date",
+            },
+            { label: "Size Options", value: product?.size },
+            { label: "Color Options", value: product?.color },
+            { label: "Fabric / Material", value: product?.material },
+            {
+              label: "Returns Completed",
+              value: product?.rental_stats?.completed_rentals,
+            },
+            {
+              label: "Cancelled Rentals",
+              value: product?.rental_stats?.cancelled_rentals,
+            },
+          ],
+        }
+        : {
+          title: "Formal Purchase Details",
+          items: [
+            { label: "Price", value: product?.buy_price },
+            { label: "Available Sizes", value: product?.size },
+            { label: "Available Colors", value: product?.color },
+            { label: "Fabric / Material", value: product?.material },
+            { label: "Stock Quantity", value: product?.stock },
+          ],
         },
-        { label: "Late Fee", value: data.rentalParams.lateFee },
-        { label: "Size Options", value: data.rentalParams.sizes },
-        { label: "Color Options", value: data.rentalParams.colors },
-        { label: "Fabric / Material", value: data.rentalParams.fabric },
-        { label: "Returns Completed", value: data.rentalParams.returns },
-        { label: "Cancelled Assignments", value: data.rentalParams.cancelled },
-      ],
-    },
 
     verification: {
       title: "Verification",
       items: [
-        { label: "Product Verification Status", value: data.verification },
+        { label: "Product Verification Status", value: product?.verification_status },
       ],
     },
   };
@@ -71,12 +140,21 @@ const ProductsDetail = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <button className="border border-[#F77F00] bg-[#FEF2E6] rounded-lg px-4 py-2 text-sm text-[#F77F00] hover:bg-[#F77F00] hover:text-white transition">
+          {/* <button className="border border-[#F77F00] bg-[#FEF2E6] rounded-lg px-4 py-2 text-sm text-[#F77F00] hover:bg-[#F77F00] hover:text-white transition">
             Suspend
+          </button> */}
+          <button
+            onClick={() => handleProductStatus(product)}
+            className={`border rounded-lg px-4 py-2 text-sm transition ${product?.status == "Active"
+              ? "border-[#F77F00] bg-[#FEF2E6] text-[#F77F00]"
+              : "border-green-600 bg-green-50 text-green-600"
+              }`}
+          >
+            {product && product?.status === "Active" ? "Suspended" : "Activate"}
           </button>
-          <button className="border border-[#F77F00] bg-[#FEF2E6] rounded-lg px-4 py-2 text-sm text-[#F77F00] hover:bg-[#F77F00] hover:text-white transition">
+          {/* <button className="border border-[#F77F00] bg-[#FEF2E6] rounded-lg px-4 py-2 text-sm text-[#F77F00] hover:bg-[#F77F00] hover:text-white transition">
             Edit Details
-          </button>
+          </button> */}
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 ">
@@ -96,33 +174,35 @@ const ProductsDetail = () => {
           <div className="flex flex-col bg-white p-6 gap-6 rounded-lg shadow">
             <h3 className="text-lg fw6 ">Product Image</h3>
             <img
-              src={data.images[0]}
+              src={product?.primary_image}
               alt="product"
-              className="w-full h-56 object-cover rounded-2xl border-color"
+              className="w-full h-60 object-cover rounded-2xl border-color"
             />
-            <div className="flex gap-3 mt-3">
-              {data.images.map((img, i) => (
-                <img
-                  key={i}
-                  src={img}
-                  alt={`thumb-${i}`}
-                  className="w-16 h-16 rounded-[10px] object-cover border-color hover:border-[#F77F00]"
-                />
-              ))}
+            <div className="flex gap-3">
+              {product?.images.map((img, i) =>
+                i > 0 ? (
+                  <img
+                    key={i}
+                    src={img?.image_url}
+                    alt={`thumb-${i}`}
+                    className="w-17 h-17 rounded-[10px] object-cover border-color hover:border-[#F77F00]"
+                  />
+                ) : null
+              )}
             </div>
-          </div>
 
+          </div>
           <div className="flex flex-col bg-white p-6 gap-6 rounded-lg shadow">
             <h3 className="text-lg fw6 mb-3">Product Video</h3>
 
-            <div className="relative">
-              <img
-                src={data.videoThumbnail}
-                alt="video"
-                className="w-full h-56 object-cover rounded-2xl"
-              />
-            </div>
+            {product?.videos?.length > 0 ? (
+              <ProductVideo video={product.videos[0]} />
+            ) : (
+              <p className="text-gray-500">No product video available.</p>
+            )}
           </div>
+
+
         </div>
       </div>
     </div>
