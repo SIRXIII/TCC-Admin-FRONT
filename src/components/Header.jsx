@@ -46,7 +46,7 @@ const Header = ({ toggleSidebar }) => {
             className="flex items-center gap-2 focus:outline-none"
           >
             <img
-              src={profile}
+              src={user?.profile_photo}
               alt="Profile"
               className="w-12 h-12 rounded-[10px]"
             />
@@ -57,10 +57,10 @@ const Header = ({ toggleSidebar }) => {
                 {user?.email}
               </span>
             </span>
-            <ChevronDown className="w-4.5 h-4.5 text-gray-600" strokeWidth={2.5} />
+            {/* <ChevronDown className="w-4.5 h-4.5 text-gray-600" strokeWidth={2.5} /> */}
           </button>
 
-          {showDropdown && (
+          {/* {showDropdown && (
             <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded shadow-md z-10">
               <a
                 href="#"
@@ -76,7 +76,7 @@ const Header = ({ toggleSidebar }) => {
                 Logout
               </a>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </header>

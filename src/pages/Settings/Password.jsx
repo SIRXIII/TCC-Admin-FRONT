@@ -1,8 +1,13 @@
 import React, { useState } from "react";
 import { FiEye } from "react-icons/fi";
 import EyeOff from "../../assets/SVG/password-hidden.svg";
+import API from "../../services/api";
+import { toast } from "react-toastify";
 
 const Password = () => {
+  const currentUser = JSON.parse(localStorage.getItem("auth_user")) || {};
+
+
   const [formData, setFormData] = useState({
     oldpassword: "",
     newpassword: "",
@@ -13,12 +18,53 @@ const Password = () => {
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleDiscard = () => {
+    setFormData({
+      oldpassword: "",
+      newpassword: "",
+      confirmpassword: "",
+    });
+ 
+   
+  };
+
+  const handleSave = async () => {
+ 
+   
+
+    if (formData.newpassword !== formData.confirmpassword) {
+      setError("New password and confirm password do not match.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await API.post("/user/update-password", {
+        user_id: currentUser.id,
+        oldpassword: formData.oldpassword,
+        newpassword: formData.newpassword,
+        confirmpassword: formData.confirmpassword,
+      });
+
+      if (response.status === 200) {
+       
+        toast.success("Password updated successfully!")
+        handleDiscard();
+      }
+    } catch (err) {
+      console.log(err.response?.data || err);
+      
+      toast.error("Something went wrong!")
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -47,8 +93,17 @@ const Password = () => {
             >
               Old Password
             </label>
+            <button
+              type="button"
+              onClick={() => setShowOld(!showOld)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            >
+              {showOld ? <img src={EyeOff} alt="Hide password" className="w-5 h-5" /> : <FiEye size={20} />}
+            </button>
           </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* New Password */}
             <div className="relative">
               <input
                 type={showNew ? "text" : "password"}
@@ -72,14 +127,11 @@ const Password = () => {
                 onClick={() => setShowNew(!showNew)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               >
-                {showNew ? (
-                  <img src={EyeOff} alt="Hide password" className="w-5 h-5" />
-                ) : (
-                  <FiEye size={20} />
-                )}
+                {showNew ? <img src={EyeOff} alt="Hide password" className="w-5 h-5" /> : <FiEye size={20} />}
               </button>
             </div>
 
+            {/* Confirm Password */}
             <div className="relative">
               <input
                 type={showConfirm ? "text" : "password"}
@@ -103,22 +155,28 @@ const Password = () => {
                 onClick={() => setShowConfirm(!showConfirm)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               >
-                {showConfirm ? (
-                  <img src={EyeOff} alt="Hide password" className="w-5 h-5" />
-                ) : (
-                  <FiEye size={20} />
-                )}
+                {showConfirm ? <img src={EyeOff} alt="Hide password" className="w-5 h-5" /> : <FiEye size={20} />}
               </button>
             </div>
           </div>
         </div>
 
+        {/* Actions */}
         <div className="flex justify-end gap-2">
-          <button className="border border-[#F77F00] bg-[#FEF2E6] rounded-lg p-3 gp-2 fw6 text-xs justify-center text-[#F77F00] hover:bg-[#F77F00] hover:text-[#FFFFFF]">
+          <button
+            type="button"
+            onClick={handleDiscard}
+            className="border border-[#F77F00] bg-[#FEF2E6] rounded-lg p-3 gap-2 fw6 text-xs text-[#F77F00] hover:bg-[#F77F00] hover:text-[#FFFFFF]"
+          >
             Discard
           </button>
-          <button className="border border-[#F77F00] bg-[#FEF2E6] rounded-lg p-3 gp-2 fw6 text-xs justify-center text-[#F77F00] hover:bg-[#F77F00] hover:text-[#FFFFFF]">
-            Save Changes
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={loading}
+            className="border border-[#F77F00] bg-[#FEF2E6] rounded-lg p-3 gap-2 fw6 text-xs text-[#F77F00] hover:bg-[#F77F00] hover:text-[#FFFFFF] disabled:opacity-50"
+          >
+            {loading ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </div>
