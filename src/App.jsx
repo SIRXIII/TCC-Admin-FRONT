@@ -9,11 +9,13 @@ import Riders from "./pages/Riders/Riders";
 import Products from "./pages/Products/Products";
 import Orders from "./pages/Orders/Orders";
 
+import Settings from "./pages/Settings/Settings";
+
+
 import Support from "./pages/Support/Support";
 
 import Refunds from "./pages/Refunds/Refunds";
 
-import Settings from "./pages/Settings";
 import TravelerProfile from "./pages/Travelers/TravelerProfile";
 import { AuthProvider } from "./context/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
