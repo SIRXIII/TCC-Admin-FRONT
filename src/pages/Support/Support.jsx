@@ -1,17 +1,38 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { FiChevronDown, FiSearch } from "react-icons/fi";
 import Eye from "../../assets/SVG/eyeorange.svg";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../../components/Pagination";
-import ticketsData from "../../data/ticketsData";
 import DefaultProfile from "../../assets/Images/rid_profile.jpg";
+import API from "../../services/api";
 
 const Support = () => {
   const navigate = useNavigate();
+
+  const [supportTickets, setSupportTickets] = useState([]);
   const [selected, setSelected] = useState([]);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        setLoading(true);
+        const res = await API.get("/support-tickets");
+        if (res.data.success) {
+          setSupportTickets(res.data.data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch support tickets:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTickets();
+  }, []);
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
@@ -40,15 +61,21 @@ const Support = () => {
     }
   };
 
+  // ✅ Use backend field names directly
   const filteredTickets = useMemo(() => {
-    return ticketsData.filter(
-      (t) =>
-        t.ticketId.toLowerCase().includes(search.toLowerCase()) ||
-        t.name.toLowerCase().includes(search.toLowerCase()) ||
-        t.email.toLowerCase().includes(search.toLowerCase()) ||
-        t.subject.toLowerCase().includes(search.toLowerCase())
-    );
-  }, [search]);
+    return supportTickets.filter((t) => {
+      const ticketId = t.ticket_id || "";
+      const name = t.userType?.name || "";
+      const email = t.userType?.email || "";
+      const subject = t.subject || "";
+      return (
+        ticketId.toLowerCase().includes(search.toLowerCase()) ||
+        name.toLowerCase().includes(search.toLowerCase()) ||
+        email.toLowerCase().includes(search.toLowerCase()) ||
+        subject.toLowerCase().includes(search.toLowerCase())
+      );
+    });
+  }, [search, supportTickets]);
 
   const paginatedTickets = useMemo(() => {
     const start = (page - 1) * perPage;
@@ -96,96 +123,104 @@ const Support = () => {
           </button>
         </div>
 
-        <table className="w-full text-left text-sm border-collapse">
-          <thead className="bg-[#F9F9F9] text-[#6C6C6C] font-medium">
-            <tr>
-              <th className="px-4 py-3">
-                <input
-                  type="checkbox"
-                  className="w-4.5 h-4.5 rounded border-[1.5px] border-[#9A9A9A]"
-                  onChange={handleSelectAll}
-                  checked={
-                    selected.length === paginatedTickets.length &&
-                    paginatedTickets.length > 0
-                  }
-                />
-              </th>
-              <th className="px-4 py-3">Ticket ID</th>
-              <th className="px-4 py-3">User Type</th>
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Subject</th>
-              <th className="px-4 py-3">Date</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">View</th>
-            </tr>
-          </thead>
-          <tbody
-            className="bg-white text-[#232323]"
-            onClick={() => navigate(`/support/chatsupport`)}
-          >
-            {paginatedTickets.map((ticket) => (
-              <tr
-                key={ticket.id}
-                className="hover:bg-[#FEF2E6] cursor-pointer transition-colors"
-              >
-                <td className="px-2.5 py-4 gap-2.5">
-                  <input
-                    type="checkbox"
-                    className="w-4.5 h-4.5 rounded border-[1.5px] border-[#9A9A9A]"
-                    checked={selected.includes(ticket.id)}
-                    onChange={() => handleSelectOne(ticket.id)}
-                  />
-                </td>
-                <td className="p-2.5  gap-2.5  ">{ticket.ticketId}</td>
-                <td className="p-2.5  gap-2.5">{ticket.userType}</td>
-                <td className="px-2.5 py-4 gap-2.5">
-                  <div className="flex items-center gap-2.5">
-                    <img
-                      src={ticket.image || DefaultProfile}
-                      alt={ticket.name}
-                      className="w-8 h-8 rounded-full object-cover"
+        {loading ? (
+          <div className="text-center p-6">Loading tickets...</div>
+        ) : (
+          <>
+            <table className="w-full text-left text-sm border-collapse">
+              <thead className="bg-[#F9F9F9] text-[#6C6C6C] font-medium">
+                <tr>
+                  <th className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      className="w-4.5 h-4.5 rounded border-[1.5px] border-[#9A9A9A]"
+                      onChange={handleSelectAll}
+                      checked={
+                        selected.length === paginatedTickets.length &&
+                        paginatedTickets.length > 0
+                      }
                     />
-                    <div className="p-0.5 flex flex-col ">
-                      <span className=" text-[#4F4F4F]">{ticket.name}</span>
-                      <span className="text-xs text-[#6C6C6C]">
-                        {ticket.email}
+                  </th>
+                  <th className="px-4 py-3">Ticket ID</th>
+                  <th className="px-4 py-3">User Type</th>
+                  <th className="px-4 py-3">Name</th>
+                  <th className="px-4 py-3">Subject</th>
+                  <th className="px-4 py-3">Date</th>
+                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3">View</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white text-[#232323]">
+                {paginatedTickets.map((ticket) => (
+                  <tr
+                    key={ticket.id}
+                    className="hover:bg-[#FEF2E6] cursor-pointer transition-colors"
+                    onClick={() => navigate(`/support/chatsupport/${ticket.id}`)}
+                  >
+                    <td className="px-2.5 py-4 gap-2.5">
+                      <input
+                        type="checkbox"
+                        className="w-4.5 h-4.5 rounded border-[1.5px] border-[#9A9A9A]"
+                        checked={selected.includes(ticket.id)}
+                        onChange={() => handleSelectOne(ticket.id)}
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </td>
+                    <td className="p-2.5">{ticket.ticket_id}</td>
+                    <td className="p-2.5">{ticket.sender.type}</td>
+                    <td className="px-2.5 py-4">
+                      <div className="flex items-center gap-2.5">
+                        <img
+                          src={ticket?.sender?.profile_photo || DefaultProfile}
+                          alt={ticket?.sender?.name}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                        <div className="p-0.5 flex flex-col">
+                          <span className=" text-[#4F4F4F]">{ticket?.sender?.name}</span>
+                          <span className="text-xs text-[#6C6C6C]">
+                            {ticket?.sender?.email}
+                          </span>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-2.5">{ticket.subject}</td>
+                    <td className="p-2.5">{ticket.created_at}</td>
+                    <td className="p-2.5">
+                      <span
+                        className={`px-3 py-1 text-xs fw5 rounded-md ${getStatusClass(
+                          ticket.status
+                        )}`}
+                      >
+                        {ticket.status}
                       </span>
-                    </div>
-                  </div>
-                </td>
-                <td className="p-2.5  gap-2.5">{ticket.subject}</td>
-                <td className="p-2.5  gap-2.5">{ticket.date}</td>
-                <td className="p-2.5  gap-2.5">
-                  <span
-                    className={`px-3 py-1 text-xs fw5 rounded-md ${getStatusClass(
-                      ticket.status
-                    )}`}
-                  >
-                    {ticket.status}
-                  </span>
-                </td>
-                <td className="p-2.5  gap-2.5">
-                  <button
-                    className="p-2.5 rounded-lg border bg-[#FEF2E6] border-[#F77F00] hover:bg-[#FEF2E6] "
-                    onClick={() => navigate(`/support/chatsupport`)}
-                  >
-                    <img src={Eye} alt="view" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                    </td>
+                    <td className="p-2.5">
+                      <button
+                        className="p-2.5 rounded-lg border bg-[#FEF2E6] border-[#F77F00] hover:bg-[#FEF2E6]"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/support/chatsupport/${ticket.id}`);
+                        }}
+                      >
+                        <img src={Eye} alt="view" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-        <Pagination
-          page={page}
-          setPage={setPage}
-          perPage={perPage}
-          setPerPage={setPerPage}
-          totalItems={filteredTickets.length}
-          options={[5, 10, 25, 50]}
-          fullWidth={true}
-        />
+            <Pagination
+              page={page}
+              setPage={setPage}
+              perPage={perPage}
+              setPerPage={setPerPage}
+              totalItems={filteredTickets.length}
+              options={[5, 10, 25, 50]}
+              fullWidth={true}
+            />
+          </>
+        )}
       </div>
     </div>
   );

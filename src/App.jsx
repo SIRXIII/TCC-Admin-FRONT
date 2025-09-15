@@ -71,10 +71,10 @@ const App = () => {
 
             <Route path="/products/productsdetail/:id" element={<ProductsDetail />} />
 
-            <Route path="/refund/refundsdetail/" element={<RefundsDetail />} />
+            <Route path="/refund/refundsdetail/:id" element={<RefundsDetail />} />
 
-//             <Route path="/products/productsdetail/" element={<ProductsDetail />} />
-            <Route path="/support/chatsupport/" element={<ChatSupport />} />
+            <Route path="/products/productsdetail/" element={<ProductsDetail />} />
+            <Route path="/support/chatsupport/:id" element={<ChatSupport />} />
 
 
 

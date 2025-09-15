@@ -8,8 +8,8 @@ import { toast } from "react-toastify";
 const ApprovedPartners = ({ paginatedPartners, openActionId, setOpenActionId }) => {
   const navigate = useNavigate();
 
-    const { mutate: statusUpdate } = useStatusUpdatePartner();
-  
+  const { mutate: statusUpdate } = useStatusUpdatePartner();
+
 
   const [selected, setSelected] = useState([]);
 
@@ -27,10 +27,10 @@ const ApprovedPartners = ({ paginatedPartners, openActionId, setOpenActionId }) 
     );
   };
 
-    const handleSuspendPartner = (id) => {
-    statusUpdate({id: id, status: "suspended" });
-    
-  } 
+  const handleSuspendPartner = (id) => {
+    statusUpdate({ id: id, status: "suspended" });
+
+  }
 
   return (
     <table className="w-full text-left text-sm leading-[150%] tracking-[-3%]">
@@ -72,11 +72,10 @@ const ApprovedPartners = ({ paginatedPartners, openActionId, setOpenActionId }) 
             <td className="px-4 py-3">{partner.location}</td>
             <td className="px-4 py-3">
               <span
-                className={`px-3 py-1 text-xs font-medium rounded-full ${
-                  partner.status === "Active"
+                className={`px-3 py-1 text-xs font-medium rounded-full ${partner.status === "Active"
                     ? "bg-green-100 text-green-700"
                     : "bg-red-100 text-red-700"
-                }`}
+                  }`}
               >
                 {partner.status}
               </span>

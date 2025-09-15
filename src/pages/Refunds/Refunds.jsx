@@ -4,13 +4,17 @@ import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DefaultProfile from "../../assets/Images/trv_profile.jpg";
 import Pagination from "../../components/Pagination";
+import { useRefunds } from "../../hooks/useRefund";
 
 const Refunds = () => {
   const navigate = useNavigate();
 
   const statusRef = useRef(null);
-  const dateRef = useRef(null);
+  // const dateRef = useRef(null);
   const actionRefs = useRef({});
+
+  const { data: refunds = [], isLoading, isError } = useRefunds();
+
 
   const [filteredRefunds, setFilteredRefunds] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -18,8 +22,8 @@ const Refunds = () => {
   const [status, setStatus] = useState("Status");
   const [statusOpen, setStatusOpen] = useState(false);
 
-  const [dateFilter, setDateFilter] = useState("Date");
-  const [dateOpen, setDateOpen] = useState(false);
+  // const [dateFilter, setDateFilter] = useState("Date");
+  // const [dateOpen, setDateOpen] = useState(false);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
@@ -27,35 +31,6 @@ const Refunds = () => {
 
   const [openActionId, setOpenActionId] = useState(null);
 
-  const refundsData = [
-    {
-      id: "REF-1001",
-      orderId: "ORD-2001",
-      traveler: { name: "Alice Johnson", email: "alice@mail.com" },
-      partner: { name: "John Partner", email: "john.partner@mail.com" },
-      date: "January 2, 2023",
-      status: "Pending",
-      total: "$120.00",
-    },
-    {
-      id: "REF-1002",
-      orderId: "ORD-2002",
-      traveler: { name: "Michael Smith", email: "michael@mail.com" },
-      partner: { name: "Sophia Carter", email: "sophia.carter@mail.com" },
-      date: "January 4, 2023",
-      status: "Processed",
-      total: "$85.00",
-    },
-    {
-      id: "REF-1003",
-      orderId: "ORD-2003",
-      traveler: { name: "Emma Brown", email: "emma@mail.com" },
-      partner: { name: "David Lee", email: "david.lee@mail.com" },
-      date: "January 5, 2023",
-      status: "Rejected",
-      total: "$60.00",
-    },
-  ];
 
   const statusColors = {
     Pending: "bg-[#E1FDFD] text-[#3E77B0]",
@@ -69,9 +44,9 @@ const Refunds = () => {
         setStatusOpen(false);
       }
 
-      if (dateRef.current && !dateRef.current.contains(event.target)) {
-        setDateOpen(false);
-      }
+      // if (dateRef.current && !dateRef.current.contains(event.target)) {
+      //   setDateOpen(false);
+      // }
 
       if (
         openActionId &&
@@ -89,7 +64,7 @@ const Refunds = () => {
   }, []);
 
   useEffect(() => {
-    let temp = [...refundsData];
+    let temp = [...refunds];
 
     if (status !== "Status") {
       temp = temp.filter(
@@ -109,7 +84,7 @@ const Refunds = () => {
 
     setFilteredRefunds(temp);
     setPage(1);
-  }, [searchTerm, status, dateFilter]);
+  }, [searchTerm, status, refunds]);
 
   const paginatedRefunds = useMemo(() => {
     const start = (page - 1) * perPage;
@@ -131,6 +106,7 @@ const Refunds = () => {
         : [...selected, id]
     );
   };
+
 
   return (
     <div className="gap-6 p-2">
@@ -163,7 +139,7 @@ const Refunds = () => {
             />
           </div>
           <div className="flex items-center gap-4">
-            <div className="relative " ref={dateRef}>
+            {/* <div className="relative " ref={dateRef}>
               <button
                 onClick={() => setDateOpen(!dateOpen)}
                 className="flex items-center justify-between border border-[#23232333] rounded-md px-3 py-1 gap-2 text-xs text-[#9A9A9A] h-[36px]"
@@ -187,7 +163,7 @@ const Refunds = () => {
                   ))}
                 </div>
               )}
-            </div>
+            </div> */}
 
             <div className="relative" ref={statusRef}>
               <button
@@ -217,7 +193,7 @@ const Refunds = () => {
           </div>
         </div>
 
-        <div className="overflow-x-auto ">
+        <div className="overflow-x-auto min-h-[400px]">
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-[#F9F9F9] text-sm uppercase text-[#6C6C6C]">
@@ -243,16 +219,19 @@ const Refunds = () => {
               </tr>
             </thead>
 
-            <tbody>
+            {/* <tbody>
               {paginatedRefunds.length === 0 ? (
+                
                 <tr>
                   <td colSpan={9} className="text-center py-4">
                     No refunds found.
                   </td>
                 </tr>
               ) : (
-                paginatedRefunds.map((r) => (
-                  <tr
+                paginatedRefunds.map((r, index) => (
+                  const isNearBottom = index >= paginatedRefunds.length - 3;
+                 return (
+                   <tr
                     key={r.id}
                     className="text-sm bg-[#FFFFFF] hover:bg-[#FEF2E6] transition-colors cursor-pointer"
                     onClick={() => navigate(`/refund/refundsdetail`)}
@@ -269,22 +248,22 @@ const Refunds = () => {
                       />
                     </td>
 
-                    <td className="px-4 py-3">{r.id}</td>
-                    <td className="px-4 py-3">{r.orderId}</td>
+                    <td className="px-4 py-3">{r.refund_id}</td>
+                    <td className="px-4 py-3">#{r.id}</td>
 
                     <td className="px-4 py-3 ">
                       <div className="flex items-center gap-3">
                         <img
-                          src={DefaultProfile}
+                          src={r?.order?.traveler_photo || DefaultProfile}
                           alt="Traveler"
                           className="w-6 h-6 rounded-full object-cover"
                         />
                         <div>
                           <p className="text-[#4F4F4F] text-sm">
-                            {r.traveler.name}
+                            {r.order?.traveler_name}
                           </p>
                           <p className="text-[#6C6C6C] text-xs">
-                            {r.traveler.email}
+                            {r.order?.traveler_email}
                           </p>
                         </div>
                       </div>
@@ -293,49 +272,52 @@ const Refunds = () => {
                     <td className="px-4 py-3 ">
                       <div className="flex items-center gap-3">
                         <img
-                          src={DefaultProfile}
+                          src={r.order?.partner_photo ||DefaultProfile}
                           alt="Partner"
                           className="w-6 h-6 rounded-full object-cover"
                         />
                         <div>
                           <p className="text-[#4F4F4F] text-sm">
-                            {r.partner.name}
+                            {r.order?.partner_name}
                           </p>
                           <p className="text-[#6C6C6C] text-xs">
-                            {r.partner.email}
+                            {r?.order?.partner_email}
                           </p>
                         </div>
                       </div>
                     </td>
 
-                    <td className="px-4 py-3">{r.date}</td>
+                    <td className="px-4 py-3">{r.requested_at}</td>
 
                     <td className="px-4 py-3">
                       <span
-                        className={`px-2 py-1 rounded-md text-xs font-medium ${
-                          statusColors[r.status] || ""
-                        }`}
+                        className={`px-2 py-1 rounded-md text-xs font-medium ${statusColors[r.status] || ""
+                          }`}
                       >
                         {r.status}
                       </span>
                     </td>
 
-                    <td className="px-4 py-3">{r.total}</td>
+                    <td className="px-4 py-3">${r.amount}</td>
                     <td
-                      className="px-4 py-3 relative"
+                      className="px-4 py-3 relative text-end"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <button
-                        className="p-2.5 rounded-lg border bg-[#FEF2E6] border-[#F77F00] text-[#F77F00]"
+                        className="p-1.5 rounded-lg border bg-[#FEF2E6] border-[#F77F00] text-[#F77F00]"
                         onClick={() =>
                           setOpenActionId(openActionId === r.id ? null : r.id)
                         }
                       >
                         <FiMoreHorizontal size={20} />
-                      </button>
+                      </button> 
 
                       {openActionId === r.id && (
-                        <div className="absolute right-0 gap-6 w-31 bg-white border border-[#00000033]  rounded-lg shadow-lg z-10 text-[#6C6C6C]">
+                        <div
+                          className={`absolute w-[140px] bg-white rounded-md shadow-[0_0_3px_#00000033] z-40 ${isNearBottom ? "bottom-full mb-1" : "top-full mt-1"
+                            } right-0`}
+                        // className="absolute right-4 gap-6 w-31 bg-white border border-[#00000033]  rounded-lg shadow-lg z-10 text-[#6C6C6C]"
+                        >
                           <button
                             className="px-4 py-2 hover:bg-[#FEF2E6] w-full text-left text-sm"
                             onClick={() =>
@@ -354,9 +336,100 @@ const Refunds = () => {
                       )}
                     </td>
                   </tr>
+                 )
                 ))
               )}
+            </tbody> */}
+            <tbody>
+              {paginatedRefunds.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="text-center py-4">
+                    No refunds found.
+                  </td>
+                </tr>
+              ) : (
+                paginatedRefunds.map((r, index) => {
+
+                  const isNearBottom = index >= paginatedRefunds.length - 2;
+
+                  return (
+                    <tr
+                      key={r.id}
+                      className="text-sm bg-[#FFFFFF] hover:bg-[#FEF2E6] transition-colors cursor-pointer"
+                      onClick={() => navigate(`/refund/refundsdetail/${r.id}`)}
+                    >
+                      {/* Checkbox */}
+                      <td
+                        className="px-4 py-3"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 rounded-lg"
+                          checked={selected.includes(r.id)}
+                          onChange={() => handleSelectOne(r.id)}
+                        />
+                      </td>
+
+                      {/* Refund Info */}
+                      <td className="px-4 py-3">{r.refund_id}</td>
+                      <td className="px-4 py-3">#{r.id}</td>
+                      <td className="px-4 py-3">{r.order?.traveler_name}</td>
+                      <td className="px-4 py-3">{r.order?.partner_name}</td>
+                      <td className="px-4 py-3">{r.requested_at}</td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`px-2 py-1 rounded-md text-xs font-medium ${statusColors[r.status] || ""
+                            }`}
+                        >
+                          {r.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">${r.amount}</td>
+
+                      {/* Action */}
+                      <td
+                        className="px-4 py-3 relative text-end"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          className="p-1.5 rounded-lg border bg-[#FEF2E6] border-[#F77F00] text-[#F77F00]"
+                          onClick={() =>
+                            setOpenActionId(openActionId === r.id ? null : r.id)
+                          }
+                        >
+                          <FiMoreHorizontal size={20} />
+                        </button>
+
+                        {openActionId === r.id && (
+                          <div
+                            className={`absolute w-[140px] bg-white  rounded-md z-5 ${isNearBottom ? "bottom-full" : "top-full"
+                              } right-4`}
+                              style={{ boxShadow: "0px 0px 3px 0px #00000033" }}
+                          >
+                            <button
+                              className="px-4 py-2 hover:bg-[#FEF2E6] w-full text-left text-sm"
+                              onClick={() =>
+                                navigate(`/refund/refundsdetail/${r.id}`)
+                              }
+                            >
+                              View Detail
+                            </button>
+                            <button
+                              className="px-4 py-2 gap-2.5 hover:bg-[#FEF2E6] w-full text-left text-sm"
+                              onClick={() => navigate(`/support/chatsupport`)}
+                            >
+                              Chat Support
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
+
           </table>
         </div>
 

@@ -1,20 +1,68 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Paypal from "../../assets/SVG/paypal.svg";
 import { RefundData } from "../../data/RefundData";
 import backward from "../../assets/SVG/backward.svg";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+import { getRefundById } from "../../services/refundService";
+import { useStatusUpdateRefund } from "../../hooks/useRefund";
+import { toast } from "react-toastify";
 const RefundsDetail = () => {
+  const {id} = useParams();
+   const [refund, setRefund] = useState(null);
+     const { mutate: statusUpdate } = useStatusUpdateRefund();
+   
+    const fetchRefund = async () => {
+    try {
+      const res = await getRefundById(id);
+      setRefund(res.data.data);
+    } catch (error) {
+      console.error("Error fetching refund data:", error);
+    }
+  };
+  
+  useEffect(() => {
+    if (id) {
+      fetchRefund();
+    }
+  }, [id]);
+
+  const customer = refund?.traveler;
+  const orderInfo = refund?.order;
+  const items = refund?.order?.items || [];
+  const partner = refund?.partner;
+  const rider = refund?.order?.rider;
+    const shippingAddress = refund?.traveler?.addresses?.find(
+    (addr) => addr?.type === "shipping"
+  );
+
+  console.log("shipping address", shippingAddress);
+
+  const billingAddress = refund?.traveler?.addresses?.find(
+    (addr) => addr?.type === "billing"
+  );
+
   const {
-    orderInfo,
-    items,
     transactions,
-    customer,
-    partner,
-    rider,
-    contact,
-    shippingAddress,
-    billingAddress,
   } = RefundData;
+
+   const handleRefundStatus = (refundId, status) => {
+  
+        statusUpdate(
+          { id: refundId, status: status },
+          {
+            onSuccess: () => {
+              toast.success(
+                `Refund ${status} successfully!`
+              );
+              fetchRefund();
+            },
+            onError: () => {
+              toast.error("Failed to update refund status");
+            },
+          }
+        
+        );
+      };
 
   return (
     <div className="flex flex-col p-2">
@@ -37,19 +85,21 @@ const RefundsDetail = () => {
                 />
               </Link>
               <span className="text-2xl fw6 font-roboto text-[#232323]">
-                REF-1001
+                {refund?.refund_id}
               </span>
             </div>
           </div>
 
           <div className="flex gap-3">
             <button
+            onClick={() => handleRefundStatus(refund?.id, "Rejected")}
               type="button"
               className="border border-[#F77F00] bg-[#FEF2E6] rounded-lg py-3 px-4 gap-2 text-xs text-[#F77F00] hover:bg-[#F77F00] hover:text-white"
             >
               Reject
             </button>
             <button
+            onClick={() => handleRefundStatus(refund?.id, "Processed")}
               type="submit"
               className="border border-[#F77F00] rounded-lg py-3 px-4 gap-2  text-xs bg-[#FEF2E6] text-[#F77F00] hover:bg-[#F77F00] hover:text-white"
             >
@@ -62,13 +112,13 @@ const RefundsDetail = () => {
           <div className="flex justify-between">
             <div className="flex items-center gap-2.5">
               <img
-                src={customer.img}
-                alt={customer.name}
+                src={customer?.profile_photo }
+                alt={customer?.name}
                 className="w-10 h-10 rounded-xl object-cover"
               />
               <div>
-                <p className="text-sm fw6 text-[#232323]">{customer.name}</p>
-                <p className="text-xs fw4 text-[#6C6C6C]">{customer.email}</p>
+                <p className="text-sm fw6 text-[#232323]">{customer?.name}</p>
+                <p className="text-xs fw4 text-[#6C6C6C]">{customer?.email}</p>
               </div>
             </div>
             <div className="flex justify-center gap-2">
@@ -81,24 +131,27 @@ const RefundsDetail = () => {
             </div>
           </div>
           <div className="flex flex-col md:flex-row gap-6">
+            {refund?.reason && (
             <div className="flex flex-col flex-1 gap-6 ">
               <h3 className="text-lg fw6 text-[#232323] ">Reason for refund</h3>
-              <p className="text-sm fw4 text-[#4F4F4F] ">{customer.reason}</p>
+              <p className="text-sm fw4 text-[#4F4F4F] ">{refund?.reason}</p>
             </div>
-
-            <div className="flex flex-col  flex-1 gap-6">
+            )}
+            {refund?.images.length > 0 && (
+             <div className="flex flex-col  flex-1 gap-6">
               <h3 className="text-lg fw6 text-[#232323] ">Evidence Images</h3>
               <div className="flex gap-3 flex-wrap">
-                {customer.evidence?.map((img, index) => (
+                {refund?.images?.map((img, index) => (
                   <img
                     key={index}
-                    src={img}
+                    src={img.image_path}
                     alt={`Evidence ${index + 1}`}
                     className="w-25 h-25 rounded-[11.63px] border-[0.36px] border-[#BBBBBB] object-cover"
                   />
                 ))}
               </div>
             </div>
+            )}
           </div>
         </div>
 
@@ -112,25 +165,25 @@ const RefundsDetail = () => {
                 <div className="flex flex-cols-5 justify-between text-sm text-[#9A9A9A] fw5 gap-2 ">
                   <div className="flex flex-col gap-2">
                     <p className="">Date</p>
-                    <p className="text-[#232323]">{orderInfo.date}</p>
+                    <p className="text-[#232323]">{orderInfo?.created_at}</p>
                   </div>
                   <div className=" flex flex-col gap-2 ">
                     <p className="">Items</p>
-                    <p className="text-[#232323]">{orderInfo.items}</p>
+                    <p className="text-[#232323]">{orderInfo?.items_count}</p>
                   </div>
                   <div className=" flex flex-col gap-2 ">
                     <p className="">ETA</p>
-                    <p className="text-[#232323]">{orderInfo.eta}</p>
+                    <p className="text-[#232323]">{orderInfo?.eta}</p>
                   </div>
                   <div className=" flex flex-col gap-2 ">
                     <p className=" ">Status</p>
                     <span className="bg-[#E1FDFD] text-[#3E77B0] text-xs px-3 py-1 rounded-md">
-                      {orderInfo.status}
+                      {orderInfo?.status}
                     </span>
                   </div>
                   <div className=" flex flex-col gap-2 ">
                     <p className="">Total</p>
-                    <p className="text-[#232323]">${orderInfo.total}</p>
+                    <p className="text-[#232323]">${orderInfo?.total_price}</p>
                   </div>
                 </div>
               </div>
@@ -146,14 +199,14 @@ const RefundsDetail = () => {
                         <tr key={idx} className=" ">
                           <td className="flex items-center gap-2.5 p-2.5">
                             <img
-                              src={item.img}
-                              alt={item.name}
+                              src={item.product_image}
+                              alt={item.product_name}
                               className="w-12 h-12 rounded-xl object-cover"
                             />
-                            <p>{item.name}</p>
+                            <p>{item.product_name}</p>
                           </td>
                           <td className="gap-2.5 p-2.5 text-right align-middle">${item.price}</td>
-                          <td className="gap-2.5 p-2.5 text-right align-middle">{item.qty}</td>
+                          <td className="gap-2.5 p-2.5 text-right align-middle">{item.quantity}</td>
                           <td className="gap-2.5 p-2.5 text-right align-middle">
                             ${item.total}
                           </td>
@@ -165,11 +218,11 @@ const RefundsDetail = () => {
                 <div className="p-6 gap-3 text-sm shadow-sm rounded-2xl bg-[#F9F9F9] fw5 text-[#232323] leading-[150%] tracking-[-3%]">
                   <div className="flex justify-between border-b border-[#D9D9D9] ">
                     <p>Subtotal</p>
-                    <p>$1277.7</p>
+                    <p>${refund?.order?.total_price}</p>
                   </div>
                   <div className="flex justify-between">
                     <p>Total</p>
-                    <p>$1202.7</p>
+                    <p>${refund?.order?.total_price}</p>
                   </div>
                 </div>
               </div>
@@ -196,7 +249,7 @@ const RefundsDetail = () => {
                   </div>
                   <div className="text-[#9A9A9A] ">
                     <p>Total</p>
-                    <p className="text-[#232323]">${transactions.total}</p>
+                    <p className="text-[#232323]">${refund?.order?.total_price}</p>
                   </div>
                 </div>
               </div>
@@ -207,45 +260,68 @@ const RefundsDetail = () => {
                 <h2 className="text-lg fw6  text-[#232323]">Partner</h2>
                 <div className="flex items-center gap-2.5">
                   <img
-                    src={partner.img}
-                    alt={partner.name}
+                    src={partner?.profile_photo}
+                    alt={partner?.name}
                     className="w-10 h-10 rounded-xl object-cover"
                   />
                   <div>
-                    <p className="fw6 text-sm text-[#232323]">{partner.name}</p>
-                    <p className="text-xs text-[#6C6C6C]">{partner.email}</p>
+                    <p className="fw6 text-sm text-[#232323]">{partner?.name}</p>
+                    <p className="text-xs text-[#6C6C6C]">{partner?.email}</p>
                   </div>
                 </div>
                 <p className="w-[314px] text-xs text-[#232323]">
-                  {partner.address}
+                  {partner?.address}
                 </p>
               </div>
               <div className="flex flex-col bg-white p-6 gap-6 rounded-lg shadow-sm">
                 <h2 className="text-lg fw6  text-[#232323]">Rider</h2>
                 <div className="flex items-center gap-2.5">
                   <img
-                    src={rider.img}
-                    alt={rider.name}
+                    src={rider?.profile_photo}
+                    alt={rider?.name}
                     className="w-10 h-10 rounded-xl object-cover"
                   />
                   <div>
-                    <p className="text-sm fw6 text-[#232323]">{rider.name}</p>
-                    <p className="text-xs fw4 text-[#6C6C6C]">{rider.email}</p>
+                    <p className="text-sm fw6 text-[#232323]">{rider?.name}</p>
+                    <p className="text-xs fw4 text-[#6C6C6C]">{rider?.email}</p>
                   </div>
                 </div>
                 <p className="w-[314px] text-xs text-[#232323]">
-                  {rider.address}
+                  {rider?.address}
                 </p>
               </div>
 
               <div className="flex flex-col bg-white p-6 gap-6 rounded-lg shadow-sm">
                 <h2 className="text-lg fw6 text-[#232323]">Contact Person</h2>
-                <p className="fw5 text-sm text-[#232323]">{contact.name}</p>
-                <p className="text-sm fw4 text-[#232323]">{contact.email}</p>
-                <p className="text-sm fw4 text-[#6C6C6C] ">{contact.phone}</p>
+                <p className="fw5 text-sm text-[#232323]">{customer?.name}</p>
+                <p className="text-sm fw4 text-[#232323]">{customer?.email}</p>
+                <p className="text-sm fw4 text-[#6C6C6C] ">{customer?.phone}</p>
               </div>
 
-              <div className="flex flex-col bg-white p-6 gap-6 rounded-lg shadow-sm">
+{shippingAddress ? (
+                <div className="flex flex-col bg-white p-6 gap-6 rounded-lg shadow-sm">
+                  <h2 className="text-lg fw6 text-[#232323]">Shipping Address</h2>
+                  <p className="fw5 text-sm text-[#232323]">{shippingAddress?.name}</p>
+                  <p className="text-sm fw4 text-[#232323]">
+                    {shippingAddress?.address}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">No shipping address available</p>
+              )}
+
+              {billingAddress ? (
+                <div className="flex flex-col bg-white p-6 gap-6 rounded-lg shadow-sm">
+                  <h2 className="text-lg fw6 text-[#232323]">Billing Address</h2>
+                  <p className="fw5 text-sm text-[#232323]">{billingAddress?.name}</p>
+                  <p className="text-sm fw4 text-[#232323]">
+                    {billingAddress?.address}
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">No shipping address available</p>
+              )}
+              {/* <div className="flex flex-col bg-white p-6 gap-6 rounded-lg shadow-sm">
                 <h2 className="text-lg fw6 text-[#232323]">Shipping Address</h2>
                 <p className="fw5 text-sm text-[#232323]">
                   {shippingAddress.name}
@@ -263,7 +339,7 @@ const RefundsDetail = () => {
                 <p className="text-sm fw4 text-[#232323]">
                   {billingAddress.address}
                 </p>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
