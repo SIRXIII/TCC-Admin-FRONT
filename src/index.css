@@ -56,7 +56,7 @@ input:-webkit-autofill {
   background-color: #999;
 }
 input[type="checkbox"] {
-  accent-color: #CA4E2E; /* your custom color */
+  accent-color: #CA4E2E; 
 }
 
 

@@ -24,8 +24,8 @@ const Partners = () => {
   const [perPageSuspended, setPerPageSuspended] = useState(10);
 
   const [openActionId, setOpenActionId] = useState(null);
-  // const [loading, setLoading] = useState(true);
-  const [open, setOpen] = useState(false);
+
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const currentData = partners?.[activeTab];
 
@@ -59,22 +59,46 @@ const Partners = () => {
         : setPerPageSuspended;
 
 
-  const filteredPartners = (currentData || []).filter((partner) => {
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+      }
+      return { key, direction: "asc" };
+    });
+  };
 
-    const fullName = `${partner.name ?? ""}`.toLowerCase();
+  const filteredPartners = useMemo(() => {
+    isLoading
+    const timer = setTimeout(() => !isLoading, 400);
+    const filtered = (currentData || []).filter((partner) => {
+      const fullName = `${partner.name ?? ""}`.toLowerCase();
+      return (
+        fullName.includes(search.toLowerCase()) ||
+        partner.email?.toLowerCase().includes(search.toLowerCase())
+      );
+    });
 
-    return (
-      fullName.includes(search.toLowerCase()) ||
-      partner.email?.toLowerCase().includes(search.toLowerCase())
-    );
-  });
+    if (!sortConfig.key) return filtered;
+
+    return [...filtered].sort((a, b) => {
+      let aVal = a[sortConfig.key] ?? "";
+      let bVal = b[sortConfig.key] ?? "";
+
+      if (typeof aVal === "string") aVal = aVal.toLowerCase();
+      if (typeof bVal === "string") bVal = bVal.toLowerCase();
+
+      if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
+      return 0;
+    });
+  }, [currentData, search, sortConfig]);
 
 
-  const totalPages = Math.ceil(filteredPartners.length / perPage);
   const paginatedPartners = useMemo(() => {
     const start = (page - 1) * perPage;
     return filteredPartners.slice(start, start + perPage);
-  }, [filteredPartners, page, perPage]);``
+  }, [filteredPartners, page, perPage]); ``
 
   return (
     <div className="flex flex-col top-[120px] left-[281px] gap-6 p-3">
@@ -123,8 +147,8 @@ const Partners = () => {
         <button
           onClick={() => setActiveTab("approved")}
           className={`px-3 py-1.5 rounded-md text-sm fw5 transition ${activeTab === "approved"
-              ? "bg-orange text-white shadow"
-              : "text-gray-600"
+            ? "bg-orange text-white shadow"
+            : "text-gray-600"
             }`}
         >
           Approved ({partners.approved.length})
@@ -132,8 +156,8 @@ const Partners = () => {
         <button
           onClick={() => setActiveTab("pending")}
           className={`px-3 py-1.5 rounded-md text-sm fw5 transition ${activeTab === "pending"
-              ? "bg-orange text-white shadow"
-              : "text-gray-600"
+            ? "bg-orange text-white shadow"
+            : "text-gray-600"
             }`}
         >
           Pending ({partners.pending.length})
@@ -141,8 +165,8 @@ const Partners = () => {
         <button
           onClick={() => setActiveTab("suspended")}
           className={`px-3 py-1.5 rounded-md text-sm fw5 transition ${activeTab === "suspended"
-              ? "bg-orange text-white shadow"
-              : "text-gray-600"
+            ? "bg-orange text-white shadow"
+            : "text-gray-600"
             }`}
         >
           Suspended ({partners.suspended.length})
@@ -172,37 +196,61 @@ const Partners = () => {
 
 
 
-        {activeTab === "approved" ? (
+        {isLoading ? (
+          <div className="flex flex-col justify-center items-center h-40 gap-2">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500"></div>
+
+
+            <p className="text-orange-500 fw5 flex items-center">
+              Loading Partners
+              <span className="flex space-x-1 ml-1 text-2xl font-bold leading-none">
+                <span className="animate-bounce">.</span>
+                <span className="animate-bounce" style={{ animationDelay: "0.2s" }}>.</span>
+                <span className="animate-bounce" style={{ animationDelay: "0.4s" }}>.</span>
+              </span>
+            </p>
+
+
+          </div>
+        ) : activeTab === "approved" ? (
           <ApprovedPartners
             paginatedPartners={paginatedPartners}
             openActionId={openActionId}
+            handleSort={handleSort}
+            sortConfig={sortConfig}
             setOpenActionId={setOpenActionId}
           />
         ) : activeTab === "pending" ? (
           <PendingPartners
             paginatedPartners={paginatedPartners}
             openActionId={openActionId}
+            handleSort={handleSort}
+            sortConfig={sortConfig}
             setOpenActionId={setOpenActionId}
           />
         ) : (
           <SuspendedPartners
             paginatedPartners={paginatedPartners}
             openActionId={openActionId}
+            handleSort={handleSort}
+            sortConfig={sortConfig}
             setOpenActionId={setOpenActionId}
           />
         )}
 
 
+        {paginatedPartners.length > 0 && (
 
-        <Pagination
-          page={page}
-          setPage={setPage}
-          perPage={perPage}
-          setPerPage={setPerPage}
-          totalItems={filteredPartners.length}
-          options={[5, 10, 25, 50]}
-          fullWidth={true}
-        />
+          <Pagination
+            page={page}
+            setPage={setPage}
+            perPage={perPage}
+            setPerPage={setPerPage}
+            totalItems={filteredPartners.length}
+            options={[5, 10, 25, 50]}
+            fullWidth={true}
+          />
+        )}
 
       </div>
     </div>

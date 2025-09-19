@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { FiMoreVertical, FiChevronDown } from "react-icons/fi";
+import { FiMoreVertical, FiChevronDown, FiArrowDown, FiArrowUp } from "react-icons/fi";
 import { Search } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -36,6 +36,8 @@ const Travelers = () => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
 
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+
   const statusColors = {
     active: "bg-[#E7F7ED] text-[#088B3A]",
     suspended: "bg-[#FCECD6] text-[#CA4E2E]",
@@ -63,11 +65,35 @@ const Travelers = () => {
     setPage(1);
   }, [searchTerm, status, travelers]);
 
+  const sortedTravelers = useMemo(() => {
+    let sortable = [...filteredTravelers];
+    if (sortConfig.key) {
+      sortable.sort((a, b) => {
+        let aVal = a[sortConfig.key];
+        let bVal = b[sortConfig.key];
+
+        if (sortConfig.key === "orders") {
+          aVal = a.order ? a.order.length : 0;
+          bVal = b.order ? b.order.length : 0;
+        }
+
+        if (typeof aVal === "string") aVal = aVal.toLowerCase();
+        if (typeof bVal === "string") bVal = bVal.toLowerCase();
+
+        if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+    return sortable;
+  }, [filteredTravelers, sortConfig]);
+
+
   const totalPages = Math.ceil(filteredTravelers.length / perPage);
   const paginatedTravelers = useMemo(() => {
     const start = (page - 1) * perPage;
-    return filteredTravelers.slice(start, start + perPage);
-  }, [filteredTravelers, page, perPage]);
+    return sortedTravelers.slice(start, start + perPage);
+  }, [sortedTravelers, page, perPage]);
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
@@ -131,8 +157,39 @@ const Travelers = () => {
     };
   }, [actionOpen]);
 
-  const [open, setOpen] = useState(false);
-  const options = [5, 10, 25, 50];
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
+      }
+      return { key, direction: "asc" };
+    });
+  };
+
+  // const getSortIndicator = (key) => {
+  //   if (sortConfig.key !== key) return "↕";
+  //   return sortConfig.direction === "asc" ? "▲" : "▼";
+  // };
+  const getSortIndicator = (key) => {
+    return (
+      <span className="inline-flex flex-row ml-1 text-xs">
+        <FiArrowUp
+          className={
+            sortConfig.key === key && sortConfig.direction === "asc"
+              ? "text-[#F77F00]"
+              : "text-gray-400"
+          }
+        />
+        <FiArrowDown
+          className={
+            sortConfig.key === key && sortConfig.direction === "desc"
+              ? "text-[#F77F00]"
+              : "text-gray-400"
+          }
+        />
+      </span>
+    );
+  };
 
   return (
     <div className="gap-6 mb-10">
@@ -199,10 +256,9 @@ const Travelers = () => {
                 onClick={() => selected.length > 0 && setBulkOpen(!bulkOpen)}
                 disabled={selected.length === 0}
                 className={`flex items-center justify-between border rounded-md px-4 py-2 text-xs w-[127px] h-[42px]
-                  ${
-                    selected.length === 0
-                      ? "bg-[#FEF2E6] text-[#F77F00] cursor-not-allowed"
-                      : "bg-[#FEF2E6] text-[#F77F00] cursor-pointer "
+                  ${selected.length === 0
+                    ? "bg-[#FEF2E6] text-[#F77F00] cursor-not-allowed"
+                    : "bg-[#FEF2E6] text-[#F77F00] cursor-pointer "
                   }`}
               >
                 {bulk}
@@ -240,19 +296,72 @@ const Travelers = () => {
                     }
                   />
                 </th>
-                <th className="px-4 py-3 text-left">Traveler Name</th>
-                <th className="px-4 py-3 text-left">Phone Number</th>
-                <th className="px-4 py-3 text-left">Orders</th>
-                <th className="px-4 py-3 text-left">Status</th>
+                <th
+                  className="px-4 py-3 text-left cursor-pointer"
+                  onClick={() => handleSort("name")}
+                >
+                  Traveler Name {getSortIndicator("name")}
+                </th>
+                <th
+                  className="px-4 py-3 text-left cursor-pointer"
+                  onClick={() => handleSort("phone")}
+                >
+                  Phone Number {getSortIndicator("phone")}
+                </th>
+                <th
+                  className="px-4 py-3 text-left cursor-pointer"
+                  onClick={() => handleSort("orders")}
+                >
+                  Orders {getSortIndicator("orders")}
+                </th>
+                <th
+                  className="px-4 py-3 text-left cursor-pointer"
+                  onClick={() => handleSort("status")}
+                >
+                  Status {getSortIndicator("status")}
+                </th>
                 <th className="px-4 py-3 text-right">Action</th>
               </tr>
             </thead>
 
             <tbody>
-              {paginatedTravelers.length === 0 ? (
+              {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-4">
-                    No travelers found.
+                  <td colSpan={6} className="text-center py-10">
+
+                    <div className="flex flex-col justify-center items-center h-40 gap-2">
+                      <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500"></div>
+                     
+
+                      <p className="text-orange-500 fw5 flex items-center">
+                        Loading Travelers
+                        <span className="flex space-x-1 ml-1 text-2xl font-bold leading-none">
+                          <span className="animate-bounce">.</span>
+                          <span className="animate-bounce" style={{ animationDelay: "0.2s" }}>.</span>
+                          <span className="animate-bounce" style={{ animationDelay: "0.4s" }}>.</span>
+                        </span>
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : paginatedTravelers.length === 0 ? (
+
+
+                <tr>
+                  <td colSpan={7} className="h-[200px]">
+                    <div className="flex flex-col items-center justify-center h-full text-centerp-6">
+
+
+
+                      <p className="text-orange-500 font-semibold text-lg">
+                        No travelers found.
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Try adjusting filters or check back later.
+                      </p>
+
+
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -295,9 +404,8 @@ const Travelers = () => {
                     </td>
                     <td className="px-4 py-3 text-[#232323]">
                       <span
-                        className={`px-2 py-1 rounded-md text-xs font-medium ${
-                          statusColors[t.status.toLowerCase()]
-                        }`}
+                        className={`px-2 py-1 rounded-md text-xs font-medium ${statusColors[t.status.toLowerCase()]
+                          }`}
                       >
                         {t.status}
                       </span>
@@ -321,14 +429,13 @@ const Travelers = () => {
                         {actionOpen === t.id && (
                           <div
                             className={`absolute w-32 bg-white border border-[#D9D9D9] rounded-md shadow-lg z-40 
-                ${
-                  [
-                    paginatedTravelers[paginatedTravelers.length - 1].id,
-                    paginatedTravelers[paginatedTravelers.length - 2].id,
-                  ].includes(t.id)
-                    ? "bottom-full mb-0.5"
-                    : "top-full mt-0.5"
-                }
+                ${[
+                                paginatedTravelers[paginatedTravelers.length - 1].id,
+                                paginatedTravelers[paginatedTravelers.length - 2].id,
+                              ].includes(t.id)
+                                ? "bottom-full mb-0.5"
+                                : "top-full mt-0.5"
+                              }
                 right-0`}
                           >
                             <Link
@@ -366,15 +473,21 @@ const Travelers = () => {
         </div>
 
 
-     
+
+
+
+        {paginatedTravelers.length > 0 && (
+
           <Pagination
-    page={page}
-    setPage={setPage}
-    perPage={perPage}
-    setPerPage={setPerPage}
-    totalItems={filteredTravelers.length}
-    fullWidth={true}
-  />
+            page={page}
+            setPage={setPage}
+            perPage={perPage}
+            setPerPage={setPerPage}
+            totalItems={filteredTravelers.length}
+            options={[5, 10, 25, 50]}
+            fullWidth={true}
+          />
+        )}
 
       </div>
     </div>

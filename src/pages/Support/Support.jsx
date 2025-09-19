@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { FiChevronDown, FiSearch } from "react-icons/fi";
+import React, { useState, useEffect, useMemo } from "react";
+import { FiChevronDown, FiSearch, FiArrowUp, FiArrowDown } from "react-icons/fi";
 import Eye from "../../assets/SVG/eyeorange.svg";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../../components/Pagination";
@@ -15,7 +15,9 @@ const Support = () => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [loading, setLoading] = useState(true);
+  const [sortConfig, setSortConfig] = useState({ key: "date", direction: "desc" });
 
+  // Fetch tickets
   useEffect(() => {
     const fetchTickets = async () => {
       try {
@@ -61,12 +63,39 @@ const Support = () => {
     }
   };
 
-  // ✅ Use backend field names directly
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const renderSortIcon = (key) => (
+    <span className="inline-flex flex-row ml-1">
+      <FiArrowUp
+        className={
+          sortConfig.key === key && sortConfig.direction === "asc"
+            ? "text-[#F77F00]"
+            : "text-gray-400"
+        }
+      />
+      <FiArrowDown
+        className={
+          sortConfig.key === key && sortConfig.direction === "desc"
+            ? "text-[#F77F00]"
+            : "text-gray-400"
+        }
+      />
+    </span>
+  );
+
+  // Filter + sort tickets
   const filteredTickets = useMemo(() => {
-    return supportTickets.filter((t) => {
+    let result = supportTickets.filter((t) => {
       const ticketId = t.ticket_id || "";
-      const name = t.userType?.name || "";
-      const email = t.userType?.email || "";
+      const name = t.sender?.name || "";
+      const email = t.sender?.email || "";
       const subject = t.subject || "";
       return (
         ticketId.toLowerCase().includes(search.toLowerCase()) ||
@@ -75,8 +104,50 @@ const Support = () => {
         subject.toLowerCase().includes(search.toLowerCase())
       );
     });
-  }, [search, supportTickets]);
 
+    if (sortConfig.key) {
+      result = [...result].sort((a, b) => {
+        let valA = "";
+        let valB = "";
+
+        switch (sortConfig.key) {
+          case "ticket_id":
+            valA = a.ticket_id || "";
+            valB = b.ticket_id || "";
+            break;
+          case "name":
+            valA = a.sender?.name || "";
+            valB = b.sender?.name || "";
+            break;
+          case "subject":
+            valA = a.subject || "";
+            valB = b.subject || "";
+            break;
+          case "date":
+            valA = a.created_at || "";
+            valB = b.created_at || "";
+            break;
+          case "status":
+            valA = a.status || "";
+            valB = b.status || "";
+            break;
+          default:
+            return 0;
+        }
+
+        valA = valA.toString().toLowerCase();
+        valB = valB.toString().toLowerCase();
+
+        if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+        if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return result;
+  }, [search, supportTickets, sortConfig]);
+
+  // Pagination
   const paginatedTickets = useMemo(() => {
     const start = (page - 1) * perPage;
     return filteredTickets.slice(start, start + perPage);
@@ -84,6 +155,7 @@ const Support = () => {
 
   return (
     <div className="flex flex-col gap-6 p-3">
+      {/* Header */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center text-xs gap-1 leading-[150%] tracking-[-3%]">
           <p className="text-[#6C6C6C]">Dashboard</p>
@@ -91,16 +163,16 @@ const Support = () => {
           <p className="text-[#F77F00]">Support</p>
         </div>
         <div>
-          <h2 className="text-2xl font-roboto fw6 text-[#232323] leading-[140%] tracking-[-3%]">
-            Support Ticket
-          </h2>
-          <p className="text-[#232323] text-sm leading-[150%] tracking-[-3%]">
+          <h2 className="text-2xl font-roboto fw6 text-[#232323]">Support Ticket</h2>
+          <p className="text-[#232323] text-sm">
             View and manage all queries from the users in the platform.
           </p>
         </div>
       </div>
 
+      {/* Table */}
       <div className="bg-white rounded-lg border-color overflow-x-auto p-6 gap-6">
+        {/* Search + Status Filter */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-2">
           <div className="relative text-[#9A9A9A]">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -133,7 +205,6 @@ const Support = () => {
                   <th className="px-4 py-3">
                     <input
                       type="checkbox"
-                      className="w-4.5 h-4.5 rounded border-[1.5px] border-[#9A9A9A]"
                       onChange={handleSelectAll}
                       checked={
                         selected.length === paginatedTickets.length &&
@@ -141,12 +212,22 @@ const Support = () => {
                       }
                     />
                   </th>
-                  <th className="px-4 py-3">Ticket ID</th>
+                  <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("ticket_id")}>
+                    Ticket ID {renderSortIcon("ticket_id")}
+                  </th>
                   <th className="px-4 py-3">User Type</th>
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3">Subject</th>
-                  <th className="px-4 py-3">Date</th>
-                  <th className="px-4 py-3">Status</th>
+                  <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("name")}>
+                    Name {renderSortIcon("name")}
+                  </th>
+                  <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("subject")}>
+                    Subject {renderSortIcon("subject")}
+                  </th>
+                  <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("date")}>
+                    Date {renderSortIcon("date")}
+                  </th>
+                  <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("status")}>
+                    Status {renderSortIcon("status")}
+                  </th>
                   <th className="px-4 py-3">View</th>
                 </tr>
               </thead>
@@ -157,17 +238,16 @@ const Support = () => {
                     className="hover:bg-[#FEF2E6] cursor-pointer transition-colors"
                     onClick={() => navigate(`/support/chatsupport/${ticket.id}`)}
                   >
-                    <td className="px-2.5 py-4 gap-2.5">
+                    <td className="px-2.5 py-4">
                       <input
                         type="checkbox"
-                        className="w-4.5 h-4.5 rounded border-[1.5px] border-[#9A9A9A]"
                         checked={selected.includes(ticket.id)}
                         onChange={() => handleSelectOne(ticket.id)}
                         onClick={(e) => e.stopPropagation()}
                       />
                     </td>
                     <td className="p-2.5">{ticket.ticket_id}</td>
-                    <td className="p-2.5">{ticket.sender.type}</td>
+                    <td className="p-2.5">{ticket.sender?.type}</td>
                     <td className="px-2.5 py-4">
                       <div className="flex items-center gap-2.5">
                         <img
@@ -175,11 +255,9 @@ const Support = () => {
                           alt={ticket?.sender?.name}
                           className="w-8 h-8 rounded-full object-cover"
                         />
-                        <div className="p-0.5 flex flex-col">
-                          <span className=" text-[#4F4F4F]">{ticket?.sender?.name}</span>
-                          <span className="text-xs text-[#6C6C6C]">
-                            {ticket?.sender?.email}
-                          </span>
+                        <div className="flex flex-col">
+                          <span className="text-[#4F4F4F]">{ticket?.sender?.name}</span>
+                          <span className="text-xs text-[#6C6C6C]">{ticket?.sender?.email}</span>
                         </div>
                       </div>
                     </td>
@@ -187,16 +265,14 @@ const Support = () => {
                     <td className="p-2.5">{ticket.created_at}</td>
                     <td className="p-2.5">
                       <span
-                        className={`px-3 py-1 text-xs fw5 rounded-md ${getStatusClass(
-                          ticket.status
-                        )}`}
+                        className={`px-3 py-1 text-xs fw5 rounded-md ${getStatusClass(ticket.status)}`}
                       >
                         {ticket.status}
                       </span>
                     </td>
                     <td className="p-2.5">
                       <button
-                        className="p-2.5 rounded-lg border bg-[#FEF2E6] border-[#F77F00] hover:bg-[#FEF2E6]"
+                        className="p-2.5 rounded-lg border bg-[#FEF2E6] border-[#F77F00]"
                         onClick={(e) => {
                           e.stopPropagation();
                           navigate(`/support/chatsupport/${ticket.id}`);
@@ -210,15 +286,17 @@ const Support = () => {
               </tbody>
             </table>
 
-            <Pagination
-              page={page}
-              setPage={setPage}
-              perPage={perPage}
-              setPerPage={setPerPage}
-              totalItems={filteredTickets.length}
-              options={[5, 10, 25, 50]}
-              fullWidth={true}
-            />
+            {paginatedTickets.length > 0 && (
+              <Pagination
+                page={page}
+                setPage={setPage}
+                perPage={perPage}
+                setPerPage={setPerPage}
+                totalItems={filteredTickets.length}
+                options={[5, 10, 25, 50]}
+                fullWidth={true}
+              />
+            )}
           </>
         )}
       </div>

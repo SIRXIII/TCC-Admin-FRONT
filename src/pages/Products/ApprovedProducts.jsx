@@ -1,19 +1,19 @@
 import React, { useState } from "react";
-import { FiMoreHorizontal } from "react-icons/fi";
+import { FiArrowDown, FiArrowUp, FiMoreHorizontal } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import ProductReqInfo from "../../components/Dialogs/ProductReqInfo";
 import ActionMenu from "../../components/Partners/ActionMenu";
 import { useStatusUpdateProduct } from "../../hooks/useProducts";
 
-const ApprovedProducts = ({ paginatedProducts = [], openActionId, setOpenActionId }) => {
+const ApprovedProducts = ({ paginatedProducts = [], openActionId, setOpenActionId, handleSort, sortConfig }) => {
   const navigate = useNavigate();
   const [selected, setSelected] = useState([]);
-    const [selectedProduct, setSelectedProduct] = useState(null);
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-      const { mutate: statusUpdate } = useStatusUpdateProduct();
-    
-  
+  const { mutate: statusUpdate } = useStatusUpdateProduct();
+
+
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
@@ -29,22 +29,45 @@ const ApprovedProducts = ({ paginatedProducts = [], openActionId, setOpenActionI
     );
   };
 
-    const handleSuspendProduct = (id, status) => {
+  const handleSuspendProduct = (id, status) => {
     statusUpdate({ id: id, status: status });
 
   }
 
-    const statusColors = {
-  Pending: "bg-[#E1FDFD] text-[#3E77B0]",
-  Active: "bg-[#E7F7ED]  text-[#088B3A]",
-  Suspended: "bg-[#FCECD6] text-[#CA4E2E]",
-};
-  
+  const renderSortIcon = (key) => {
+    return (
+      <span className="inline-flex flex-row ml-1 text-xs">
+        <FiArrowUp
+          className={
+            sortConfig.key === key && sortConfig.direction === "asc"
+              ? "text-[#F77F00]"
+              : "text-gray-400"
+          }
+        />
+        <FiArrowDown
+          className={
+            sortConfig.key === key && sortConfig.direction === "desc"
+              ? "text-[#F77F00]"
+              : "text-gray-400"
+          }
+        />
+      </span>
+    );
+  };
+
+
+
+  const statusColors = {
+    Pending: "bg-[#E1FDFD] text-[#3E77B0]",
+    Active: "bg-[#E7F7ED]  text-[#088B3A]",
+    Suspended: "bg-[#FCECD6] text-[#CA4E2E]",
+  };
+
 
   return (
     <table className="w-full text-left text-sm border-collapse leading-[150%] tracking-[-3%]">
       <thead className="bg-[#F9F9F9] text-[#6C6C6C]">
-        <tr>
+        <tr className="cursor-pointer">
           <th className="px-4 py-3">
             <input
               type="checkbox"
@@ -55,21 +78,51 @@ const ApprovedProducts = ({ paginatedProducts = [], openActionId, setOpenActionI
               }
             />
           </th>
-          <th className="px-4 py-3">Product ID</th>
-          <th className="px-4 py-3">Product</th>
-          <th className="px-4 py-3">Partner Name</th>
-          <th className="px-4 py-3">Grade</th>
-          <th className="px-4 py-3">Stock</th>
-          <th className="px-4 py-3">Status</th>
-          <th className="px-4 py-3">Price</th>
+          <th className="px-4 py-3" onClick={() => handleSort("product_id")}>
+            Product ID {renderSortIcon("product_id")}
+          </th>
+
+          <th className="px-4 py-3" onClick={() => handleSort("name")}>
+            Product {renderSortIcon("name")}
+          </th>
+
+          <th className="px-4 py-3" >
+            Partner Name
+          </th>
+
+          <th className="px-4 py-3" onClick={() => handleSort("condition_grade")}>
+            Grade {renderSortIcon("condition_grade")}
+          </th>
+
+          <th className="px-4 py-3" onClick={() => handleSort("stock")}>
+            Stock {renderSortIcon("stock")}
+          </th>
+
+          <th className="px-4 py-3" onClick={() => handleSort("status")}>
+            Status {renderSortIcon("status")}
+          </th>
+
+          <th className="px-4 py-3" onClick={() => handleSort("buy_price")}>
+            Price {renderSortIcon("buy_price")}
+          </th>
           <th className="px-4 py-3">Action</th>
         </tr>
       </thead>
       <tbody className="bg-white text-[#232323]">
         {paginatedProducts.length === 0 ? (
           <tr>
-            <td colSpan="9" className="text-center py-6 text-gray-500">
-              No approved products found.
+            <td colSpan={9} className="h-[200px]">
+              <div className="flex flex-col items-center justify-center h-full text-centerp-6">
+
+                <p className="text-orange-500 font-semibold text-lg">
+                  No approved products found.
+                </p>
+                <p className="text-sm text-gray-500 mt-1">
+                  Try adjusting filters or check back later.
+                </p>
+
+
+              </div>
             </td>
           </tr>
         ) : (
@@ -122,9 +175,8 @@ const ApprovedProducts = ({ paginatedProducts = [], openActionId, setOpenActionI
 
               <td className="px-4 py-3">
                 <span
-                  className={`px-2 py-1 rounded-md text-xs font-medium ${
-                          statusColors[p.status] || "bg-gray-100 text-gray-600"
-                        }`}
+                  className={`px-2 py-1 rounded-md text-xs font-medium ${statusColors[p.status] || "bg-gray-100 text-gray-600"
+                    }`}
                 >
                   {p.status}
                 </span>
@@ -146,42 +198,42 @@ const ApprovedProducts = ({ paginatedProducts = [], openActionId, setOpenActionI
                     <FiMoreHorizontal size={20} />
                   </button>
 
-                   <ActionMenu
-                  partner={p}
-                  isOpen={openActionId === p.id}
-                  setOpenActionId={setOpenActionId}
-                  paginatedPartners={paginatedProducts}
-                  items={[
-                   
-                     {
-                      label: "View",
-                      type: "link",
-                      to: `/products/productsdetail/${p.id}`,
-                    },
-                    {
-                      label: "Accept",
-                      onClick: () => handleSuspendProduct(p.id, "accept"),
-                    },
-                    {
-                      label: "Reject",
-                      onClick: () => handleSuspendProduct(p.id, "reject"),
-                    },
-                    {
-                      label: "Request Information",
-                      onClick: (p) => {
-                        setSelectedProduct(p);
-                        setIsDialogOpen(true);
-                      },
+                  <ActionMenu
+                    partner={p}
+                    isOpen={openActionId === p.id}
+                    setOpenActionId={setOpenActionId}
+                    paginatedPartners={paginatedProducts}
+                    items={[
 
-                    },
-                  ]}
-                />
-                   <ProductReqInfo
-                  isOpen={isDialogOpen}
-                  onClose={() => setIsDialogOpen(false)}
-                  onSend={() => setIsDialogOpen(false)}
-                  product={selectedProduct}
-                />
+                      {
+                        label: "View",
+                        type: "link",
+                        to: `/products/productsdetail/${p.id}`,
+                      },
+                      {
+                        label: "Accept",
+                        onClick: () => handleSuspendProduct(p.id, "accept"),
+                      },
+                      {
+                        label: "Reject",
+                        onClick: () => handleSuspendProduct(p.id, "reject"),
+                      },
+                      {
+                        label: "Request Information",
+                        onClick: (p) => {
+                          setSelectedProduct(p);
+                          setIsDialogOpen(true);
+                        },
+
+                      },
+                    ]}
+                  />
+                  <ProductReqInfo
+                    isOpen={isDialogOpen}
+                    onClose={() => setIsDialogOpen(false)}
+                    onSend={() => setIsDialogOpen(false)}
+                    product={selectedProduct}
+                  />
                 </div>
               </td>
             </tr>

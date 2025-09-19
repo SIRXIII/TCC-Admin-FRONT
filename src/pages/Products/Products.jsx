@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { FiSearch , FiChevronDown } from "react-icons/fi";
+import { FiSearch, FiChevronDown } from "react-icons/fi";
 import ApprovedProducts from "./ApprovedProducts";
 import PendingProducts from "./PendingProducts";
 import Pagination from "../../components/Pagination";
@@ -9,8 +9,8 @@ import { useProducts } from "../../hooks/useProducts";
 const Products = () => {
 
 
-    const { data: products = { approved: [], suspended: [], pending: [] }, isLoading, isError } = useProducts();
-  
+  const { data: products = { approved: [], suspended: [], pending: [] }, isLoading, isError } = useProducts();
+
   const [activeTab, setActiveTab] = useState("approved");
   const [search, setSearch] = useState("");
   const [pageApproved, setPageApproved] = useState(1);
@@ -23,17 +23,12 @@ const Products = () => {
 
   const [openActionId, setOpenActionId] = useState(null);
 
-  // const approvedData = Array.isArray(productsData?.approved)
-  //   ? productsData.approved
-  //   : [];
-  // const pendingData = Array.isArray(productsData?.pending)
-  //   ? productsData.pending
-  //   : [];
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
-  console.log("Products Data:", products);
+
   const currentData = products?.[activeTab];
 
-  
+
   const page =
     activeTab === "approved"
       ? pageApproved
@@ -62,27 +57,59 @@ const Products = () => {
         ? setPerPagePending
         : setPerPageSuspended;
 
-  const filteredProducts = currentData.filter((p) => {
-    const name = p.productName?.toLowerCase() || "";
-    const partner = p.partnerName?.toLowerCase() || "";
-    return (
-      name.includes(search.toLowerCase()) ||
-      partner.includes(search.toLowerCase())
-    );
-  });
+  const filteredProducts = useMemo(() => {
+    return currentData.filter((p) => {
+      const name = p.productName?.toLowerCase() || "";
+      const partner = p.partnerName?.toLowerCase() || "";
+      return (
+        name.includes(search.toLowerCase()) ||
+        partner.includes(search.toLowerCase())
+      );
+    });
+  }, [currentData, search]);
 
 
-    const paginatedProducts = useMemo(() => {
-      const start = (page - 1) * perPage;
-      return filteredProducts.slice(start, start + perPage);
-    }, [filteredProducts, page, perPage]);
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const sortedProducts = useMemo(() => {
+    let sorted = [...filteredProducts];
+    if (sortConfig.key) {
+      sorted.sort((a, b) => {
+        let valA = a[sortConfig.key] ?? "";
+        let valB = b[sortConfig.key] ?? "";
 
 
+        if (!isNaN(valA) && !isNaN(valB)) {
+          return sortConfig.direction === "asc" ? valA - valB : valB - valA;
+        }
 
-  // console.log("Active Tab:", activeTab);
-  // console.log("Current Data:", currentData);
-  // console.log("Filtered Products:", filteredProducts);
-  // console.log("Paginated Products:", paginatedProducts);
+        if (sortConfig.key === "created_at") {
+          return sortConfig.direction === "asc"
+            ? new Date(valA) - new Date(valB)
+            : new Date(valB) - new Date(valA);
+        }
+
+
+        return sortConfig.direction === "asc"
+          ? valA.toString().localeCompare(valB)
+          : valB.toString().localeCompare(valA);
+      });
+    }
+    return sorted;
+  }, [filteredProducts, sortConfig]);
+
+  const paginatedProducts = useMemo(() => {
+    const start = (page - 1) * perPage;
+    return sortedProducts.slice(start, start + perPage);
+  }, [sortedProducts, page, perPage]);
+
+
 
   return (
     <div className="flex flex-col gap-6 p-3">
@@ -101,31 +128,12 @@ const Products = () => {
       </div>
 
       <div className="flex gap-4 bg-[#FEECD9] rounded-lg p-2 w-fit">
-        {/* <button
-          onClick={() => setActiveTab("approved")}
-          className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
-            activeTab === "approved"
-              ? "bg-orange text-white shadow"
-              : "text-gray-600"
-          }`}
-        >
-          Approved ({approvedData.length})
-        </button>
+        
         <button
-          onClick={() => setActiveTab("pending")}
-          className={`px-3 py-1.5 rounded-md text-sm font-medium transition ${
-            activeTab === "pending"
-              ? "bg-orange text-white shadow"
-              : "text-gray-600"
-          }`}
-        >
-          Pending ({pendingData.length})
-        </button> */}
-         <button
           onClick={() => setActiveTab("approved")}
           className={`px-3 py-1.5 rounded-md text-sm fw5 transition ${activeTab === "approved"
-              ? "bg-orange text-white shadow"
-              : "text-gray-600"
+            ? "bg-orange text-white shadow"
+            : "text-gray-600"
             }`}
         >
           Approved ({products.approved.length})
@@ -133,8 +141,8 @@ const Products = () => {
         <button
           onClick={() => setActiveTab("pending")}
           className={`px-3 py-1.5 rounded-md text-sm fw5 transition ${activeTab === "pending"
-              ? "bg-orange text-white shadow"
-              : "text-gray-600"
+            ? "bg-orange text-white shadow"
+            : "text-gray-600"
             }`}
         >
           Pending ({products.pending.length})
@@ -142,8 +150,8 @@ const Products = () => {
         <button
           onClick={() => setActiveTab("suspended")}
           className={`px-3 py-1.5 rounded-md text-sm fw5 transition ${activeTab === "suspended"
-              ? "bg-orange text-white shadow"
-              : "text-gray-600"
+            ? "bg-orange text-white shadow"
+            : "text-gray-600"
             }`}
         >
           Suspended ({products.suspended.length})
@@ -167,30 +175,56 @@ const Products = () => {
               className="pl-9 pr-2 px-4 py-2 border border-gray-300 rounded-xl text-base w-[320px] focus:outline-none"
             />
           </div>
-         
+
         </div>
 
-         {activeTab === "approved" ? (
+         {isLoading ? (
+          <div className="flex flex-col justify-center items-center h-40 gap-2">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500"></div>
+
+
+            <p className="text-orange-500 fw5 flex items-center">
+              Loading Products
+              <span className="flex space-x-1 ml-1 text-2xl font-bold leading-none">
+                <span className="animate-bounce">.</span>
+                <span className="animate-bounce" style={{ animationDelay: "0.2s" }}>.</span>
+                <span className="animate-bounce" style={{ animationDelay: "0.4s" }}>.</span>
+              </span>
+            </p>
+
+
+          </div>
+        ) : activeTab === "approved" ? (
           <ApprovedProducts
             paginatedProducts={paginatedProducts}
             openActionId={openActionId}
             setOpenActionId={setOpenActionId}
+            handleSort={handleSort}
+            sortConfig={sortConfig}
+            
           />
         ) : activeTab === "suspended" ? (
           <ApprovedProducts
             paginatedProducts={paginatedProducts}
             openActionId={openActionId}
             setOpenActionId={setOpenActionId}
+            handleSort={handleSort}
+            sortConfig={sortConfig}
           />
         ) : (
           <ApprovedProducts
             paginatedProducts={paginatedProducts}
             openActionId={openActionId}
             setOpenActionId={setOpenActionId}
+            handleSort={handleSort}
+            sortConfig={sortConfig}
           />
         )}
 
-        <Pagination
+        {paginatedProducts.length > 0 && (
+
+          
+          <Pagination
           page={page}
           setPage={setPage}
           perPage={perPage}
@@ -198,7 +232,8 @@ const Products = () => {
           totalItems={filteredProducts.length}
           options={[5, 10, 25, 50]}
           fullWidth={true}
-        />
+          />
+        )}
       </div>
     </div>
   );

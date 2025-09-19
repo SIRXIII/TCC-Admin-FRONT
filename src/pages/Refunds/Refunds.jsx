@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
-import { FiChevronDown, FiMoreHorizontal } from "react-icons/fi";
+import { FiArrowDown, FiArrowUp, FiChevronDown, FiMoreHorizontal } from "react-icons/fi";
 import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DefaultProfile from "../../assets/Images/trv_profile.jpg";
@@ -8,29 +8,19 @@ import { useRefunds } from "../../hooks/useRefund";
 
 const Refunds = () => {
   const navigate = useNavigate();
-
   const statusRef = useRef(null);
-  // const dateRef = useRef(null);
   const actionRefs = useRef({});
-
-  const { data: refunds = [], isLoading, isError } = useRefunds();
-
+  const { data: refunds = [], isLoading } = useRefunds();
 
   const [filteredRefunds, setFilteredRefunds] = useState([]);
   const [selected, setSelected] = useState([]);
-
   const [status, setStatus] = useState("Status");
   const [statusOpen, setStatusOpen] = useState(false);
-
-  // const [dateFilter, setDateFilter] = useState("Date");
-  // const [dateOpen, setDateOpen] = useState(false);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
-
   const [openActionId, setOpenActionId] = useState(null);
-
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
   const statusColors = {
     Pending: "bg-[#E1FDFD] text-[#3E77B0]",
@@ -43,11 +33,6 @@ const Refunds = () => {
       if (statusRef.current && !statusRef.current.contains(event.target)) {
         setStatusOpen(false);
       }
-
-      // if (dateRef.current && !dateRef.current.contains(event.target)) {
-      //   setDateOpen(false);
-      // }
-
       if (
         openActionId &&
         actionRefs.current[openActionId] &&
@@ -56,12 +41,9 @@ const Refunds = () => {
         setOpenActionId(null);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [openActionId]);
 
   useEffect(() => {
     let temp = [...refunds];
@@ -75,16 +57,26 @@ const Refunds = () => {
     if (searchTerm.trim() !== "") {
       temp = temp.filter(
         (r) =>
-          r.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          r.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          r.traveler.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          r.partner.name.toLowerCase().includes(searchTerm.toLowerCase())
+          r.id.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
+          r.orderId?.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
+          r.order?.traveler_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          r.order?.partner_name?.toLowerCase().includes(searchTerm.toLowerCase())
       );
+    }
+
+    if (sortConfig.key) {
+      temp.sort((a, b) => {
+        const valA = (a[sortConfig.key] || "").toString().toLowerCase();
+        const valB = (b[sortConfig.key] || "").toString().toLowerCase();
+        if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+        if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+        return 0;
+      });
     }
 
     setFilteredRefunds(temp);
     setPage(1);
-  }, [searchTerm, status, refunds]);
+  }, [searchTerm, status, refunds, sortConfig]);
 
   const paginatedRefunds = useMemo(() => {
     const start = (page - 1) * perPage;
@@ -107,23 +99,35 @@ const Refunds = () => {
     );
   };
 
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const renderSortIcon = (key) => (
+    <span className="inline-flex flex-row ml-1 text-xs">
+      <FiArrowUp
+        className={
+          sortConfig.key === key && sortConfig.direction === "asc"
+            ? "text-[#F77F00]"
+            : "text-gray-400"
+        }
+      />
+      <FiArrowDown
+        className={
+          sortConfig.key === key && sortConfig.direction === "desc"
+            ? "text-[#F77F00]"
+            : "text-gray-400"
+        }
+      />
+    </span>
+  );
 
   return (
     <div className="gap-6 p-2">
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center text-xs">
-          <p className="text-[#6C6C6C]">Dashboard</p>
-          <span className="mx-2 text-[#9A9A9A]">/</span>
-          <p className="text-[#F77F00]">Refund</p>
-        </div>
-        <div>
-          <h2 className="text-2xl font-semibold text-[#232323]">Refund</h2>
-          <p className="text-[#232323] text-sm">
-            View and manage refund orders in the platform.
-          </p>
-        </div>
-      </div>
-
       <div className="bg-[#FFFFFF] rounded-lg border-color p-6 mt-4">
         <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
           <div className="relative">
@@ -138,62 +142,34 @@ const Refunds = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <div className="flex items-center gap-4">
-            {/* <div className="relative " ref={dateRef}>
-              <button
-                onClick={() => setDateOpen(!dateOpen)}
-                className="flex items-center justify-between border border-[#23232333] rounded-md px-3 py-1 gap-2 text-xs text-[#9A9A9A] h-[36px]"
-              >
-                {dateFilter}
-                <FiChevronDown size={12} />
-              </button>
-              {dateOpen && (
-                <div className="absolute mt-1 bg-white border-color rounded-lg shadow-lg w-28 z-20">
-                  {["Newest", "Oldest"].map((d) => (
-                    <p
-                      key={d}
-                      className="px-4 py-2 hover:bg-[#FEF2E6] cursor-pointer text-sm"
-                      onClick={() => {
-                        setDateFilter(d);
-                        setDateOpen(false);
-                      }}
-                    >
-                      {d}
-                    </p>
-                  ))}
-                </div>
-              )}
-            </div> */}
-
-            <div className="relative" ref={statusRef}>
-              <button
-                onClick={() => setStatusOpen(!statusOpen)}
-                className="flex items-center justify-between border border-[#23232333] rounded-md px-3 py-1 gap-2 text-xs text-[#9A9A9A] h-[36px]"
-              >
-                {status}
-                <FiChevronDown size={12} />
-              </button>
-              {statusOpen && (
-                <div className="absolute mt-1 bg-white border-color rounded-lg shadow-lg w-28 z-20">
-                  {["Pending", "Processed", "Rejected"].map((s) => (
-                    <p
-                      key={s}
-                      className="px-4 py-2 hover:bg-[#FEF2E6] cursor-pointer text-sm"
-                      onClick={() => {
-                        setStatus(s);
-                        setStatusOpen(false);
-                      }}
-                    >
-                      {s}
-                    </p>
-                  ))}
-                </div>
-              )}
-            </div>
+          <div className="relative" ref={statusRef}>
+            <button
+              onClick={() => setStatusOpen(!statusOpen)}
+              className="flex items-center justify-between border border-[#23232333] rounded-md px-3 py-1 gap-2 text-xs text-[#9A9A9A] h-[36px]"
+            >
+              {status}
+              <FiChevronDown size={12} />
+            </button>
+            {statusOpen && (
+              <div className="absolute mt-1 bg-white border-color rounded-lg shadow-lg w-28 z-20">
+                {["Pending", "Processed", "Rejected"].map((s) => (
+                  <p
+                    key={s}
+                    className="px-4 py-2 hover:bg-[#FEF2E6] cursor-pointer text-sm"
+                    onClick={() => {
+                      setStatus(s);
+                      setStatusOpen(false);
+                    }}
+                  >
+                    {s}
+                  </p>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
-        <div className="overflow-x-auto min-h-[400px]">
+        <div className="overflow-x-auto  min-h-[200px]">
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-[#F9F9F9] text-sm uppercase text-[#6C6C6C]">
@@ -208,161 +184,78 @@ const Refunds = () => {
                     }
                   />
                 </th>
-                <th className="px-4 py-3 text-left">Refund ID</th>
-                <th className="px-4 py-3 text-left">Order ID</th>
-                <th className="px-4 py-3 text-left">Traveler Name</th>
-                <th className="px-4 py-3 text-left">Partner Name</th>
-                <th className="px-4 py-3 text-left">Date</th>
-                <th className="px-4 py-3 text-left">Status</th>
-                <th className="px-4 py-3 text-left">Total</th>
+                <th className="px-4 py-3 text-left cursor-pointer" onClick={() => handleSort("refund_id")}>
+                  Refund ID {renderSortIcon("refund_id")}
+                </th>
+                <th className="px-4 py-3 text-left cursor-pointer" onClick={() => handleSort("id")}>
+                  Order ID {renderSortIcon("id")}
+                </th>
+                <th className="px-4 py-3 text-left cursor-pointer" onClick={() => handleSort("order.traveler_name")}>
+                  Traveler Name {renderSortIcon("order.traveler_name")}
+                </th>
+                <th className="px-4 py-3 text-left cursor-pointer" onClick={() => handleSort("order.partner_name")}>
+                  Partner Name {renderSortIcon("order.partner_name")}
+                </th>
+                <th className="px-4 py-3 text-left cursor-pointer" onClick={() => handleSort("requested_at")}>
+                  Date {renderSortIcon("requested_at")}
+                </th>
+                <th className="px-4 py-3 text-left cursor-pointer" onClick={() => handleSort("status")}>
+                  Status {renderSortIcon("status")}
+                </th>
+                <th className="px-4 py-3 text-left cursor-pointer" onClick={() => handleSort("amount")}>
+                  Total {renderSortIcon("amount")}
+                </th>
                 <th className="px-4 py-3 text-right">Action</th>
               </tr>
             </thead>
-
-            {/* <tbody>
-              {paginatedRefunds.length === 0 ? (
-                
+            <tbody>
+              {isLoading ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-4">
-                    No refunds found.
+                  <td colSpan={9} className="text-center py-10">
+
+                    <div className="flex flex-col justify-center items-center h-40 gap-2">
+                      <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500"></div>
+
+
+                      <p className="text-orange-500 fw5 flex items-center">
+                        Loading Refunds
+                        <span className="flex space-x-1 ml-1 text-2xl font-bold leading-none">
+                          <span className="animate-bounce">.</span>
+                          <span className="animate-bounce" style={{ animationDelay: "0.2s" }}>.</span>
+                          <span className="animate-bounce" style={{ animationDelay: "0.4s" }}>.</span>
+                        </span>
+                      </p>
+                    </div>
                   </td>
                 </tr>
-              ) : (
-                paginatedRefunds.map((r, index) => (
-                  const isNearBottom = index >= paginatedRefunds.length - 3;
-                 return (
-                   <tr
-                    key={r.id}
-                    className="text-sm bg-[#FFFFFF] hover:bg-[#FEF2E6] transition-colors cursor-pointer"
-                    onClick={() => navigate(`/refund/refundsdetail`)}
-                  >
-                    <td
-                      className="px-4 py-3"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <input
-                        type="checkbox"
-                        className="w-4 h-4 rounded-lg"
-                        checked={selected.includes(r.id)}
-                        onChange={() => handleSelectOne(r.id)}
-                      />
-                    </td>
-
-                    <td className="px-4 py-3">{r.refund_id}</td>
-                    <td className="px-4 py-3">#{r.id}</td>
-
-                    <td className="px-4 py-3 ">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={r?.order?.traveler_photo || DefaultProfile}
-                          alt="Traveler"
-                          className="w-6 h-6 rounded-full object-cover"
-                        />
-                        <div>
-                          <p className="text-[#4F4F4F] text-sm">
-                            {r.order?.traveler_name}
-                          </p>
-                          <p className="text-[#6C6C6C] text-xs">
-                            {r.order?.traveler_email}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td className="px-4 py-3 ">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={r.order?.partner_photo ||DefaultProfile}
-                          alt="Partner"
-                          className="w-6 h-6 rounded-full object-cover"
-                        />
-                        <div>
-                          <p className="text-[#4F4F4F] text-sm">
-                            {r.order?.partner_name}
-                          </p>
-                          <p className="text-[#6C6C6C] text-xs">
-                            {r?.order?.partner_email}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td className="px-4 py-3">{r.requested_at}</td>
-
-                    <td className="px-4 py-3">
-                      <span
-                        className={`px-2 py-1 rounded-md text-xs font-medium ${statusColors[r.status] || ""
-                          }`}
-                      >
-                        {r.status}
-                      </span>
-                    </td>
-
-                    <td className="px-4 py-3">${r.amount}</td>
-                    <td
-                      className="px-4 py-3 relative text-end"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        className="p-1.5 rounded-lg border bg-[#FEF2E6] border-[#F77F00] text-[#F77F00]"
-                        onClick={() =>
-                          setOpenActionId(openActionId === r.id ? null : r.id)
-                        }
-                      >
-                        <FiMoreHorizontal size={20} />
-                      </button> 
-
-                      {openActionId === r.id && (
-                        <div
-                          className={`absolute w-[140px] bg-white rounded-md shadow-[0_0_3px_#00000033] z-40 ${isNearBottom ? "bottom-full mb-1" : "top-full mt-1"
-                            } right-0`}
-                        // className="absolute right-4 gap-6 w-31 bg-white border border-[#00000033]  rounded-lg shadow-lg z-10 text-[#6C6C6C]"
-                        >
-                          <button
-                            className="px-4 py-2 hover:bg-[#FEF2E6] w-full text-left text-sm"
-                            onClick={() =>
-                              navigate(`/refund/refundsdetail/${r.id}`)
-                            }
-                          >
-                            View Detail
-                          </button>
-                          <button
-                            className="px-4 py-2 gap-2.5 hover:bg-[#FEF2E6] w-full text-left text-sm"
-                            onClick={() => navigate(`/support/chatsupport`)}
-                          >
-                            Chat Support
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                 )
-                ))
-              )}
-            </tbody> */}
-            <tbody>
-              {paginatedRefunds.length === 0 ? (
+              ) : paginatedRefunds.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="text-center py-4">
-                    No refunds found.
+                  <td colSpan={9} className="h-[200px]">
+                    <div className="flex flex-col items-center justify-center h-full text-centerp-6">
+
+
+
+                      <p className="text-orange-500 font-semibold text-lg">
+                        No refunds found.
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Try adjusting filters or check back later.
+                      </p>
+
+
+                    </div>
                   </td>
                 </tr>
               ) : (
                 paginatedRefunds.map((r, index) => {
-
                   const isNearBottom = index >= paginatedRefunds.length - 2;
-
                   return (
                     <tr
                       key={r.id}
                       className="text-sm bg-[#FFFFFF] hover:bg-[#FEF2E6] transition-colors cursor-pointer"
                       onClick={() => navigate(`/refund/refundsdetail/${r.id}`)}
                     >
-                      {/* Checkbox */}
-                      <td
-                        className="px-4 py-3"
-                        onClick={(e) => e.stopPropagation()}
-                      >
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                         <input
                           type="checkbox"
                           className="w-4 h-4 rounded-lg"
@@ -370,48 +263,32 @@ const Refunds = () => {
                           onChange={() => handleSelectOne(r.id)}
                         />
                       </td>
-
-                      {/* Refund Info */}
                       <td className="px-4 py-3">{r.refund_id}</td>
                       <td className="px-4 py-3">#{r.id}</td>
                       <td className="px-4 py-3">{r.order?.traveler_name}</td>
                       <td className="px-4 py-3">{r.order?.partner_name}</td>
                       <td className="px-4 py-3">{r.requested_at}</td>
                       <td className="px-4 py-3">
-                        <span
-                          className={`px-2 py-1 rounded-md text-xs font-medium ${statusColors[r.status] || ""
-                            }`}
-                        >
+                        <span className={`px-2 py-1 rounded-md text-xs font-medium ${statusColors[r.status] || ""}`}>
                           {r.status}
                         </span>
                       </td>
                       <td className="px-4 py-3">${r.amount}</td>
-
-                      {/* Action */}
-                      <td
-                        className="px-4 py-3 relative text-end"
-                        onClick={(e) => e.stopPropagation()}
-                      >
+                      <td className="px-4 py-3 relative text-end" onClick={(e) => e.stopPropagation()}>
                         <button
                           className="p-1.5 rounded-lg border bg-[#FEF2E6] border-[#F77F00] text-[#F77F00]"
-                          onClick={() =>
-                            setOpenActionId(openActionId === r.id ? null : r.id)
-                          }
+                          onClick={() => setOpenActionId(openActionId === r.id ? null : r.id)}
                         >
                           <FiMoreHorizontal size={20} />
                         </button>
-
                         {openActionId === r.id && (
                           <div
-                            className={`absolute w-[140px] bg-white  rounded-md z-5 ${isNearBottom ? "bottom-full" : "top-full"
-                              } right-4`}
-                              style={{ boxShadow: "0px 0px 3px 0px #00000033" }}
+                            className={`absolute w-[140px] bg-white rounded-md z-5 ${isNearBottom ? "bottom-full" : "top-full"} right-4`}
+                            style={{ boxShadow: "0px 0px 3px 0px #00000033" }}
                           >
                             <button
                               className="px-4 py-2 hover:bg-[#FEF2E6] w-full text-left text-sm"
-                              onClick={() =>
-                                navigate(`/refund/refundsdetail/${r.id}`)
-                              }
+                              onClick={() => navigate(`/refund/refundsdetail/${r.id}`)}
                             >
                               View Detail
                             </button>
@@ -429,17 +306,21 @@ const Refunds = () => {
                 })
               )}
             </tbody>
-
           </table>
         </div>
 
-        <Pagination
-          page={page}
-          setPage={setPage}
-          perPage={perPage}
-          setPerPage={setPerPage}
-          totalItems={filteredRefunds.length}
-        />
+        {paginatedRefunds.length > 0 && (
+
+          <Pagination
+            page={page}
+            setPage={setPage}
+            perPage={perPage}
+            setPerPage={setPerPage}
+            totalItems={filteredRefunds.length}
+            options={[5, 10, 25, 50]}
+            fullWidth={true}
+          />
+        )}
       </div>
     </div>
   );

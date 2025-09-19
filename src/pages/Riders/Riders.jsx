@@ -1,12 +1,9 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import Plus from "../../assets/SVG/Plus.svg";
-import { FiChevronDown } from "react-icons/fi";
+import { FiArrowDown, FiArrowUp, FiChevronDown } from "react-icons/fi";
 import { Search } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import arrow_left from "../../assets/SVG/arrow-left.svg";
-import arrow_right from "../../assets/SVG/arrow-right.svg";
 import DefaultProfile from "../../assets/Images/trv_profile.jpg";
-import ridersData from "../../data/RidersData";
 import Rating from "../../assets/SVG/rating.svg";
 import Eye from "../../assets/SVG/eye.svg";
 import Edit from "../../assets/SVG/edit.svg";
@@ -22,7 +19,6 @@ const Riders = () => {
   const { data: riders = [], isLoading, isError } = useRiders();
 
 
-  const [filteredRiders, setFilteredRiders] = useState([]);
   const [selected, setSelected] = useState([]);
 
   const [status, setStatus] = useState("Status");
@@ -32,16 +28,17 @@ const Riders = () => {
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
 
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+
   const statusColors = {
     Online: "bg-[#E7F7ED] text-[#088B3A]",
     Offline: "bg-[#FCECD6] text-[#CA4E2E]",
   };
 
-  useEffect(() => {
+  const sortedRiders = useMemo(() => {
     let temp = [...riders];
 
     if (status !== "Status") {
-      // console.log("r.status.toLowerCase()", r.status.toLowerCase());
       temp = temp.filter(
         (r) => r.availability_status.toLowerCase() === status.toLowerCase()
       );
@@ -56,14 +53,34 @@ const Riders = () => {
       );
     }
 
-    setFilteredRiders(temp);
-    setPage(1);
-  }, [searchTerm, status, riders]);
+    if (sortConfig.key) {
+      temp = [...temp].sort((a, b) => {
+        let valA = a[sortConfig.key] ?? "";
+        let valB = b[sortConfig.key] ?? "";
+
+        
+        if (sortConfig.key === "rating" || sortConfig.key === "current_assigned_orders") {
+          valA = Number(valA);
+          valB = Number(valB);
+        }
+
+        if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+        if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return temp;
+  }, [riders, status, searchTerm, sortConfig]);
 
   const paginatedRiders = useMemo(() => {
     const start = (page - 1) * perPage;
-    return filteredRiders.slice(start, start + perPage);
-  }, [filteredRiders, page, perPage]);
+    return sortedRiders.slice(start, start + perPage);
+  }, [sortedRiders, page, perPage]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, status, sortConfig]);
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
@@ -81,11 +98,33 @@ const Riders = () => {
     );
   };
 
-  const handleBulkAction = (action) => {
-    console.log("Bulk action:", action, selected);
-    setBulk(action);
-    setBulkOpen(false);
+
+  const handleSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
   };
+
+  const renderSortIcon = (key) => (
+    <span className="inline-flex flex-row ml-1 text-xs">
+      <FiArrowUp
+        className={
+          sortConfig.key === key && sortConfig.direction === "asc"
+            ? "text-[#F77F00]"
+            : "text-gray-400"
+        }
+      />
+      <FiArrowDown
+        className={
+          sortConfig.key === key && sortConfig.direction === "desc"
+            ? "text-[#F77F00]"
+            : "text-gray-400"
+        }
+      />
+    </span>
+  );
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -93,17 +132,14 @@ const Riders = () => {
         setBulkOpen(false);
       }
 
-       if (statusRef.current && !statusRef.current.contains(event.target)) {
-      setStatusOpen(false);
-    }
+      if (statusRef.current && !statusRef.current.contains(event.target)) {
+        setStatusOpen(false);
+      }
 
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  // const [open, setOpen] = useState(false);
-  // const options = [5, 10, 25, 50];
 
   return (
     <div className="gap-6 p-2">
@@ -181,7 +217,7 @@ const Riders = () => {
         <div className="overflow-x-auto p-6">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="bg-[#F9F9F9] text-sm uppercase text-[#6C6C6C]">
+              <tr className="bg-[#F9F9F9] text-sm uppercase text-[#6C6C6C] cursor-pointer">
                 <th className="px-4 py-3 text-left">
                   <input
                     type="checkbox"
@@ -193,20 +229,62 @@ const Riders = () => {
                     }
                   />
                 </th>
-                <th className="px-4 py-3 text-left">Rider ID</th>
-                <th className="px-4 py-3 text-left">Rider Name</th>
-                <th className="px-4 py-3 text-left">Rating</th>
-                <th className="px-4 py-3 text-left">Current Orders</th>
-                <th className="px-4 py-3 text-left">Status</th>
+
+                <th className="px-4 py-3 text-left" onClick={() => handleSort("rider_id")}>
+                  Rider ID {renderSortIcon("rider_id")}
+                </th>
+                <th className="px-4 py-3 text-left" onClick={() => handleSort("name")}>
+                  Rider Name {renderSortIcon("name")}
+                </th>
+                <th className="px-4 py-3 text-left" onClick={() => handleSort("rating")}>
+                  Rating {renderSortIcon("rating")}
+                </th>
+                <th className="px-4 py-3 text-left" onClick={() => handleSort("current_assigned_orders")}>
+                  Current Orders {renderSortIcon("current_assigned_orders")}
+                </th>
+                <th className="px-4 py-3 text-left" onClick={() => handleSort("availability_status")}>
+                  Status {renderSortIcon("availability_status")}
+                </th>
                 <th className="px-4 py-3 text-right">Action</th>
               </tr>
             </thead>
 
             <tbody>
-              {paginatedRiders.length === 0 ? (
+              {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-4">
-                    No riders found.
+                  <td colSpan={7} className="text-center py-10">
+
+                    <div className="flex flex-col justify-center items-center h-40 gap-2">
+                      <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500"></div>
+
+
+                      <p className="text-orange-500 fw5 flex items-center">
+                        Loading Riders
+                        <span className="flex space-x-1 ml-1 text-2xl font-bold leading-none">
+                          <span className="animate-bounce">.</span>
+                          <span className="animate-bounce" style={{ animationDelay: "0.2s" }}>.</span>
+                          <span className="animate-bounce" style={{ animationDelay: "0.4s" }}>.</span>
+                        </span>
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : paginatedRiders.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="h-[200px]">
+                    <div className="flex flex-col items-center justify-center h-full text-centerbg-gray-50 rounded-xl border border-dashed border-gray-300 p-6">
+
+
+
+                      <p className="text-orange-500 font-semibold text-lg">
+                        No riders found.
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Try adjusting filters or check back later.
+                      </p>
+
+
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -285,14 +363,18 @@ const Riders = () => {
           </table>
         </div>
 
-        <Pagination
-          page={page}
-          setPage={setPage}
-          perPage={perPage}
-          setPerPage={setPerPage}
-          totalItems={filteredRiders.length}
-          fullWidth={true}
-        />
+        {paginatedRiders.length > 0 && (
+
+          <Pagination
+            page={page}
+            setPage={setPage}
+            perPage={perPage}
+            setPerPage={setPerPage}
+            totalItems={sortedRiders.length}
+            options={[5, 10, 25, 50]}
+            fullWidth={true}
+          />
+        )}
 
 
       </div>

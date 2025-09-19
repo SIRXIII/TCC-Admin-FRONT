@@ -44,7 +44,7 @@ useEffect(() => {
       {
         onSuccess: () => {
           toast.success(
-            `Partner ${newStatus === "accept" ? "suspended" : "activated"} successfully!`
+            `Partner ${newStatus === "accept" ? "activated" : "suspended"} successfully!`
           );
           fetchPartner();
         },

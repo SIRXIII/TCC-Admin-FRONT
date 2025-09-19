@@ -2,31 +2,75 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Search } from "lucide-react";
 import DefaultProfile from "../../../assets/Images/trv_profile.jpg";
 import Pagination from "../../../components/Pagination";
+import { FiArrowDown, FiArrowUp } from "react-icons/fi";
 
-const PartnerOrders = ({partner}) => {
+const PartnerOrders = ({ partner, isLoading }) => {
   if (!partner) return <p className="text-center py-4">No partner data found.</p>;
 
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
+
   const orders = partner.order || [];
 
   const statusColors = {
-  pending: "bg-[#E1FDFD] text-[#3E77B0]",
-  delivered: "bg-[#E7F7ED] text-[#088B3A]",
-  shipped: "bg-[#FEFCDD] text-[#B2A23F]",
-  cancelled: "bg-[#FCECD6] text-[#CA4E2E]",
-};
+    pending: "bg-[#E1FDFD] text-[#3E77B0]",
+    delivered: "bg-[#E7F7ED] text-[#088B3A]",
+    shipped: "bg-[#FEFCDD] text-[#B2A23F]",
+    cancelled: "bg-[#FCECD6] text-[#CA4E2E]",
+  };
 
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key && prev.direction === "asc") {
+        return { key, direction: "desc" };
+      }
+      return { key, direction: "asc" };
+    });
+  };
+
+  // const renderSortIcon = (key) => {
+  //   if (sortConfig.key !== key) return "↕"; // neutral arrow
+  //   return sortConfig.direction === "asc" ? "▲" : "▼"; // single arrow
+  // };
+  const renderSortIcon = (key) => (
+    <span className="inline-flex flex-row ml-1 text-xs">
+      <FiArrowUp
+        className={
+          sortConfig.key === key && sortConfig.direction === "asc"
+            ? "text-[#F77F00]"
+            : "text-gray-400"
+        }
+      />
+      <FiArrowDown
+        className={
+          sortConfig.key === key && sortConfig.direction === "desc"
+            ? "text-[#F77F00]"
+            : "text-gray-400"
+        }
+      />
+    </span>
+  );
 
   const filteredOrders = useMemo(() => {
-    return orders.filter((o) =>
+    let result = orders.filter((o) =>
       o.id.toString().includes(searchTerm.toLowerCase())
     );
-  }, [orders, searchTerm]);
 
-  
+    if (sortConfig.key) {
+      result = [...result].sort((a, b) => {
+        const valA = a[sortConfig.key] ?? "";
+        const valB = b[sortConfig.key] ?? "";
+        if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+        if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return result;
+  }, [orders, searchTerm, sortConfig]);
 
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
 
@@ -66,17 +110,46 @@ const PartnerOrders = ({partner}) => {
         <div className="overflow-x-auto overflow-y-auto min-h-[200px]">
           <table className="w-full border-collapse text-sm">
             <thead>
-              <tr className="bg-[#F9F9F9] uppercase text-[#6C6C6C]">
-                <th className="px-4 py-3 text-left">Order ID</th>
-                <th className="px-4 py-3 text-left">Partner</th>
-                <th className="px-4 py-3 text-left">Date</th>
-                <th className="px-4 py-3 text-left">Items</th>
-                <th className="px-4 py-3 text-left">Total</th>
-                <th className="px-4 py-3 text-left">Status</th>
+              <tr className="bg-[#F9F9F9] uppercase text-[#6C6C6C] cursor-pointer">
+                <th className="px-4 py-3 text-left" onClick={() => handleSort("id")}>
+                  Order ID {renderSortIcon("id")}
+                </th>
+                <th className="px-4 py-3 text-left" onClick={() => handleSort("partnerName")}>
+                  Partner {renderSortIcon("partnerName")}
+                </th>
+                <th className="px-4 py-3 text-left" onClick={() => handleSort("created_at")}>
+                  Date {renderSortIcon("created_at")}
+                </th>
+                <th className="px-4 py-3 text-left" onClick={() => handleSort("items_count")}>
+                  Items {renderSortIcon("items_count")}
+                </th>
+                <th className="px-4 py-3 text-left" onClick={() => handleSort("total_price")}>
+                  Total {renderSortIcon("total_price")}
+                </th>
+                <th className="px-4 py-3 text-left" onClick={() => handleSort("status")}>
+                  Status {renderSortIcon("status")}
+                </th>
               </tr>
             </thead>
             <tbody>
-              {currentPageData.length === 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-6">
+                    <p className="text-orange-500 font-medium flex items-center justify-center">
+                      Loading Orders
+                      <span className="flex space-x-1 ml-2 text-2xl font-bold leading-none">
+                        <span className="animate-bounce">.</span>
+                        <span className="animate-bounce" style={{ animationDelay: "0.2s" }}>
+                          .
+                        </span>
+                        <span className="animate-bounce" style={{ animationDelay: "0.4s" }}>
+                          .
+                        </span>
+                      </span>
+                    </p>
+                  </td>
+                </tr>
+              ) : currentPageData.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="text-center py-4 text-[#6C6C6C]">
                     No orders found.
@@ -100,9 +173,9 @@ const PartnerOrders = ({partner}) => {
                     <td className="px-4 py-3">{o.total_price}</td>
                     <td className="px-4 py-3">
                       <span
-                        className={`px-2 py-1 rounded-md text-xs font-medium ${
-                          statusColors[o.status?.toLowerCase()] || "bg-gray-100 text-gray-600"
-                        }`}
+                        className={`px-2 py-1 rounded-md text-xs font-medium ${statusColors[o.status?.toLowerCase()] ||
+                          "bg-gray-100 text-gray-600"
+                          }`}
                       >
                         {o.status === "shipped" ? "In Progress" : o.status}
                       </span>
@@ -113,16 +186,20 @@ const PartnerOrders = ({partner}) => {
             </tbody>
           </table>
         </div>
-       
-         <Pagination
-          page={currentPage}
-          setPage={setCurrentPage}
-          perPage={itemsPerPage}
-          setPerPage={setItemsPerPage}
-          totalItems={filteredOrders.length}
-          options={[5, 10, 25, 50]}
-          fullWidth={true}
-        />
+
+        {totalPages > 1 && (
+
+          <Pagination
+            page={currentPage}
+            setPage={setCurrentPage}
+            perPage={itemsPerPage}
+            setPerPage={setItemsPerPage}
+            totalItems={filteredOrders.length}
+            options={[5, 10, 25, 50]}
+            fullWidth={true}
+          />
+        )}
+
       </div>
     </div>
   );

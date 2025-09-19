@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 import { getTravelerById } from "../../services/travelerService";
 import DefaultProfile from "../../assets/Images/trv_profile.jpg";
 import Pagination from "../../components/Pagination";
+import Orders from "../../components/Orders";
 
 
 const TravelerProfile = () => {
@@ -25,7 +26,11 @@ const TravelerProfile = () => {
     fetchTraveler();
   }, [id]);
 
-  if (!traveler) return <p>Loading...</p>;
+  if (!traveler) return
+  <div className="flex flex-col items-center justify-center gap-3">
+    <div className="w-8 h-8 border-4 border-orange-400 border-t-transparent rounded-full animate-spin"></div>
+    <span className="text-orange-500 font-medium">Loading travelers...</span>
+  </div>;
 
 
 
@@ -142,7 +147,7 @@ const TravelerProfile = () => {
             <div className="grid grid-cols-2">
               <div className="flex flex-col gap-2">
                 <p className="text-sm fw6">Last Order</p>
-                <p className="fw5 text-xs text-[#9A9A9A]">{daysAgo} <span className="text-[#F77F00]">{lastOrderId ?? "#"+lastOrderId}</span></p>
+                <p className="fw5 text-xs text-[#9A9A9A]">{daysAgo} <span className="text-[#F77F00]">{lastOrderId ?? "#" + lastOrderId}</span></p>
               </div>
               <div className="flex flex-col gap-2">
                 <p className="text-sm fw6">Total Spent</p>
@@ -216,106 +221,8 @@ const TravelerProfile = () => {
 
         </div>
 
-        <div className="flex flex-col gap-6 flex-2">
-          <div className="bg-white rounded-lg border border-[#D9D9D9] p-6 gap-6 flex flex-col min-h-[400px]">
-
-            <div className="flex justify-between">
-              <h2 className="text-lg fw6 text-[#232323]">
-                Orders
-              </h2>
-              <span className="text-sm text-[#9A9A9A] ml-2">
-                Total spent <span className="text-[#4F4F4F] fw6">${traveler.total_amount_spent}</span> on {traveler.order.length} orders
-              </span>
-            </div>
-
-
-
-            <div className="relative text-[#9A9A9A] text-xs leading-[150%] tracking-[-3%]">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-2">
-                <Search size={16} />
-              </span>
-              <input
-                type="text"
-                placeholder="Search orders..."
-                className="w-full pl-8 pr-2 px-4 py-2.5 border border-[#D9D9D9] rounded-xl text-sm leading-[150%] focus:outline-none focus:border-[#F77F00]"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-
-
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead>
-                  <tr className="bg-[#F9F9F9] text-sm uppercase text-[#6C6C6C]">
-                    <th className="px-4 py-3 text-left">Order ID</th>
-                    <th className="px-4 py-3 text-left">Partner</th>
-                    <th className="px-4 py-3 text-left">Date</th>
-                    <th className="px-4 py-3 text-left">Items</th>
-                    <th className="px-4 py-3 text-left">Total</th>
-                    <th className="px-4 py-3 text-left">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentPageData.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="text-center py-4 text-[#6C6C6C]">
-                        No orders found.
-                      </td>
-                    </tr>
-                  ) : (
-                    currentPageData.map((t) => (
-                      <tr key={t.id} className="text-sm bg-[#FFFFFF]">
-
-                        <td className="px-4 py-3 leading-[150%] tracking-[-3%] h-[48px]">
-
-                          <p className="text-[#F77F00] text-xs ">#{t.id}</p>
-
-                        </td>
-                        <td className="px-4 py-3 text-[#232323] leading-[150%] tracking-[-3%] h-[48px] flex gap-2.5">
-                          <div><img src={t?.partner_photo} alt={t.partner_name || '-'} className="w-6 h-6 rounded-full object-cover object-center" onError={(e) => { e.currentTarget.src = DefaultProfile; }} /></div>
-                          <div>
-
-                            {t.partner_name || '-'}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-[#232323] leading-[150%] tracking-[-3%] h-[48px]">
-                          {t.created_at}
-                        </td>
-                        <td className="px-4 py-3 text-[#232323] leading-[150%] tracking-[-3%] h-[48px]">
-                          {t.items_count}
-                        </td>
-                        <td className="px-4 py-3 text-[#232323] leading-[150%] tracking-[-3%] h-[48px]">
-                          {t.total_price}
-                        </td>
-                        <td className="px-4 py-3 text-[#232323] leading-[150%] tracking-[-3%] h-[48px]">
-                          <span
-                            className={`px-2 py-1 rounded-md text-xs font-medium ${statusColors[t.status.toLowerCase()]
-                              }`}
-                          >
-                            {t.status}
-                          </span>
-                        </td>
-
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-
-
-            <Pagination
-              page={currentPage}
-              setPage={setCurrentPage}
-              perPage={itemsPerPage}
-              setPerPage={setItemsPerPage}
-              totalItems={filteredOrders.length}
-              fullWidth={true}
-            />
-          </div>
-        </div>
+      
+        <Orders order={traveler} />
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DefaultProfile from "../../../assets/Images/trv_profile.jpg";
 import Pagination from "../../../components/Pagination";
+import { FiArrowUp, FiArrowDown } from "react-icons/fi";
 
 const PartnerProducts = ({ partner }) => {
   const navigate = useNavigate();
@@ -13,6 +14,8 @@ const PartnerProducts = ({ partner }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
+
   const products = partner.products || [];
 
   const statusColors = {
@@ -21,15 +24,68 @@ const PartnerProducts = ({ partner }) => {
     Suspended: "bg-[#FCECD6] text-[#CA4E2E]",
   };
 
-  // 🔎 Search filter
-  const filteredProducts = useMemo(() => {
-    return products.filter((p) =>
-      p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.product_id?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [products, searchTerm]);
+  
+  const handleSort = (key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+       
+        return {
+          key,
+          direction: prev.direction === "asc" ? "desc" : "asc",
+        };
+      }
+      return { key, direction: "asc" };
+    });
+  };
 
-  // 📄 Pagination
+  const renderSortIcon = (key) => (
+    <span className="inline-flex flex-row ml-1 text-xs">
+      <FiArrowUp
+        className={
+          sortConfig.key === key && sortConfig.direction === "asc"
+            ? "text-[#F77F00]"
+            : "text-gray-400"
+        }
+      />
+      <FiArrowDown
+        className={
+          sortConfig.key === key && sortConfig.direction === "desc"
+            ? "text-[#F77F00]"
+            : "text-gray-400"
+        }
+      />
+    </span>
+  );
+
+  
+  const filteredProducts = useMemo(() => {
+    let data = [...products];
+
+    
+    data = data.filter(
+      (p) =>
+        p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.product_id?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    
+    if (sortConfig.key) {
+      data.sort((a, b) => {
+        let aVal = a[sortConfig.key];
+        let bVal = b[sortConfig.key];
+
+        if (typeof aVal === "string") aVal = aVal.toLowerCase();
+        if (typeof bVal === "string") bVal = bVal.toLowerCase();
+
+        if (aVal < bVal) return sortConfig.direction === "asc" ? -1 : 1;
+        if (aVal > bVal) return sortConfig.direction === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return data;
+  }, [products, searchTerm, sortConfig]);
+
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
   const currentPageData = useMemo(() => {
@@ -38,13 +94,13 @@ const PartnerProducts = ({ partner }) => {
   }, [filteredProducts, currentPage, itemsPerPage]);
 
   useEffect(() => {
-    setCurrentPage(1); // reset page on search/filter change
+    setCurrentPage(1); 
   }, [filteredProducts]);
 
   return (
     <div className="flex flex-col gap-6">
       <div className="bg-white rounded-lg border border-[#D9D9D9] p-6 flex flex-col gap-6 min-h-[400px]">
-        {/* Header */}
+      
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold text-[#232323]">Products</h2>
           <span className="text-sm text-[#9A9A9A]">
@@ -67,24 +123,61 @@ const PartnerProducts = ({ partner }) => {
           />
         </div>
 
-        {/* Table */}
         <div className="overflow-x-auto overflow-y-auto min-h-[200px]">
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="bg-[#F9F9F9] uppercase text-[#6C6C6C]">
-                <th className="px-4 py-3 text-left">Product ID</th>
-                <th className="px-4 py-3 text-left">Product</th>
-                <th className="px-4 py-3 text-left">Grade</th>
-                <th className="px-4 py-3 text-left">Stock</th>
+                <th
+                  className="px-4 py-3 text-left cursor-pointer"
+                  onClick={() => handleSort("product_id")}
+                >
+                  Product ID {renderSortIcon("product_id")}
+                </th>
+                <th
+                  className="px-4 py-3 text-left cursor-pointer"
+                  onClick={() => handleSort("name")}
+                >
+                  Product {renderSortIcon("name")}
+                </th>
+                <th
+                  className="px-4 py-3 text-left cursor-pointer"
+                  onClick={() => handleSort("condition_grade")}
+                >
+                  Grade {renderSortIcon("condition_grade")}
+                </th>
+                <th
+                  className="px-4 py-3 text-left cursor-pointer"
+                  onClick={() => handleSort("stock")}
+                >
+                  Stock {renderSortIcon("stock")}
+                </th>
                 <th className="px-4 py-3 text-left">Status</th>
-                <th className="px-4 py-3 text-left">Price</th>
+                <th
+                  className="px-4 py-3 text-left cursor-pointer"
+                  onClick={() => handleSort("buy_price")}
+                >
+                  Price {renderSortIcon("buy_price")}
+                </th>
               </tr>
             </thead>
             <tbody>
               {currentPageData.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="text-center py-4 text-[#6C6C6C]">
-                    No products found.
+               
+                 <tr>
+                  <td colSpan={6} className="h-[200px]">
+                    <div className="flex flex-col items-center justify-center h-full text-center bg-gray-50 rounded-xl border border-dashed border-gray-300 p-6">
+                     
+
+                   
+                      <p className="text-orange-500 font-semibold text-lg">
+                        No products found.
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Try adjusting filters or check back later.
+                      </p>
+
+                     
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -111,9 +204,8 @@ const PartnerProducts = ({ partner }) => {
 
                     <td className="px-4 py-3">
                       <span
-                        className={`px-2 py-1 rounded-md text-xs font-medium ${
-                          statusColors[p.status] || "bg-gray-100 text-gray-600"
-                        }`}
+                        className={`px-2 py-1 rounded-md text-xs font-medium ${statusColors[p.status] || "bg-gray-100 text-gray-600"
+                          }`}
                       >
                         {p.status}
                       </span>
@@ -127,16 +219,18 @@ const PartnerProducts = ({ partner }) => {
           </table>
         </div>
 
-        {/* Pagination */}
-        <Pagination
-          page={currentPage}
-          setPage={setCurrentPage}
-          perPage={itemsPerPage}
-          setPerPage={setItemsPerPage}
-          totalItems={filteredProducts.length}
-          options={[5, 10, 25, 50]}
-          fullWidth={true}
-        />
+        {totalPages > 1 && (
+
+          <Pagination
+            page={currentPage}
+            setPage={setCurrentPage}
+            perPage={itemsPerPage}
+            setPerPage={setItemsPerPage}
+            totalItems={filteredOrders.length}
+            options={[5, 10, 25, 50]}
+            fullWidth={true}
+          />
+        )}
       </div>
     </div>
   );

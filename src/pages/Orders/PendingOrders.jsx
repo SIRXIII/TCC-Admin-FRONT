@@ -3,11 +3,9 @@ import { useNavigate } from "react-router-dom";
 import Assigned from "../../assets/SVG/assigned.svg";
 import DefaultProfile from "../../assets/Images/trv_profile.jpg";
 
-
-const PendingOrders = ({ orders = [] }) => {
+const PendingOrders = ({ orders = [], handleSort, renderSortIcon }) => {
   const navigate = useNavigate();
   const [selected, setSelected] = useState([]);
-
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
@@ -23,19 +21,8 @@ const PendingOrders = ({ orders = [] }) => {
     );
   };
 
-  const handleRowClick = (e, orderId) => {
-    if (
-      e.target.tagName === "INPUT" ||
-      e.target.tagName === "BUTTON" ||
-      e.target.closest("button")
-    ) {
-      return;
-    }
-    navigate(`/orders/ordersdetail/{orderId}`);
-  };
-
   return (
-    <table className="w-full text-left text-sm leading-[150%] tracking-[-3%] ">
+    <table className="w-full text-left text-sm leading-[150%] tracking-[-3%]">
       <thead className="bg-[#F9F9F9] text-[#6C6C6C] fw5">
         <tr>
           <th className="px-4 py-3">
@@ -46,12 +33,24 @@ const PendingOrders = ({ orders = [] }) => {
               checked={selected.length === orders.length && orders.length > 0}
             />
           </th>
-          <th className="px-4 py-3">Order ID</th>
-          <th className="px-4 py-3">Traveler Name</th>
-          <th className="px-4 py-3">Partner Name</th>
-          <th className="px-4 py-3">ETA</th>
-          <th className="px-4 py-3">Date</th>
-          <th className="px-4 py-3">Total</th>
+          <th className="px-4 py-3" onClick={() => handleSort("id")}>
+            Order ID {renderSortIcon("id")}
+          </th>
+          <th className="px-4 py-3" onClick={() => handleSort("traveler.name")}>
+            Traveler Name {renderSortIcon("traveler.name")}
+          </th>
+          <th className="px-4 py-3" onClick={() => handleSort("partner.name")}>
+            Partner Name {renderSortIcon("partner.name")}
+          </th>
+          <th className="px-4 py-3" onClick={() => handleSort("eta")}>
+            ETA {renderSortIcon("eta")}
+          </th>
+          <th className="px-4 py-3" onClick={() => handleSort("created_at")}>
+            Date {renderSortIcon("created_at")}
+          </th>
+          <th className="px-4 py-3" onClick={() => handleSort("total_price")}>
+            Total {renderSortIcon("total_price")}
+          </th>
           <th className="px-4 py-3">Action</th>
         </tr>
       </thead>
@@ -61,7 +60,6 @@ const PendingOrders = ({ orders = [] }) => {
           <tr
             key={order.id}
             className="text-sm hover:bg-[#FEF2E6] transition-colors cursor-pointer"
-
             onClick={() => navigate(`/orders/ordersdetail/${order.id}`)}
           >
             <td className="px-4 py-3">
@@ -76,41 +74,40 @@ const PendingOrders = ({ orders = [] }) => {
             <td className="px-4 py-3 text-[#F77F00] fw5">#ODR-{order.id}</td>
 
             <td className="px-4 py-3">
-
               <div className="flex gap-2.5">
                 <img
-                  src={order?.traveler?.profile_photo}
+                  src={order?.traveler?.profile_photo || DefaultProfile}
                   alt="Traveler"
                   className="w-6 h-6 rounded-xl object-cover object-center"
-                  onError={(e) => {
-                    e.currentTarget.src = DefaultProfile;
-                  }}
+                  onError={(e) => (e.currentTarget.src = DefaultProfile)}
                 />
                 <div>
-                  <p className="text-[#4F4F4F] text-sm">{order.traveler?.name}</p>
-                  <p className="text-[#6C6C6C] text-xs">{order.traveler?.email}</p>
+                  <p className="text-[#4F4F4F] text-sm">
+                    {order.traveler?.name}
+                  </p>
+                  <p className="text-[#6C6C6C] text-xs">
+                    {order.traveler?.email}
+                  </p>
                 </div>
-
-
               </div>
             </td>
 
             <td className="px-4 py-3">
               <div className="flex gap-2.5">
                 <img
-                  src={order?.partner?.profile_photo}
+                  src={order?.partner?.profile_photo || DefaultProfile}
                   alt="Partner"
                   className="w-6 h-6 rounded-xl object-cover object-center"
-                  onError={(e) => {
-                    e.currentTarget.src = DefaultProfile;
-                  }}
+                  onError={(e) => (e.currentTarget.src = DefaultProfile)}
                 />
                 <div>
-                  <p className="text-[#4F4F4F] text-sm">{order.partner?.name}</p>
-                  <p className="text-[#6C6C6C] text-xs">{order.partner?.email}</p>
+                  <p className="text-[#4F4F4F] text-sm">
+                    {order.partner?.name}
+                  </p>
+                  <p className="text-[#6C6C6C] text-xs">
+                    {order.partner?.email}
+                  </p>
                 </div>
-
-
               </div>
             </td>
 
@@ -130,7 +127,6 @@ const PendingOrders = ({ orders = [] }) => {
                 Assign Rider
               </button>
             </td>
-
           </tr>
         ))}
       </tbody>
