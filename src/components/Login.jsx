@@ -23,7 +23,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("LOGIN CLICKED");
-    console.log("API_URL =", API_URL);            
+    console.log("API_URL =", VITE_API_URL);            
     setFieldErrors({});
     setError("");
     try {
