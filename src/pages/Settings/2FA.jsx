@@ -1,13 +1,24 @@
 import React, { useState } from "react";
-import API from "../../services/api"; 
+import API from "../../services/api";
 import { toast } from "react-toastify";
 
 const TwoFA = () => {
   const user = JSON.parse(localStorage.getItem("auth_user")) || {};
   const [selected, setSelected] = useState(user?.two_factor_method || "none");
   const [qrData, setQrData] = useState(null);
-  // const [setupToken, setSetupToken] = useState(null);
-  // const [otpCode, setOtpCode] = useState("");
+  const [recoveryCode, setRecoveryCode] = useState([]);
+
+  const [copied, setCopied] = useState(false);
+
+  // New states for recovery input
+  const [showRecoveryInput, setShowRecoveryInput] = useState(false);
+  const [recoveryInput, setRecoveryInput] = useState("");
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(recoveryCode.join("\n"));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleSave = async () => {
     try {
@@ -31,9 +42,29 @@ const TwoFA = () => {
     try {
       const res = await API.post("/2fa/generate-totp");
       setQrData(res.data.qr);
-      
+      setRecoveryCode(res.data.recovery_codes);
+      localStorage.setItem("auth_user", JSON.stringify(data.user));
     } catch (error) {
+      console.log("error", error);
       toast.error("Failed to generate TOTP QR code");
+    }
+  };
+
+  const handleRecoverySubmit = async () => {
+    try {
+      const res = await API.post("/2fa/verify-recovery", {
+        code: recoveryInput,
+      });
+      setQrData(res.data.qr);
+      setRecoveryCode(res.data.recovery_codes);
+      setShowRecoveryInput(false);
+      setRecoveryInput("");
+      localStorage.setItem("auth_user", JSON.stringify(data.user));
+
+      toast.success("QR regenerated successfully!");
+    } catch (error) {
+      console.log("error", error);
+      toast.error("Invalid recovery code");
     }
   };
 
@@ -50,6 +81,7 @@ const TwoFA = () => {
         <h3 className="text-lg font-semibold text-[#232323]">2FA Verification</h3>
 
         <div className="flex flex-col gap-6">
+         
           <div
             className="flex items-center p-4 rounded-lg border border-[#D9D9D9]"
             onClick={() => setSelected("totp")}
@@ -65,33 +97,82 @@ const TwoFA = () => {
               <div className="flex flex-col flex-1 gap-1.5">
                 <div className="flex justify-between items-center w-full gap-[30px]">
                   <p className="font-medium text-[#232323]">Authenticator App</p>
-                  {selected === "totp" && !qrData && (
-                    <button
-                      className="text-sm text-[#F77F00] fw6"
-                      onClick={handleGenerateTotp}
-                    >
-                      Set
-                    </button>
-                  )}
+                  {selected === "totp" &&
+                    (user?.two_factor_secret == false ? (
+                      <button
+                        className="text-sm text-[#F77F00] fw6"
+                        onClick={handleGenerateTotp}
+                      >
+                        Set
+                      </button>
+                    ) : (
+                      <button
+                        className="text-sm text-[#F77F00] fw6"
+                        onClick={() => setShowRecoveryInput(true)}
+                      >
+                        Recovery
+                      </button>
+                    ))}
                 </div>
                 <p className="text-xs text-[#4F4F4F]">
                   Use Google Authenticator or Authy for a one-time passcode.
                 </p>
 
+             
+                {showRecoveryInput && (
+                  <div className="mt-3 flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Enter recovery code"
+                      value={recoveryInput}
+                      onChange={(e) => setRecoveryInput(e.target.value)}
+                      className="border border-gray-300 rounded-md p-2 flex-1"
+                    />
+                    <button
+                      onClick={handleRecoverySubmit}
+                      className="bg-[#F77F00] text-white px-3 rounded-md"
+                    >
+                      Submit
+                    </button>
+                  </div>
+                )}
+
+            
                 {qrData && (
-                  <div className="mt-3 flex flex-col gap-2">
-                    {/* <div
-                      className="w-64 h-64"
-                      dangerouslySetInnerHTML={{ __html: qrData }}
-                    /> */}
-                    <img src={qrData} alt="QR Code" className="w-64 h-64" />
-                   
+                  <div className="mt-3 flex items-start justify-between gap-6">
+                    <div className="flex-shrink-0">
+                      <img
+                        src={qrData}
+                        alt="QR Code"
+                        className="w-64 h-64 rounded-lg shadow-md"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-2 w-64">
+                      <div className="flex justify-between items-center">
+                        <h4 className="text-sm font-semibold">Recovery Codes</h4>
+                        <button
+                          onClick={handleCopy}
+                          className="text-xs text-white bg-[#F77F00] px-2 py-1 rounded-md hover:bg-[#e06e00] relative"
+                        >
+                          {copied ? "Copied!" : "Copy"}
+                        </button>
+                      </div>
+                      <div className="bg-gray-100 p-3 rounded-md text-sm font-mono">
+                        {recoveryCode.map((code, idx) => (
+                          <p key={idx} className="mb-1">
+                            {code}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
             </div>
           </div>
 
+        
           <div
             className="flex items-center p-4 rounded-lg border border-[#D9D9D9]"
             onClick={() => setSelected("email")}
@@ -113,6 +194,7 @@ const TwoFA = () => {
             </div>
           </div>
 
+       
           <div
             className="flex items-center p-4 rounded-lg border border-[#D9D9D9]"
             onClick={() => setSelected("none")}
@@ -135,6 +217,7 @@ const TwoFA = () => {
           </div>
         </div>
 
+     
         <div className="flex justify-end gap-2">
           <button
             onClick={handleDiscard}

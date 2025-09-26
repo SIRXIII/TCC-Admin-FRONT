@@ -7,9 +7,9 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("auth_token") || null);
-  
+
   const [loading, setLoading] = useState(true);
-  const [pending2FA, setPending2FA] = useState(null); 
+  const [pending2FA, setPending2FA] = useState(null);
   const [loginToken, setLoginToken] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
@@ -33,14 +33,14 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
- 
+
   const login = async (email, password) => {
     try {
       const response = await API.post("/login", { email, password });
       const { data } = response.data;
 
       if (data?.two_factor_required) {
-      
+
         setPending2FA({
           userId: data.user_id,
           methods: data.method,
@@ -59,7 +59,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  
+
   const verify2FA = async (method, code) => {
     try {
       const response = await API.post("/two-factor/verify", {
@@ -83,15 +83,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   const completeLogin = (data) => {
-     setToken(data.token);
-            setUser(data.user);
-            localStorage.setItem("auth_token", data.token);
-            localStorage.setItem("auth_user", JSON.stringify(data.user));
-            localStorage.setItem("type", data.user.type);
+    setToken(data.token);
+    setUser(data.user);
+    localStorage.setItem("auth_token", data.token);
+    localStorage.setItem("auth_user", JSON.stringify(data.user));
+    localStorage.setItem("type", data.user.type);
 
-            API.defaults.headers.Authorization = `Bearer ${data.token}`;
+    API.defaults.headers.Authorization = `Bearer ${data.token}`;
 
-            navigate("/");
+    navigate("/");
 
   };
 
@@ -118,21 +118,21 @@ export const AuthProvider = ({ children }) => {
     if (loading) return;
 
     if (!isAuthenticated() && !pending2FA) {
-    
+
       if (location.pathname !== "/login" && location.pathname !== "/signup") {
         navigate("/login");
       }
     }
 
     if (pending2FA) {
-    
+
       if (location.pathname !== "/two-factor") {
         navigate("/two-factor");
       }
     }
 
     if (isAuthenticated()) {
-     
+
       if (location.pathname === "/login" || location.pathname === "/signup") {
         navigate(location.state?.from || "/", { replace: true });
       }
@@ -155,15 +155,10 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {loading ? (
-        <div className="flex items-center justify-center min-h-screen">
-          <p>Loading...</p>
-        </div>
-      ) : (
-        children
-      )}
+      {!loading && children}
     </AuthContext.Provider>
   );
+
 };
 
 export const useAuth = () => {

@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'Http://5.78.123.166/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://tcc-admin-back.test/api',
 });
 
 API.interceptors.request.use((config) => {
