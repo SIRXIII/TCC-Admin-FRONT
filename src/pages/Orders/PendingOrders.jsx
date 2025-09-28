@@ -61,15 +61,15 @@ const PendingOrders = ({ orders = [], handleSort, renderSortIcon }) => {
             key={order.id}
             className="text-sm hover:bg-[#FEF2E6] transition-colors cursor-pointer"
             onClick={() => navigate(`/orders/ordersdetail/${order.id}`)}
-          >
-            <td className="px-4 py-3">
-              <input
-                type="checkbox"
-                className="w-4.5 h-4.5 rounded border-[1.5px] border-[#9A9A9A]"
-                checked={selected.includes(order.id)}
-                onChange={() => handleSelectOne(order.id)}
-              />
-            </td>
+          > 
+             <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded border-gray-400"
+                  checked={selected.includes(order.id)}
+                  onChange={() => handleSelectOne(order.id)}
+                />
+              </td>
 
             <td className="px-4 py-3 text-[#F77F00] fw5">#ODR-{order.id}</td>
 

@@ -134,10 +134,26 @@ export const AuthProvider = ({ children }) => {
     if (isAuthenticated()) {
 
       if (location.pathname === "/login" || location.pathname === "/signup") {
-        navigate(location.state?.from || "/", { replace: true });
+        navigate(location.state?.from || "/", { replace: true });   
       }
     }
   }, [loading, token, user, pending2FA, location.pathname, navigate]);
+
+  useEffect(() => {
+    const interceptor = API.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          logout();
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      API.interceptors.response.eject(interceptor);
+    };
+  }, []);
 
   const value = {
     user,

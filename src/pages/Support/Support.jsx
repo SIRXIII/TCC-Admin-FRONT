@@ -17,7 +17,6 @@ const Support = () => {
   const [loading, setLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState({ key: "date", direction: "desc" });
 
-  // Fetch tickets
   useEffect(() => {
     const fetchTickets = async () => {
       try {
@@ -90,7 +89,6 @@ const Support = () => {
     </span>
   );
 
-  // Filter + sort tickets
   const filteredTickets = useMemo(() => {
     let result = supportTickets.filter((t) => {
       const ticketId = t.ticket_id || "";
@@ -147,7 +145,7 @@ const Support = () => {
     return result;
   }, [search, supportTickets, sortConfig]);
 
-  // Pagination
+  
   const paginatedTickets = useMemo(() => {
     const start = (page - 1) * perPage;
     return filteredTickets.slice(start, start + perPage);
@@ -155,7 +153,7 @@ const Support = () => {
 
   return (
     <div className="flex flex-col gap-6 p-3">
-      {/* Header */}
+    
       <div className="flex flex-col gap-4">
         <div className="flex items-center text-xs gap-1 leading-[150%] tracking-[-3%]">
           <p className="text-[#6C6C6C]">Dashboard</p>
@@ -170,9 +168,9 @@ const Support = () => {
         </div>
       </div>
 
-      {/* Table */}
+    
       <div className="bg-white rounded-lg border-color overflow-x-auto p-6 gap-6">
-        {/* Search + Status Filter */}
+      
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-2">
           <div className="relative text-[#9A9A9A]">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3">
@@ -196,7 +194,21 @@ const Support = () => {
         </div>
 
         {loading ? (
-          <div className="text-center p-6">Loading tickets...</div>
+          <div className="flex flex-col justify-center items-center h-40 gap-2">
+            <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500"></div>
+
+
+            <p className="text-orange-500 fw5 flex items-center">
+              Loading Support Tickets
+              <span className="flex space-x-1 ml-1 text-2xl font-bold leading-none">
+                <span className="animate-bounce">.</span>
+                <span className="animate-bounce" style={{ animationDelay: "0.2s" }}>.</span>
+                <span className="animate-bounce" style={{ animationDelay: "0.4s" }}>.</span>
+              </span>
+            </p>
+
+
+          </div>
         ) : (
           <>
             <table className="w-full text-left text-sm border-collapse">
@@ -205,6 +217,7 @@ const Support = () => {
                   <th className="px-4 py-3">
                     <input
                       type="checkbox"
+                      className="w-4.5 h-4.5 rounded border-[1.5px] border-[#9A9A9A]"
                       onChange={handleSelectAll}
                       checked={
                         selected.length === paginatedTickets.length &&
@@ -212,6 +225,7 @@ const Support = () => {
                       }
                     />
                   </th>
+                 
                   <th className="px-4 py-3 cursor-pointer" onClick={() => handleSort("ticket_id")}>
                     Ticket ID {renderSortIcon("ticket_id")}
                   </th>
@@ -238,14 +252,16 @@ const Support = () => {
                     className="hover:bg-[#FEF2E6] cursor-pointer transition-colors"
                     onClick={() => navigate(`/support/chatsupport/${ticket.id}`)}
                   >
-                    <td className="px-2.5 py-4">
+                    <td className="px-4 py-3"  onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
+                         className="w-4.5 h-4.5 rounded border-[1.5px] border-[#9A9A9A]"
                         checked={selected.includes(ticket.id)}
                         onChange={() => handleSelectOne(ticket.id)}
-                        onClick={(e) => e.stopPropagation()}
+                      
                       />
                     </td>
+                    
                     <td className="p-2.5">{ticket.ticket_id}</td>
                     <td className="p-2.5">{ticket.sender?.type}</td>
                     <td className="px-2.5 py-4">
