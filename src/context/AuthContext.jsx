@@ -101,7 +101,6 @@ export const AuthProvider = ({ children }) => {
     try {
       oauthService.initiateGoogleLogin();
     } catch (error) {
-      console.error("Google OAuth error:", error);
       throw new Error(error.message || "Failed to initiate Google login");
     }
   };
@@ -110,7 +109,6 @@ export const AuthProvider = ({ children }) => {
     try {
       oauthService.initiateAppleLogin();
     } catch (error) {
-      console.error("Apple OAuth error:", error);
       throw new Error(error.message || "Failed to initiate Apple login");
     }
   };
@@ -119,7 +117,6 @@ export const AuthProvider = ({ children }) => {
     try {
       oauthService.initiateShopifyLogin();
     } catch (error) {
-      console.error("Shopify OAuth error:", error);
       throw new Error(error.message || "Failed to initiate Shopify login");
     }
   };
@@ -144,7 +141,6 @@ export const AuthProvider = ({ children }) => {
       window.history.replaceState({}, document.title, window.location.pathname);
       return { twoFactor: false };
     } catch (error) {
-      console.error("OAuth callback error:", error);
       oauthService.cleanup();
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
@@ -156,7 +152,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await API.post("/logout");
     } catch (error) {
-      console.error("Logout error:", error);
+      // Silently handle logout errors
     } finally {
       setToken(null);
       setUser(null);
@@ -180,7 +176,6 @@ export const AuthProvider = ({ children }) => {
         try {
           await handleOAuthCallback();
         } catch (error) {
-          console.error("OAuth callback handling error:", error);
           // You might want to show a toast notification here
         }
       }

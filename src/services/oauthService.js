@@ -5,9 +5,31 @@ class OAuthService {
   constructor() {
     this.baseURL = import.meta.env.VITE_API_URL || "http://tcc-admin-back.test/api";
     this.redirectUri = `${window.location.origin}/auth/callback`;
+    
+    // Set this to true if you want provider-specific callback URLs
+    this.useProviderSpecificCallbacks = true;
   }
 
-  // Generate secure state parameter for OAuth
+  // Get provider-specific redirect URI if needed
+  getRedirectUri(provider = null) {
+    if (this.useProviderSpecificCallbacks && provider) {
+      return `${window.location.origin}/auth/${provider}/callback`;
+    }
+    return this.redirectUri;
+  }
+
+  // Debug method to test callback URLs
+  testCallbackUrls() {
+    return {
+      generic: this.getRedirectUri(),
+      google: this.getRedirectUri('google'),
+      apple: this.getRedirectUri('apple'),
+      shopify: this.getRedirectUri('shopify'),
+      useProviderSpecific: this.useProviderSpecificCallbacks
+    };
+  }
+
+  // Generate secure state parameter for OAuth+
   generateState() {
     const state = CryptoJS.lib.WordArray.random(32).toString();
     sessionStorage.setItem('oauth_state', state);
@@ -25,10 +47,10 @@ class OAuthService {
   async getProviders() {
     try {
       const response = await API.get('/social/providers');
-      return response.data;
+      // Backend returns: { success: true, data: { providers: {...} }, message: "..." }
+      return response.data.data || response.data;
     } catch (error) {
-      console.error('Failed to get social providers:', error);
-      throw new Error('Failed to get available social providers');
+      throw new Error(error.response?.data?.message || 'Failed to get available social providers');
     }
   }
 
@@ -36,23 +58,21 @@ class OAuthService {
   async initiateGoogleLogin() {
     try {
       const state = this.generateState();
+      
       sessionStorage.setItem('oauth_provider', 'google');
       
-      // Get redirect URL from backend
-      const response = await API.get('/social/google/redirect', {
-        params: {
-          redirect_uri: this.redirectUri,
-          state: `google_${state}`
-        }
-      });
+      // Get redirect URL from backend - backend handles redirect_uri internally
+      const response = await API.get('/social/google/redirect');
       
-      if (response.data?.redirect_url) {
-        window.location.href = response.data.redirect_url;
+      // Backend returns: { success: true, data: { redirect_url: "..." }, message: "..." }
+      const redirectUrl = response.data.data?.redirect_url || response.data.redirect_url;
+      
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
       } else {
         throw new Error('No redirect URL received from server');
       }
     } catch (error) {
-      console.error('Google OAuth initiation error:', error);
       throw new Error(error.response?.data?.message || 'Failed to initiate Google login');
     }
   }
@@ -61,23 +81,21 @@ class OAuthService {
   async initiateAppleLogin() {
     try {
       const state = this.generateState();
+      
       sessionStorage.setItem('oauth_provider', 'apple');
       
-      // Get redirect URL from backend
-      const response = await API.get('/social/apple/redirect', {
-        params: {
-          redirect_uri: this.redirectUri,
-          state: `apple_${state}`
-        }
-      });
+      // Get redirect URL from backend - backend handles redirect_uri internally
+      const response = await API.get('/social/apple/redirect');
       
-      if (response.data?.redirect_url) {
-        window.location.href = response.data.redirect_url;
+      // Backend returns: { success: true, data: { redirect_url: "..." }, message: "..." }
+      const redirectUrl = response.data.data?.redirect_url || response.data.redirect_url;
+      
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
       } else {
         throw new Error('No redirect URL received from server');
       }
     } catch (error) {
-      console.error('Apple OAuth initiation error:', error);
       throw new Error(error.response?.data?.message || 'Failed to initiate Apple login');
     }
   }
@@ -100,25 +118,26 @@ class OAuthService {
       }
 
       const state = this.generateState();
+      
       sessionStorage.setItem('oauth_provider', 'shopify');
       sessionStorage.setItem('shopify_domain', shopDomain);
       
-      // Get redirect URL from backend
+      // Get redirect URL from backend - backend handles redirect_uri internally
       const response = await API.get('/social/shopify/redirect', {
         params: {
-          redirect_uri: this.redirectUri,
-          state: `shopify_${state}`,
           shop: shopDomain
         }
       });
       
-      if (response.data?.redirect_url) {
-        window.location.href = response.data.redirect_url;
+      // Backend returns: { success: true, data: { redirect_url: "..." }, message: "..." }
+      const redirectUrl = response.data.data?.redirect_url || response.data.redirect_url;
+      
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
       } else {
         throw new Error('No redirect URL received from server');
       }
     } catch (error) {
-      console.error('Shopify OAuth initiation error:', error);
       throw new Error(error.response?.data?.message || 'Failed to initiate Shopify login');
     }
   }
@@ -163,46 +182,25 @@ class OAuthService {
   // Handle provider callback via backend
   async handleProviderCallback(provider, urlParams) {
     try {
-      // Prepare callback data
-      const callbackData = {
-        code: urlParams.get('code'),
-        state: urlParams.get('state'),
-        redirect_uri: this.redirectUri
-      };
-
-      // Add provider-specific data
+      // Laravel Socialite handles the callback automatically
+      // We just need to hit the callback endpoint and let Laravel do the work
+      const response = await API.get(`/social/${provider}/callback?${urlParams.toString()}`);
+      
+      // Backend returns: { success: true, data: { user: {...}, token: "..." }, message: "..." }
+      const responseData = response.data.data || response.data;
+      
+      // Clean up stored data
       if (provider === 'shopify') {
-        const shopDomain = sessionStorage.getItem('shopify_domain');
         sessionStorage.removeItem('shopify_domain');
-        if (shopDomain) {
-          callbackData.shop = shopDomain;
-        }
       }
-
-      // For Apple, we might receive additional user data
-      if (provider === 'apple' && urlParams.get('user')) {
-        try {
-          callbackData.user = JSON.parse(urlParams.get('user'));
-        } catch (e) {
-          console.warn('Failed to parse Apple user data:', e);
-        }
-      }
-
-      // Add any additional parameters that might be useful
-      for (const [key, value] of urlParams.entries()) {
-        if (!['code', 'state'].includes(key) && value) {
-          callbackData[key] = value;
-        }
-      }
-
-      // Send callback data to backend
-      const response = await API.get(`/social/${provider}/callback`, {
-        params: callbackData
-      });
-
-      return response.data.data || response.data;
+      
+      return responseData;
     } catch (error) {
-      console.error('OAuth callback handling error:', error);
+      // Clean up on error
+      if (provider === 'shopify') {
+        sessionStorage.removeItem('shopify_domain');
+      }
+      
       throw new Error(
         error.response?.data?.message || 
         'Failed to authenticate with OAuth provider'
@@ -210,17 +208,16 @@ class OAuthService {
     }
   }
 
-  // Alternative method to login with token (if your backend supports it)
-  async loginWithToken(provider, token) {
+  // Login with access token (for mobile apps or direct token auth)
+  async loginWithToken(provider, accessToken) {
     try {
       const response = await API.post(`/social/${provider}/token`, {
-        token: token,
-        redirect_uri: this.redirectUri
+        access_token: accessToken  // Backend expects 'access_token', not 'token'
       });
-
+      
+      // Backend returns: { success: true, data: { user: {...}, token: "..." }, message: "..." }
       return response.data.data || response.data;
     } catch (error) {
-      console.error('OAuth token login error:', error);
       throw new Error(
         error.response?.data?.message || 
         'Failed to authenticate with token'
@@ -256,4 +253,5 @@ class OAuthService {
 }
 
 const oauthService = new OAuthService();
+
 export default oauthService;

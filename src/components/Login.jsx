@@ -28,7 +28,6 @@ const Login = () => {
     try {
       await login(email, password);
     } catch (err) {
-      console.error("Login error login page:", err);
       setError(err.message);
       setFieldErrors(err.errors);
     }
@@ -41,7 +40,6 @@ const Login = () => {
     try {
       await loginWithGoogle();
     } catch (err) {
-      console.error("Google login error:", err);
       setError(err.message);
       setOauthLoading(null);
     }
@@ -53,7 +51,6 @@ const Login = () => {
     try {
       await loginWithApple();
     } catch (err) {
-      console.error("Apple login error:", err);
       setError(err.message);
       setOauthLoading(null);
     }
@@ -65,7 +62,6 @@ const Login = () => {
     try {
       await loginWithShopify();
     } catch (err) {
-      console.error("Shopify login error:", err);
       setError(err.message);
       setOauthLoading(null);
     }

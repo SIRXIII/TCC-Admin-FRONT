@@ -14,7 +14,6 @@ const OAuthCallback = () => {
         await handleOAuthCallback();
         // Success - user will be redirected by AuthContext
       } catch (err) {
-        console.error('OAuth callback error:', err);
         setError(err.message || 'Authentication failed');
         // Redirect to login after showing error briefly
         setTimeout(() => {
