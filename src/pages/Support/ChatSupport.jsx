@@ -187,7 +187,7 @@ const ChatSupport = () => {
               <p className="text-xs text-[#9A9A9A] fw5">Online</p>
             </div>
           </div>
-         {!(ticket?.order_id && userType === "user") && (
+         {!(ticket?.order_id && userType === "User") && (
           <div className="relative inline-block">
             <button
               onClick={() => setOpen(!open)}
@@ -293,7 +293,7 @@ const ChatSupport = () => {
         </div>
 
 
-      {!(ticket?.order_id && userType === "user") && (
+      {!(ticket?.order_id && userType === "User") && (
   <div className="flex items-center gap-3 p-4">
     <input
       type="text"

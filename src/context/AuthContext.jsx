@@ -1,13 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import API from "../services/api";
+import echo from "../../echo";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("auth_token") || null);
-
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pending2FA, setPending2FA] = useState(null);
   const [loginToken, setLoginToken] = useState("");
@@ -23,6 +24,38 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   useEffect(() => {
+  if (user && token) {
+    API.get("/notifications").then((res) => {
+      const data = Array.isArray(res.data) ? res.data : res.data.notifications || [];
+      const unread = data.filter((n) => !n.read_at);
+      setNotifications(unread);
+    });
+
+    const channel = echo.private(`App.Models.${user.type}.${user.id}`);
+    channel.notification((notification) => {
+
+      const normalizedNotification = {
+        id: notification.id,
+        read_at: notification.read_at || null,
+        data: {
+          message: notification.data?.message || notification.message || "No message provided",
+          title: notification.data?.title || notification.title || null,
+          url: notification.data?.url || notification.url || null
+        }
+      };
+      setNotifications((prev) => [normalizedNotification, ...prev]);
+    });
+
+    return () => {
+      echo.leave(`App.Models.${user.type}.${user.id}`);
+    };
+  }
+}, [user, token]);
+      
+
+    
+
+  useEffect(() => {
     const storedToken = localStorage.getItem("auth_token");
     const storedUser = localStorage.getItem("auth_user");
     if (storedToken && storedUser) {
@@ -33,18 +66,13 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-
   const login = async (email, password) => {
     try {
       const response = await API.post("/login", { email, password });
       const { data } = response.data;
 
       if (data?.two_factor_required) {
-
-        setPending2FA({
-          userId: data.user_id,
-          methods: data.method,
-        });
+        setPending2FA({ userId: data.user_id, methods: data.method });
         setLoginToken(data.login_token);
         return { twoFactor: true, methods: data.method };
       }
@@ -59,25 +87,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-
   const verify2FA = async (method, code) => {
     try {
       const response = await API.post("/two-factor/verify", {
         method,
         code,
         user_id: pending2FA?.userId,
-        login_token: loginToken
+        login_token: loginToken,
       });
-
       const { data } = response.data;
       if (data.verified) {
         completeLogin(data);
         setPending2FA(null);
         return true;
       }
-
       return false;
-    } catch (error) {
+    } catch {
       return false;
     }
   };
@@ -88,11 +113,8 @@ export const AuthProvider = ({ children }) => {
     localStorage.setItem("auth_token", data.token);
     localStorage.setItem("auth_user", JSON.stringify(data.user));
     localStorage.setItem("type", data.user.type);
-
     API.defaults.headers.Authorization = `Bearer ${data.token}`;
-
     navigate("/");
-
   };
 
   const logout = async () => {
@@ -104,6 +126,7 @@ export const AuthProvider = ({ children }) => {
       setToken(null);
       setUser(null);
       setPending2FA(null);
+      setNotifications([]);
       localStorage.removeItem("auth_token");
       localStorage.removeItem("auth_user");
       localStorage.removeItem("type");
@@ -112,30 +135,38 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const markAsRead = async (id) => {
+    try {
+      await API.post(`/notifications/${id}/read`);
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    } catch (err) {
+      console.error("Mark as read failed:", err);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      await API.post("/notifications/read-all");
+      setNotifications([]);
+    } catch (err) {
+      console.error("Mark all as read failed:", err);
+    }
+  };
+
   const isAuthenticated = () => !!token && !!user;
 
   useEffect(() => {
     if (loading) return;
-
     if (!isAuthenticated() && !pending2FA) {
-
-      if (location.pathname !== "/login" && location.pathname !== "/signup") {
+      if (!["/login", "/signup"].includes(location.pathname)) {
         navigate("/login");
       }
     }
-
-    if (pending2FA) {
-
-      if (location.pathname !== "/two-factor") {
-        navigate("/two-factor");
-      }
+    if (pending2FA && location.pathname !== "/two-factor") {
+      navigate("/two-factor");
     }
-
-    if (isAuthenticated()) {
-
-      if (location.pathname === "/login" || location.pathname === "/signup") {
-        navigate(location.state?.from || "/", { replace: true });   
-      }
+    if (isAuthenticated() && ["/login", "/signup"].includes(location.pathname)) {
+      navigate(location.state?.from || "/", { replace: true });
     }
   }, [loading, token, user, pending2FA, location.pathname, navigate]);
 
@@ -143,13 +174,10 @@ export const AuthProvider = ({ children }) => {
     const interceptor = API.interceptors.response.use(
       (response) => response,
       (error) => {
-        if (error.response?.status === 401) {
-          logout();
-        }
+        if (error.response?.status === 401) logout();
         return Promise.reject(error);
       }
     );
-
     return () => {
       API.interceptors.response.eject(interceptor);
     };
@@ -158,6 +186,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     token,
+    notifications,
     login,
     verify2FA,
     logout,
@@ -166,21 +195,16 @@ export const AuthProvider = ({ children }) => {
     pending2FA,
     api: API,
     loginToken,
-    setLoginToken
+    setLoginToken,
+    markAsRead,
+    markAllAsRead,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
-
+  return <AuthContext.Provider value={value}>{!loading && children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 };

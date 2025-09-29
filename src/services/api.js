@@ -2,10 +2,9 @@ import axios from "axios";
 
 const API = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://tcc-admin-back.test/api",
-  withCredentials: true, // ✅ important for Sanctum cookies
+  withCredentials: true, 
 });
 
-// Attach token if you still want to support Bearer fallback
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem("auth_token");
   if (token) {
