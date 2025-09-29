@@ -38,9 +38,36 @@ const Login = () => {
     setOauthLoading('google');
     setError("");
     
-    // Direct redirect to backend OAuth endpoint
     const API_URL = import.meta.env.VITE_API_URL || 'https://travelclothingclub-admin.online/api';
+    
+    // Option 1: Direct redirect (current approach)
     window.location.href = `${API_URL}/social/google/redirect`;
+    
+    // Option 2: Popup approach (uncomment if you prefer popup)
+    // const popup = window.open(
+    //   `${API_URL}/social/google/redirect`,
+    //   'google-oauth',
+    //   'width=500,height=600,scrollbars=yes,resizable=yes'
+    // );
+    
+    // const handleMessage = (event) => {
+    //   if (event.origin !== new URL(API_URL).origin) return;
+    //   
+    //   if (event.data.type === 'OAUTH_SUCCESS') {
+    //     localStorage.setItem('auth_token', event.data.token);
+    //     localStorage.setItem('auth_user', JSON.stringify(event.data.user));
+    //     localStorage.setItem('type', event.data.user.type || 'admin');
+    //     window.location.href = '/';
+    //   } else if (event.data.type === 'OAUTH_ERROR') {
+    //     setError(event.data.error);
+    //   }
+    //   
+    //   setOauthLoading(null);
+    //   window.removeEventListener('message', handleMessage);
+    //   popup.close();
+    // };
+    
+    // window.addEventListener('message', handleMessage);
   };
 
   const handleAppleLogin = () => {
