@@ -32,17 +32,17 @@ const OAuthCallback = () => {
             const userData = userResponse.data.data || userResponse.data;
             
             localStorage.setItem('auth_user', JSON.stringify(userData));
-            localStorage.setItem('type', userData.type);
+            localStorage.setItem('type', userData.type || 'admin');
             
             // Update auth context
             setAuthFromExternal({ user: userData, token });
             
             // Navigate to dashboard
-            navigate('/dashboard', { replace: true });
+            navigate('/', { replace: true });
           } catch (userErr) {
             console.error('Failed to fetch user data:', userErr);
             // Still navigate to dashboard, user data can be fetched later
-            navigate('/dashboard', { replace: true });
+            navigate('/', { replace: true });
           }
         } else {
           const errorMsg = searchParams.get('error') || 'Authentication failed';
