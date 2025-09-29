@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import API from '../services/api';
 
 const OAuthCallback = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { setAuthFromExternal } = useAuth();
 
   // OAuth callback handler
   const handleOAuthCallback = async (provider, code, state) => {
@@ -15,21 +17,19 @@ const OAuthCallback = () => {
         params: { code, state }
       });
       
+      // Your backend returns: { success: true, message: "...", data: { user: {...}, token: "..." } }
       const data = response.data;
       
-      if (data.success && data.data) {
-        // Store token and user data (matching your backend response format)
-        localStorage.setItem('auth_token', data.data.token);
-        localStorage.setItem('auth_user', JSON.stringify(data.data.user));
-        localStorage.setItem('type', data.data.user.type);
+      if (data.success && data.data && data.data.token) {
+        const { user, token } = data.data;
         
-        // Set API authorization header
-        API.defaults.headers.Authorization = `Bearer ${data.data.token}`;
+        // Use AuthContext to properly set authentication state
+        setAuthFromExternal({ user, token });
         
-        // Redirect to dashboard - now it will work properly!
-        navigate('/dashboard');
+        // Navigate to dashboard - this will now work properly!
+        navigate('/dashboard', { replace: true });
       } else {
-        throw new Error(data.message || 'OAuth authentication failed');
+        throw new Error(data.message || 'Invalid response from server');
       }
     } catch (err) {
       throw new Error(err.response?.data?.message || err.message || 'Authentication failed');

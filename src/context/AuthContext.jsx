@@ -127,6 +127,7 @@ export const AuthProvider = ({ children }) => {
       const urlParams = new URLSearchParams(window.location.search);
       const data = await oauthService.handleCallback(urlParams);
       
+      // Backend response format: { user: {...}, token: "...", two_factor_required?: boolean }
       if (data?.two_factor_required) {
         setPending2FA({
           userId: data.user_id,
@@ -136,7 +137,12 @@ export const AuthProvider = ({ children }) => {
         return { twoFactor: true, methods: data.method };
       }
 
-      completeLogin(data);
+      // Use completeLogin with proper data structure
+      completeLogin({
+        user: data.user,
+        token: data.token
+      });
+      
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
       return { twoFactor: false };
@@ -168,23 +174,34 @@ export const AuthProvider = ({ children }) => {
 
   const isAuthenticated = () => !!token && !!user;
 
-  // Handle OAuth callback on mount
-  useEffect(() => {
-    const handleOAuthOnMount = async () => {
-      // Check if this is an OAuth callback
-      if (oauthService.isOAuthCallback() && !token && !pending2FA) {
-        try {
-          await handleOAuthCallback();
-        } catch (error) {
-          // You might want to show a toast notification here
-        }
-      }
-    };
+  // Allow external components to set auth state (for OAuth callback)
+  const setAuthFromExternal = (authData) => {
+    const { user, token } = authData;
+    setToken(token);
+    setUser(user);
+    localStorage.setItem("auth_token", token);
+    localStorage.setItem("auth_user", JSON.stringify(user));
+    localStorage.setItem("type", user.type);
+    API.defaults.headers.Authorization = `Bearer ${token}`;
+  };
 
-    if (!loading) {
-      handleOAuthOnMount();
-    }
-  }, [loading]);
+  // Handle OAuth callback on mount - REMOVED since OAuthCallback component handles this now
+  // useEffect(() => {
+  //   const handleOAuthOnMount = async () => {
+  //     // Check if this is an OAuth callback
+  //     if (oauthService.isOAuthCallback() && !token && !pending2FA) {
+  //       try {
+  //         await handleOAuthCallback();
+  //       } catch (error) {
+  //         // You might want to show a toast notification here
+  //       }
+  //     }
+  //   };
+
+  //   if (!loading) {
+  //     handleOAuthOnMount();
+  //   }
+  // }, [loading]);
 
   useEffect(() => {
     if (loading) return;
@@ -237,6 +254,7 @@ export const AuthProvider = ({ children }) => {
     loginWithApple,
     loginWithShopify,
     handleOAuthCallback,
+    setAuthFromExternal,
     verify2FA,
     logout,
     isAuthenticated,
