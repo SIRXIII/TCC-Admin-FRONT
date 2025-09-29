@@ -149,7 +149,6 @@ export const AuthProvider = ({ children }) => {
       const urlParams = new URLSearchParams(window.location.search);
       const data = await oauthService.handleCallback(urlParams);
 
-      // Backend response format: { user: {...}, token: "...", two_factor_required?: boolean }
       if (data?.two_factor_required) {
         setPending2FA({
           userId: data.user_id,
@@ -159,7 +158,6 @@ export const AuthProvider = ({ children }) => {
         return { twoFactor: true, methods: data.method };
       }
 
-      // Use completeLogin with proper data structure
       completeLogin({
         user: data.user,
         token: data.token
@@ -226,20 +224,6 @@ export const AuthProvider = ({ children }) => {
   };
 
 
-  // useEffect(() => {
-  //   if (loading) return;
-  //   if (!isAuthenticated() && !pending2FA) {
-  //     if (!["/login", "/signup"].includes(location.pathname)) {
-  //       navigate("/login");
-  //     }
-  //   }
-  //   if (pending2FA && location.pathname !== "/two-factor") {
-  //     navigate("/two-factor");
-  //   }
-  //   if (isAuthenticated() && ["/login", "/signup"].includes(location.pathname)) {
-  //     navigate(location.state?.from || "/", { replace: true });
-  //   }
-  // }, [loading, token, user, pending2FA, location.pathname, navigate]);
 
   useEffect(() => {
     if (loading) return;

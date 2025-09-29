@@ -173,6 +173,7 @@ class OAuthService {
       const response = await API.get(`/social/${provider}/callback?${urlParams.toString()}`);
       
       // Backend returns: { success: true, data: { user: {...}, token: "..." }, message: "..." }
+        console.log("test response", response, provider, urlParams);
       const responseData = response.data.data || response.data;
       
       // Clean up stored data
