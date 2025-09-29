@@ -66,11 +66,10 @@ class OAuthService {
       // Backend returns: { success: true, data: { redirect_url: "..." }, message: "..." }
       const redirectUrl = response.data.data?.redirect_url || response.data.redirect_url;
 
-    
+      console.log("redirect google url", redirectUrl);
 
       if (redirectUrl) {
-        // window.location.href = redirectUrl;
-        handleCallback(redirectUrl);
+        window.location.href = redirectUrl;
       } else {
         throw new Error('No redirect URL received from server');
       }
@@ -189,11 +188,11 @@ class OAuthService {
       localStorage.setItem("auth_token", responseData?.data.token);
       localStorage.setItem("auth_user", JSON.stringify(responseData?.data.user));
       localStorage.setItem("type", responseData?.data.user.type);
-      API.defaults.headers.Authorization = `Bearer ${responseData?.data.token}`;
-      navigate("/");
+      API.defaults.headers.Authorization = `Bearer ${data.token}`;
+    navigate("/");
     } catch (error) {
       // Clean up on error
-      if (provider === 'shopify') {
+      if (provider === 'shopify') { 
         sessionStorage.removeItem('shopify_domain');
       }
 
