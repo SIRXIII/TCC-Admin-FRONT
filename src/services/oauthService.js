@@ -3,7 +3,7 @@ import CryptoJS from 'crypto-js';
 
 class OAuthService {
   constructor() {
-    this.baseURL = import.meta.env.VITE_API_URL || "http://tcc-admin-back.test/api";
+    this.baseURL = import.meta.env.VITE_API_URL || "https://travelclothingclub-admin.online/api";
     this.redirectUri = `${window.location.origin}/auth/callback`;
     
     // Set this to true if you want provider-specific callback URLs
