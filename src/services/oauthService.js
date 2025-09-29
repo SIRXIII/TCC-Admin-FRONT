@@ -116,6 +116,8 @@ class OAuthService {
 
   isOAuthCallback() {
     const urlParams = new URLSearchParams(window.location.search);
+
+    console.log("isOAuthCallback", urlParams);
     return urlParams.has('code') && urlParams.has('state');
   }
 
