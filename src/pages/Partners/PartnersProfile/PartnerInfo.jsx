@@ -1,5 +1,7 @@
 
 import { useDownloadPartnersZip } from "../../../hooks/usePartners";
+import DefaultProfile from "../../../assets/Images/trv_profile.jpg"
+
 
 const PartnerInfo = ({ items, partnerId }) => {
 
@@ -15,6 +17,7 @@ const PartnerInfo = ({ items, partnerId }) => {
                   src={item.image}
                   alt={item.value}
                   className="w-14 h-14 rounded-xl object-cover"
+                  onError={(e) => { e.currentTarget.src = DefaultProfile; }}
                 />
                 <div>
                   <p className="text-lg font-medium text-[#232323]">

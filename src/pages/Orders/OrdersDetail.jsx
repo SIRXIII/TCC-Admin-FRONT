@@ -4,6 +4,10 @@ import { orderData } from "../../data/OrderData";
 import backward from "../../assets/SVG/backward.svg";
 import { Link, useParams } from "react-router-dom";
 import { getOrderById } from "../../services/orderService";
+import productImg from "../../assets/Images/Pro_img.jpg";
+import DefaultProfile from "../../assets/Images/trv_profile.jpg";
+
+
 const OrdersDetail = () => {
 
   const { id } = useParams();
@@ -123,9 +127,10 @@ const OrdersDetail = () => {
                     >
                       <div className="flex items-center gap-3">
                         <img
-                          src={item.product_image}
-                          alt={item.product_name}
+                          src={item?.product_image || productImg}
+                          alt={item?.product_name}
                           className="w-12 h-12 rounded-xl object-cover "
+                          onError={(e) => { e.currentTarget.src = productImg; }}
                         />
                         <p className="text-sm fw5">{item.product_name}</p>
                       </div>
@@ -200,6 +205,7 @@ const OrdersDetail = () => {
                     src={order?.traveler?.profile_photo}
                     alt={order?.traveler?.name}
                     className="w-10 h-10 rounded-xl object-cover"
+                    onError={(e) => { e.currentTarget.src = DefaultProfile; }}
                   />
                   <div>
                     <p className="text-sm fw6 text-[#232323]">{order?.traveler.name}</p>
@@ -215,6 +221,8 @@ const OrdersDetail = () => {
                     src={order?.partner.profile_photo}
                     alt={order?.partner.name}
                     className="w-10 h-10 rounded-xl object-cover"
+                          onError={(e) => { e.currentTarget.src = DefaultProfile; }}
+
                   />
                   <div>
                     <p className="fw6 text-sm text-[#232323]">{order?.partner.name}</p>
@@ -232,6 +240,8 @@ const OrdersDetail = () => {
                       src={order?.rider.profile_photo}
                       alt={order?.rider.name}
                       className="w-10 h-10 rounded-xl object-cover"
+                          onError={(e) => { e.currentTarget.src = DefaultProfile; }}
+
                     />
                     <div>
                       <p className="fw6 text-sm text-[#232323]">{order?.rider.name}</p>

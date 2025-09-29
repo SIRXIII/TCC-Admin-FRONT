@@ -4,10 +4,11 @@ import CryptoJS from 'crypto-js';
 class OAuthService {
   constructor() {
     this.baseURL = import.meta.env.VITE_API_URL || "https://travelclothingclub-admin.online/api";
-    this.redirectUri = `${window.location.origin}/auth/callback`;
+    this.redirectUri = `${window.location.origin}/auth/callback`; // default generic
     this.useProviderSpecificCallbacks = true;
   }
 
+  // build frontend redirect URI for Google/Apple/Shopify
   getRedirectUri(provider = null) {
     if (this.useProviderSpecificCallbacks && provider) {
       return `${window.location.origin}/auth/${provider}/callback`;
@@ -36,7 +37,8 @@ class OAuthService {
     }
   }
 
-  async initiateGoogleLogin() {
+  // --- Login initiators ---
+  async initiateLogin(provider) {
     try {
       sessionStorage.setItem('oauth_provider', 'google');
       
@@ -47,11 +49,18 @@ class OAuthService {
       });
       
       const redirectUrl = response.data.data?.redirect_url || response.data.redirect_url;
-      if (redirectUrl) window.location.href = redirectUrl;
-      else throw new Error('No redirect URL received from server');
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      } else {
+        throw new Error('No redirect URL received from server');
+      }
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to initiate Google login');
+      throw new Error(error.response?.data?.message || `Failed to initiate ${provider} login`);
     }
+  }
+
+  async initiateGoogleLogin() {
+    return this.initiateLogin('google');
   }
 
   async initiateAppleLogin() {
@@ -98,6 +107,7 @@ class OAuthService {
     }
   }
 
+  // --- Handle callback ---
   async handleCallback(urlParams, navigate) {
     const code = urlParams.get('code');
     const state = urlParams.get('state');
@@ -105,6 +115,11 @@ class OAuthService {
 
     if (error) throw new Error(`OAuth error: ${error}`);
     if (!code) throw new Error('Authorization code not received');
+
+    // verify state (optional but good)
+    if (!this.verifyState(state)) {
+      throw new Error('Invalid OAuth state');
+    }
 
     const storedProvider = sessionStorage.getItem('oauth_provider');
     sessionStorage.removeItem('oauth_provider');
@@ -130,6 +145,28 @@ class OAuthService {
     } catch (error) {
       if (provider === 'shopify') sessionStorage.removeItem('shopify_domain');
       throw new Error(error.response?.data?.message || 'Failed to authenticate');
+    }
+  }
+
+  // --- Token login (optional) ---
+  async loginWithToken(provider, token) {
+    try {
+      const response = await API.post(`/social/${provider}/token`, { token });
+      const responseData = response.data.data || response.data;
+
+      const authToken = responseData?.data?.token;
+      const user = responseData?.data?.user;
+
+      if (authToken && user) {
+        localStorage.setItem("auth_token", authToken);
+        localStorage.setItem("auth_user", JSON.stringify(user));
+        localStorage.setItem("type", user.type);
+        API.defaults.headers.Authorization = `Bearer ${authToken}`;
+      }
+
+      return responseData;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Token login failed');
     }
   }
 

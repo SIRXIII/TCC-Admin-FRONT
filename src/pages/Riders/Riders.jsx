@@ -310,9 +310,10 @@ const Riders = () => {
 
                     <td className="px-4 py-3 flex gap-2.5 items-center">
                       <img
-                        src={r.profile_photo || DefaultProfile}
+                        src={r.profile_photo}
                         alt="Rider"
                         className="w-6 h-6 rounded-xl object-cover object-center"
+                        onError={(e) => { e.currentTarget.src = DefaultProfile; }}
                       />
                       <div>
                         <p className="text-[#4F4F4F] text-sm">{r.name}</p>

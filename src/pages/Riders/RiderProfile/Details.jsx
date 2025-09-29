@@ -2,60 +2,6 @@ import React from "react";
 import RiderInfo from "./RiderInfo";
 import riderImg from "../../../assets/Images/rid_profile.jpg";
 
-// const RiderDetails = {
-//   riderInfo: {
-//     items: [
-//       {
-//         image: riderImg,
-//         value: "Jason Miller",
-//         email: "jasonmiller@mail.com",
-//         status: "Active",
-//       },
-//       { label: "Rider Name", value: "Jason Miller" },
-//       { label: "Email", value: "jasonmiller@mail.com" },
-//       { label: "Rider ID", value: "RDR-0987" },
-//       { label: "Phone", value: "+38 (094) 730-24-25" },
-//       {
-//         label: "Address",
-//         value: "Random Federation 115302, Moscow ul. Varshavskaya, 15-2-178",
-//       },
-//     ],
-//   },
-
-//   workDetails: {
-//     items: [
-//       { label: "Assigned Region", value: "Brooklyn, Queens, Manhattan" },
-//       { label: "Vehicle Type", value: "Motorbike (Yamaha R3)" },
-//       { label: "License Plate", value: "NY-7832" },
-//       { label: "Avg Delivery Time", value: "32 mins" },
-//       { label: "Deliveries Completed", value: "831" },
-//       { label: "Returns Completed", value: "243" },
-//       { label: "Cancelled Assignments", value: "12" },
-//     ],
-//   },
-
-//   ratingsPerformance: {
-//     items: [
-//       {
-//         label: "Rating (From Traveler & Partners)",
-//         value: "4.8 / 5 (689 reviews)",
-//       },
-//       { label: "Common Complaints", value: "Common Complaints" },
-//       { label: "Bonus Eligibility", value: "Yes (Top performer Q2 2025)" },
-//     ],
-//   },
-
-//   verification: {
-//     items: [
-//       {
-//         label: "Driver's License",
-//         value: "Uploaded",
-//         actions: ["View", "Download"],
-//       },
-//       { label: "Insurance", value: "Active (Expires: Dec 2025)" },
-//     ],
-//   },
-// };
 
 const Details = ({rider}) => {
 

@@ -1,13 +1,13 @@
 import React from "react";
 import { useDownloadRiderZip } from "../../../hooks/useRiders";
+import riderImg from "../../../assets/Images/rid_profile.jpg";
+
 
 const RiderInfo = ({ items, riderId }) => {
 
 
   const { mutate: downloadZip, isLoading } = useDownloadRiderZip();
 
-
-  console.log("item actions", items);
   return (
     <div className="flex flex-col gap-3 ">
       {items.map((item, idx) => {
@@ -19,6 +19,8 @@ const RiderInfo = ({ items, riderId }) => {
                   src={item.image}
                   alt={item.value}
                   className="w-14 h-14 rounded-xl object-cover"
+                  onError={(e) => { e.currentTarget.src = riderImg; }}
+                  
                 />
                 <div className="fw4">
                   <p className="text-lg fw6 text-[#232323]">{item.value}</p>

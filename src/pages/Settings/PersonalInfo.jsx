@@ -84,6 +84,8 @@ const PersonalInfo = () => {
             src={preview}
             alt="profile"
             className="w-18 h-18 rounded-[10px] object-cover object-center"
+           onError={(e) => { e.currentTarget.src = Rid_image; }}
+            
           />
           <div className="flex gap-2">
             <label className="cursor-pointer border border-[#F77F00] bg-[#FEF2E6] rounded-lg p-3 text-xs fw6 text-[#F77F00] hover:bg-[#F77F00] hover:text-[#FFFFFF]">

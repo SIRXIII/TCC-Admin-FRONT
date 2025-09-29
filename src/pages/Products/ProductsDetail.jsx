@@ -7,6 +7,8 @@ import { getProductById } from "../../services/productService";
 import ProductVideo from "../../components/ProductVideo";
 import { useStatusUpdateProduct } from "../../hooks/useProducts";
 import { toast } from "react-toastify";
+import productImg from "../../assets/Images/Pro_img.jpg";
+
 
 const ProductsDetail = () => {
   const { id } = useParams()
@@ -140,9 +142,7 @@ const ProductsDetail = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          {/* <button className="border border-[#F77F00] bg-[#FEF2E6] rounded-lg px-4 py-2 text-sm text-[#F77F00] hover:bg-[#F77F00] hover:text-white transition">
-            Suspend
-          </button> */}
+         
           <button
             onClick={() => handleProductStatus(product)}
             className={`border rounded-lg px-4 py-2 text-sm transition ${product?.status == "Active"
@@ -152,9 +152,7 @@ const ProductsDetail = () => {
           >
             {product && product?.status === "Active" ? "Suspended" : "Activate"}
           </button>
-          {/* <button className="border border-[#F77F00] bg-[#FEF2E6] rounded-lg px-4 py-2 text-sm text-[#F77F00] hover:bg-[#F77F00] hover:text-white transition">
-            Edit Details
-          </button> */}
+         
         </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 ">
@@ -177,6 +175,8 @@ const ProductsDetail = () => {
               src={product?.primary_image}
               alt="product"
               className="w-full h-60 object-cover rounded-2xl border-color"
+              onError={(e) => { e.currentTarget.src = productImg; }}
+              
             />
             <div className="flex gap-3">
               {product?.images.map((img, i) =>
@@ -186,6 +186,8 @@ const ProductsDetail = () => {
                     src={img?.image_url}
                     alt={`thumb-${i}`}
                     className="w-17 h-17 rounded-[10px] object-cover border-color hover:border-[#F77F00]"
+              onError={(e) => { e.currentTarget.src = productImg; }}
+
                   />
                 ) : null
               )}
