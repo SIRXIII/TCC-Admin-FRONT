@@ -65,7 +65,21 @@ export const AuthProvider = ({ children }) => {
       API.defaults.headers.Authorization = `Bearer ${storedToken}`;
     }
     setLoading(false);
-  }, []);
+
+    // Listen for storage changes (for OAuth callback)
+    const handleStorageChange = () => {
+      const newToken = localStorage.getItem("auth_token");
+      const newUser = localStorage.getItem("auth_user");
+      if (newToken && newUser && newToken !== token) {
+        setToken(newToken);
+        setUser(JSON.parse(newUser));
+        API.defaults.headers.Authorization = `Bearer ${newToken}`;
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [token]);
 
   const login = async (email, password) => {
     try {
