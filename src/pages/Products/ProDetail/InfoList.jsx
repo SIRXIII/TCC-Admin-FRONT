@@ -1,4 +1,6 @@
 import React from "react";
+// import productImg from "../../../assets";
+import productImg from "../../../assets/Images/Pro_img.jpg";
 
 const InfoList = ({ items }) => {
 
@@ -11,7 +13,6 @@ const InfoList = ({ items }) => {
   return (
     <div className="flex flex-col gap-3 ">
       {items.map((item, idx) => {
-        // Case: Image Row
         if (item.image) {
           return (
             <div
@@ -23,6 +24,8 @@ const InfoList = ({ items }) => {
                   src={item.image}
                   alt={item.value}
                   className="w-14 h-14 rounded-xl object-cover"
+                  onError={(e) => { e.currentTarget.src = productImg; }}
+                  
                 />
                 <div>
                   <p className="text-lg fw6 text-[#232323]">

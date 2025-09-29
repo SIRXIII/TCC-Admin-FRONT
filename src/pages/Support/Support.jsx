@@ -270,6 +270,8 @@ const Support = () => {
                           src={ticket?.sender?.profile_photo || DefaultProfile}
                           alt={ticket?.sender?.name}
                           className="w-8 h-8 rounded-full object-cover"
+                          onError={(e) => { e.currentTarget.src = DefaultProfile; }}
+                          
                         />
                         <div className="flex flex-col">
                           <span className="text-[#4F4F4F]">{ticket?.sender?.name}</span>

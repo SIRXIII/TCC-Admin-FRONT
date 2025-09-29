@@ -6,6 +6,9 @@ import { Link, useParams } from "react-router-dom";
 import { getRefundById } from "../../services/refundService";
 import { useStatusUpdateRefund } from "../../hooks/useRefund";
 import { toast } from "react-toastify";
+import productImg from "../../assets/Images/Pro_img.jpg";
+import DefaultProfile from "../../assets/Images/trv_profile.jpg";
+
 const RefundsDetail = () => {
   const {id} = useParams();
    const [refund, setRefund] = useState(null);
@@ -115,6 +118,8 @@ const RefundsDetail = () => {
                 src={customer?.profile_photo }
                 alt={customer?.name}
                 className="w-10 h-10 rounded-xl object-cover"
+                                          onError={(e) => { e.currentTarget.src = DefaultProfile; }}
+                
               />
               <div>
                 <p className="text-sm fw6 text-[#232323]">{customer?.name}</p>
@@ -147,6 +152,7 @@ const RefundsDetail = () => {
                     src={img.image_path}
                     alt={`Evidence ${index + 1}`}
                     className="w-25 h-25 rounded-[11.63px] border-[0.36px] border-[#BBBBBB] object-cover"
+                    onError={(e) => { e.currentTarget.src = productImg; }}
                   />
                 ))}
               </div>
@@ -199,9 +205,11 @@ const RefundsDetail = () => {
                         <tr key={idx} className=" ">
                           <td className="flex items-center gap-2.5 p-2.5">
                             <img
-                              src={item.product_image}
+                              src={item.product_image || productImg}
                               alt={item.product_name}
                               className="w-12 h-12 rounded-xl object-cover"
+                                                        onError={(e) => { e.currentTarget.src = productImg; }}
+                              
                             />
                             <p>{item.product_name}</p>
                           </td>
@@ -263,6 +271,8 @@ const RefundsDetail = () => {
                     src={partner?.profile_photo}
                     alt={partner?.name}
                     className="w-10 h-10 rounded-xl object-cover"
+                                              onError={(e) => { e.currentTarget.src = DefaultProfile; }}
+                    
                   />
                   <div>
                     <p className="fw6 text-sm text-[#232323]">{partner?.name}</p>
@@ -280,6 +290,8 @@ const RefundsDetail = () => {
                     src={rider?.profile_photo}
                     alt={rider?.name}
                     className="w-10 h-10 rounded-xl object-cover"
+                                              onError={(e) => { e.currentTarget.src = DefaultProfile; }}
+                    
                   />
                   <div>
                     <p className="text-sm fw6 text-[#232323]">{rider?.name}</p>

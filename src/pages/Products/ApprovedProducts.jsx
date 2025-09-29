@@ -4,6 +4,10 @@ import { useNavigate } from "react-router-dom";
 import ProductReqInfo from "../../components/Dialogs/ProductReqInfo";
 import ActionMenu from "../../components/Partners/ActionMenu";
 import { useStatusUpdateProduct } from "../../hooks/useProducts";
+import DefaultProfile from "../../assets/Images/trv_profile.jpg"
+import productImg from "../../assets/Images/Pro_img.jpg";
+
+
 
 const ApprovedProducts = ({ paginatedProducts = [], openActionId, setOpenActionId, handleSort, sortConfig }) => {
   const navigate = useNavigate();
@@ -148,6 +152,7 @@ const ApprovedProducts = ({ paginatedProducts = [], openActionId, setOpenActionI
                   src={p.primary_image}
                   alt={p.name}
                   className="w-10 h-10 rounded object-cover"
+                  onError={(e) => { e.currentTarget.src = productImg; }}
                 />
                 <span>{p.name}</span>
               </td>
@@ -158,6 +163,8 @@ const ApprovedProducts = ({ paginatedProducts = [], openActionId, setOpenActionI
                     src={p.partner?.profile_photo}
                     alt={p.partner?.name}
                     className="w-8 h-8 rounded-full"
+                  onError={(e) => { e.currentTarget.src = DefaultProfile; }}
+
                   />
                   <div>
                     <p className="font-medium text-sm">{p.partner?.name}</p>
