@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import API from "../services/api";
 import echo from "../../echo";
+import oauthService from "../services/oauthService";
 
 const AuthContext = createContext();
 
@@ -24,36 +25,36 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   useEffect(() => {
-  if (user && token) {
-    API.get("/notifications").then((res) => {
-      const data = Array.isArray(res.data) ? res.data : res.data.notifications || [];
-      const unread = data.filter((n) => !n.read_at);
-      setNotifications(unread);
-    });
+    if (user && token) {
+      API.get("/notifications").then((res) => {
+        const data = Array.isArray(res.data) ? res.data : res.data.notifications || [];
+        const unread = data.filter((n) => !n.read_at);
+        setNotifications(unread);
+      });
 
-    const channel = echo.private(`App.Models.${user.type}.${user.id}`);
-    channel.notification((notification) => {
+      const channel = echo.private(`App.Models.${user.type}.${user.id}`);
+      channel.notification((notification) => {
 
-      const normalizedNotification = {
-        id: notification.id,
-        read_at: notification.read_at || null,
-        data: {
-          message: notification.data?.message || notification.message || "No message provided",
-          title: notification.data?.title || notification.title || null,
-          url: notification.data?.url || notification.url || null
-        }
+        const normalizedNotification = {
+          id: notification.id,
+          read_at: notification.read_at || null,
+          data: {
+            message: notification.data?.message || notification.message || "No message provided",
+            title: notification.data?.title || notification.title || null,
+            url: notification.data?.url || notification.url || null
+          }
+        };
+        setNotifications((prev) => [normalizedNotification, ...prev]);
+      });
+
+      return () => {
+        echo.leave(`App.Models.${user.type}.${user.id}`);
       };
-      setNotifications((prev) => [normalizedNotification, ...prev]);
-    });
+    }
+  }, [user, token]);
 
-    return () => {
-      echo.leave(`App.Models.${user.type}.${user.id}`);
-    };
-  }
-}, [user, token]);
-      
 
-    
+
 
   useEffect(() => {
     const storedToken = localStorage.getItem("auth_token");
@@ -117,20 +118,79 @@ export const AuthProvider = ({ children }) => {
     navigate("/");
   };
 
+  // OAuth login methods
+  const loginWithGoogle = async () => {
+    try {
+      oauthService.initiateGoogleLogin();
+    } catch (error) {
+      throw new Error(error.message || "Failed to initiate Google login");
+    }
+  };
+
+  const loginWithApple = async () => {
+    try {
+      oauthService.initiateAppleLogin();
+    } catch (error) {
+      throw new Error(error.message || "Failed to initiate Apple login");
+    }
+  };
+
+  const loginWithShopify = async () => {
+    try {
+      oauthService.initiateShopifyLogin();
+    } catch (error) {
+      throw new Error(error.message || "Failed to initiate Shopify login");
+    }
+  };
+
+  // Handle OAuth callback
+  const handleOAuthCallback = async () => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const data = await oauthService.handleCallback(urlParams);
+
+      // Backend response format: { user: {...}, token: "...", two_factor_required?: boolean }
+      if (data?.two_factor_required) {
+        setPending2FA({
+          userId: data.user_id,
+          methods: data.method,
+        });
+        setLoginToken(data.login_token);
+        return { twoFactor: true, methods: data.method };
+      }
+
+      // Use completeLogin with proper data structure
+      completeLogin({
+        user: data.user,
+        token: data.token
+      });
+
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return { twoFactor: false };
+    } catch (error) {
+      oauthService.cleanup();
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      throw new Error(error.message || "Authentication failed");
+    }
+  };
+
+
   const logout = async () => {
     try {
       await API.post("/logout");
     } catch (error) {
-      console.error("Logout error:", error);
+
     } finally {
       setToken(null);
       setUser(null);
       setPending2FA(null);
-      setNotifications([]);
       localStorage.removeItem("auth_token");
       localStorage.removeItem("auth_user");
       localStorage.removeItem("type");
       delete API.defaults.headers.Authorization;
+      oauthService.cleanup();
       navigate("/login");
     }
   };
@@ -155,20 +215,59 @@ export const AuthProvider = ({ children }) => {
 
   const isAuthenticated = () => !!token && !!user;
 
+  const setAuthFromExternal = (authData) => {
+    const { user, token } = authData;
+    setToken(token);
+    setUser(user);
+    localStorage.setItem("auth_token", token);
+    localStorage.setItem("auth_user", JSON.stringify(user));
+    localStorage.setItem("type", user.type);
+    API.defaults.headers.Authorization = `Bearer ${token}`;
+  };
+
+
+  // useEffect(() => {
+  //   if (loading) return;
+  //   if (!isAuthenticated() && !pending2FA) {
+  //     if (!["/login", "/signup"].includes(location.pathname)) {
+  //       navigate("/login");
+  //     }
+  //   }
+  //   if (pending2FA && location.pathname !== "/two-factor") {
+  //     navigate("/two-factor");
+  //   }
+  //   if (isAuthenticated() && ["/login", "/signup"].includes(location.pathname)) {
+  //     navigate(location.state?.from || "/", { replace: true });
+  //   }
+  // }, [loading, token, user, pending2FA, location.pathname, navigate]);
+
   useEffect(() => {
     if (loading) return;
+
+    // Skip navigation if we're currently processing an OAuth callback
+    if (oauthService.isOAuthCallback()) {
+      return;
+    }
+
     if (!isAuthenticated() && !pending2FA) {
-      if (!["/login", "/signup"].includes(location.pathname)) {
+      if (location.pathname !== "/login" && location.pathname !== "/signup") {
         navigate("/login");
       }
     }
-    if (pending2FA && location.pathname !== "/two-factor") {
-      navigate("/two-factor");
+
+    if (pending2FA) {
+      if (location.pathname !== "/two-factor") {
+        navigate("/two-factor");
+      }
     }
-    if (isAuthenticated() && ["/login", "/signup"].includes(location.pathname)) {
-      navigate(location.state?.from || "/", { replace: true });
+
+    if (isAuthenticated()) {
+      if (location.pathname === "/login" || location.pathname === "/signup") {
+        navigate(location.state?.from || "/", { replace: true });
+      }
     }
   }, [loading, token, user, pending2FA, location.pathname, navigate]);
+
 
   useEffect(() => {
     const interceptor = API.interceptors.response.use(
@@ -183,11 +282,17 @@ export const AuthProvider = ({ children }) => {
     };
   }, []);
 
+  
   const value = {
     user,
     token,
-    notifications,
     login,
+    notifications,
+    loginWithGoogle,
+    loginWithApple,
+    loginWithShopify,
+    handleOAuthCallback,
+    setAuthFromExternal,
     verify2FA,
     logout,
     isAuthenticated,

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Menu, Search } from "lucide-react";
+import { ChevronDown, Menu, Search } from "lucide-react";
 import profile from "../assets/SVG/img.svg";
 import bell from "../assets/SVG/bell.svg";
 import { useAuth } from "../context/AuthContext";
@@ -10,6 +10,11 @@ const Header = ({ toggleSidebar }) => {
   const { user, notifications, markAsRead, markAllAsRead } = useAuth();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
+  const profileRef = useRef(null);
+ const [profileDropdown, setProfileDropdown] = useState(false);
+
+
+  const toggleDropdown = () => setProfileDropdown(!profileDropdown);
 
   const unreadCount = notifications.length;
 
@@ -17,6 +22,9 @@ const Header = ({ toggleSidebar }) => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowDropdown(false);
+      }
+       if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setProfileDropdown(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -144,22 +152,48 @@ const Header = ({ toggleSidebar }) => {
           )}
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            className="flex items-center gap-2"
-            aria-label="Profile"
-            onClick={handleProfileClick}
+        <div className="flex items-center gap-3" ref={profileRef}>
+           <button
+            onClick={toggleDropdown}
+            className="flex items-center gap-2 focus:outline-none hover:bg-gray-50 p-2 rounded-lg transition-colors"
           >
             <img
-              src={user?.profile_photo || profile}
+              src={user?.profile_photo}
               alt="Profile"
-              className="w-12 h-12 rounded-[10px] object-cover"
+              className="w-12 h-12 rounded-[10px]"
             />
-            <span className="text-base font-medium text-left text-gray-800 hidden md:inline leading-[150%]">
+            
+            <span className="text-base font-medium text-left text-[#232323] hidden md:inline leading-[150%]">
               {user?.name} <br />
-              <span className="text-xs font-medium text-gray-400">{user?.email}</span>
+              <span className="text-xs font-medium text-[#9A9A9A] hidden md:inline leading-[150%]">
+                {user?.email}
+              </span>
             </span>
+            <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform duration-200 ${profileDropdown ? 'rotate-180' : ''}`} strokeWidth={2.5} />
           </button>
+
+          {profileDropdown && (
+            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+              <button
+                onClick={() => {
+                  navigate('/settings');
+                  setProfileDropdown(false);
+                }}
+                className="flex items-center w-full px-4 py-3 text-sm text-[#4F4F4F] hover:bg-[#FEF2E6] transition-colors"
+              >
+                <span>Settings</span>
+              </button>
+              <button
+                onClick={() => { 
+                  logout(); 
+                  setProfileDropdown(false); 
+                }}  
+                className="flex items-center w-full px-4 py-3 text-sm text-[#4F4F4F] hover:bg-[#FEF2E6] transition-colors border-t border-gray-100"
+              >
+                <span>Logout</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

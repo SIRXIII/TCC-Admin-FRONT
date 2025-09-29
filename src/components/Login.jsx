@@ -17,7 +17,8 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const [error, setError] = useState("");
-  const { login } = useAuth();
+  const [oauthLoading, setOauthLoading] = useState(null);
+  const { login, loginWithGoogle, loginWithApple, loginWithShopify } = useAuth();
 
 
   const handleSubmit = async (e) => {
@@ -27,9 +28,42 @@ const Login = () => {
     try {
       await login(email, password);
     } catch (err) {
-      console.error("Login error login page:", err);
       setError(err.message);
       setFieldErrors(err.errors);
+    }
+  };
+
+  // OAuth handlers
+  const handleGoogleLogin = async () => {
+    setOauthLoading('google');
+    setError("");
+    try {
+      await loginWithGoogle();
+    } catch (err) {
+      setError(err.message);
+      setOauthLoading(null);
+    }
+  };
+
+  const handleAppleLogin = async () => {
+    setOauthLoading('apple');
+    setError("");
+    try {
+      await loginWithApple();
+    } catch (err) {
+      setError(err.message);
+      setOauthLoading(null);
+    }
+  };
+
+  const handleShopifyLogin = async () => {
+    setOauthLoading('shopify');
+    setError("");
+    try {
+      await loginWithShopify();
+    } catch (err) {
+      setError(err.message);
+      setOauthLoading(null);
     }
   };
 
@@ -180,19 +214,49 @@ const Login = () => {
           </div>
 
           <div className="space-y-3">
-            <button className="w-full border border-[#D9D9D9] py-4 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50">
-              <img src={google} alt="" />
-              <span className="text-base fw6">Sign in with Google</span>
+            <button 
+              onClick={handleGoogleLogin}
+              disabled={oauthLoading !== null}
+              className="w-full border border-[#D9D9D9] py-4 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              {oauthLoading === 'google' ? (
+                <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+              ) : (
+                <img src={google} alt="" />
+              )}
+              <span className="text-base fw6">
+                {oauthLoading === 'google' ? 'Connecting...' : 'Sign in with Google'}
+              </span>
             </button>
 
             <div className="flex space-x-4">
-              <button className="w-1/2 border border-[#D9D9D9] py-4 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50">
-                <img src={apple} alt="" />
-                <span className="text-base fw6">Sign in with Apple</span>
+              <button 
+                onClick={handleAppleLogin}
+                disabled={oauthLoading !== null}
+                className="w-1/2 border border-[#D9D9D9] py-4 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {oauthLoading === 'apple' ? (
+                  <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                ) : (
+                  <img src={apple} alt="" />
+                )}
+                <span className="text-base fw6">
+                  {oauthLoading === 'apple' ? 'Connecting...' : 'Sign in with Apple'}
+                </span>
               </button>
-              <button className="w-1/2 border border-[#D9D9D9] py-4 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50">
-                <img src={shopify} alt="" />
-                <span className="text-base fw6">Sign in with Shopify</span>
+              <button 
+                onClick={handleShopifyLogin}
+                disabled={oauthLoading !== null}
+                className="w-1/2 border border-[#D9D9D9] py-4 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {oauthLoading === 'shopify' ? (
+                  <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
+                ) : (
+                  <img src={shopify} alt="" />
+                )}
+                <span className="text-base fw6">
+                  {oauthLoading === 'shopify' ? 'Connecting...' : 'Sign in with Shopify'}
+                </span>
               </button>
             </div>
           </div>
