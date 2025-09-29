@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import API from "../services/api";
+import oauthService from "../services/oauthService";
 
 const AuthContext = createContext();
 
@@ -95,6 +96,62 @@ export const AuthProvider = ({ children }) => {
 
   };
 
+  // OAuth login methods
+  const loginWithGoogle = async () => {
+    try {
+      oauthService.initiateGoogleLogin();
+    } catch (error) {
+      console.error("Google OAuth error:", error);
+      throw new Error(error.message || "Failed to initiate Google login");
+    }
+  };
+
+  const loginWithApple = async () => {
+    try {
+      oauthService.initiateAppleLogin();
+    } catch (error) {
+      console.error("Apple OAuth error:", error);
+      throw new Error(error.message || "Failed to initiate Apple login");
+    }
+  };
+
+  const loginWithShopify = async () => {
+    try {
+      oauthService.initiateShopifyLogin();
+    } catch (error) {
+      console.error("Shopify OAuth error:", error);
+      throw new Error(error.message || "Failed to initiate Shopify login");
+    }
+  };
+
+  // Handle OAuth callback
+  const handleOAuthCallback = async () => {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const data = await oauthService.handleCallback(urlParams);
+      
+      if (data?.two_factor_required) {
+        setPending2FA({
+          userId: data.user_id,
+          methods: data.method,
+        });
+        setLoginToken(data.login_token);
+        return { twoFactor: true, methods: data.method };
+      }
+
+      completeLogin(data);
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return { twoFactor: false };
+    } catch (error) {
+      console.error("OAuth callback error:", error);
+      oauthService.cleanup();
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      throw new Error(error.message || "Authentication failed");
+    }
+  };
+
   const logout = async () => {
     try {
       await API.post("/logout");
@@ -108,31 +165,53 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem("auth_user");
       localStorage.removeItem("type");
       delete API.defaults.headers.Authorization;
+      oauthService.cleanup(); // Clean up OAuth session data
       navigate("/login");
     }
   };
 
   const isAuthenticated = () => !!token && !!user;
 
+  // Handle OAuth callback on mount
+  useEffect(() => {
+    const handleOAuthOnMount = async () => {
+      // Check if this is an OAuth callback
+      if (oauthService.isOAuthCallback() && !token && !pending2FA) {
+        try {
+          await handleOAuthCallback();
+        } catch (error) {
+          console.error("OAuth callback handling error:", error);
+          // You might want to show a toast notification here
+        }
+      }
+    };
+
+    if (!loading) {
+      handleOAuthOnMount();
+    }
+  }, [loading]);
+
   useEffect(() => {
     if (loading) return;
 
-    if (!isAuthenticated() && !pending2FA) {
+    // Skip navigation if we're currently processing an OAuth callback
+    if (oauthService.isOAuthCallback()) {
+      return;
+    }
 
+    if (!isAuthenticated() && !pending2FA) {
       if (location.pathname !== "/login" && location.pathname !== "/signup") {
         navigate("/login");
       }
     }
 
     if (pending2FA) {
-
       if (location.pathname !== "/two-factor") {
         navigate("/two-factor");
       }
     }
 
     if (isAuthenticated()) {
-
       if (location.pathname === "/login" || location.pathname === "/signup") {
         navigate(location.state?.from || "/", { replace: true });   
       }
@@ -159,6 +238,10 @@ export const AuthProvider = ({ children }) => {
     user,
     token,
     login,
+    loginWithGoogle,
+    loginWithApple,
+    loginWithShopify,
+    handleOAuthCallback,
     verify2FA,
     logout,
     isAuthenticated,

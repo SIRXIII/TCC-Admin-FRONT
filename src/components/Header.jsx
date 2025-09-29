@@ -1,17 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Menu, Bell, Search, ChevronDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import profile from "../assets/SVG/img.svg";
 import bell from "../assets/SVG/bell.svg";
 import { useAuth } from "../context/AuthContext";
 
 const Header = ({ toggleSidebar }) => {
   const [showDropdown, setShowDropdown] = useState(false);
+  const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
   const toggleDropdown = () => setShowDropdown(!showDropdown);
 
-    const { user, logout } = useAuth();
+  const { user, logout } = useAuth();
     
   const notifications = 4;
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <header className="bg-[#FFFFFF] shadow-sm p-6 flex items-center justify-between w-full z-10 relative">
@@ -40,10 +57,10 @@ const Header = ({ toggleSidebar }) => {
           )}
         </button>
 
-        <div className="relative gap-3">
+        <div className="relative gap-3" ref={dropdownRef}>
           <button
             onClick={toggleDropdown}
-            className="flex items-center gap-2 focus:outline-none"
+            className="flex items-center gap-2 focus:outline-none hover:bg-gray-50 p-2 rounded-lg transition-colors"
           >
             <img
               src={user?.profile_photo}
@@ -57,26 +74,31 @@ const Header = ({ toggleSidebar }) => {
                 {user?.email}
               </span>
             </span>
-            {/* <ChevronDown className="w-4.5 h-4.5 text-gray-600" strokeWidth={2.5} /> */}
+            <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} strokeWidth={2.5} />
           </button>
 
-          {/* {showDropdown && (
-            <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded shadow-md z-10">
-              <a
-                href="#"
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          {showDropdown && (
+            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+              <button
+                onClick={() => {
+                  navigate('/settings');
+                  setShowDropdown(false);
+                }}
+                className="flex items-center w-full px-4 py-3 text-sm text-[#4F4F4F] hover:bg-[#FEF2E6] transition-colors"
               >
-                Settings
-              </a>
-              <a
-                href="#"
-                onClick={() => { logout(); setShowDropdown(false); }}  
-                className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                <span>Settings</span>
+              </button>
+              <button
+                onClick={() => { 
+                  logout(); 
+                  setShowDropdown(false); 
+                }}  
+                className="flex items-center w-full px-4 py-3 text-sm text-[#4F4F4F] hover:bg-[#FEF2E6] transition-colors border-t border-gray-100"
               >
-                Logout
-              </a>
+                <span>Logout</span>
+              </button>
             </div>
-          )} */}
+          )}
         </div>
       </div>
     </header>

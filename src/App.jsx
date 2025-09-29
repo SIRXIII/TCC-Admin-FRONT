@@ -25,6 +25,7 @@ import ChatSupport from "./pages/Support/ChatSupport";
 import RefundsDetail from "./pages/Refunds/RefundsDetail";
 import UpdateRider from "./pages/Riders/UpdateRider";
 import TwoFactor from "./components/TwoFactor";
+import OAuthCallback from "./components/OAuthCallback";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/two-factor" element={<TwoFactor />} />
+          <Route path="/auth/callback" element={<OAuthCallback />} />
 
          
           <Route
