@@ -1,17 +1,57 @@
 import React, { useEffect, useState } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import API from '../services/api';
 
 const OAuthCallback = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { handleOAuthCallback } = useAuth();
   const navigate = useNavigate();
+
+  // OAuth callback handler
+  const handleOAuthCallback = async (provider, code, state) => {
+    try {
+      // Call backend API directly with proper JSON response
+      const response = await API.get(`/social/${provider}/callback`, {
+        params: { code, state }
+      });
+      
+      const data = response.data;
+      
+      if (data.success && data.data) {
+        // Store token and user data (matching your backend response format)
+        localStorage.setItem('auth_token', data.data.token);
+        localStorage.setItem('auth_user', JSON.stringify(data.data.user));
+        localStorage.setItem('type', data.data.user.type);
+        
+        // Set API authorization header
+        API.defaults.headers.Authorization = `Bearer ${data.data.token}`;
+        
+        // Redirect to dashboard - now it will work properly!
+        navigate('/dashboard');
+      } else {
+        throw new Error(data.message || 'OAuth authentication failed');
+      }
+    } catch (err) {
+      throw new Error(err.response?.data?.message || err.message || 'Authentication failed');
+    }
+  };
 
   useEffect(() => {
     const processCallback = async () => {
       try {
-        await handleOAuthCallback();
+        // Get code and state from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+        
+        if (!code) {
+          throw new Error('No authorization code received');
+        }
+
+        // Determine provider from current path or state
+        const provider = getProviderFromPath();
+        
+        await handleOAuthCallback(provider, code, state);
         // Success - user will be redirected by AuthContext
       } catch (err) {
         setError(err.message || 'Authentication failed');
@@ -24,8 +64,17 @@ const OAuthCallback = () => {
       }
     };
 
+    // Helper function to get provider from URL path
+    const getProviderFromPath = () => {
+      const path = window.location.pathname;
+      if (path.includes('/google/')) return 'google';
+      if (path.includes('/apple/')) return 'apple';
+      if (path.includes('/shopify/')) return 'shopify';
+      return 'google'; // default
+    };
+
     processCallback();
-  }, [handleOAuthCallback, navigate]);
+  }, [navigate]);
 
   if (loading) {
     return (

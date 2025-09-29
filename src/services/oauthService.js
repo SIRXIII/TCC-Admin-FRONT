@@ -57,11 +57,10 @@ class OAuthService {
   // Google OAuth
   async initiateGoogleLogin() {
     try {
-      const state = this.generateState();
-      
+      // Let backend handle state management entirely
       sessionStorage.setItem('oauth_provider', 'google');
       
-      // Get redirect URL from backend - backend handles redirect_uri internally
+      // Get redirect URL from backend - backend handles state and redirect_uri
       const response = await API.get('/social/google/redirect');
       
       // Backend returns: { success: true, data: { redirect_url: "..." }, message: "..." }
@@ -80,11 +79,10 @@ class OAuthService {
   // Apple OAuth
   async initiateAppleLogin() {
     try {
-      const state = this.generateState();
-      
+      // Let backend handle state management entirely
       sessionStorage.setItem('oauth_provider', 'apple');
       
-      // Get redirect URL from backend - backend handles redirect_uri internally
+      // Get redirect URL from backend - backend handles state and redirect_uri
       const response = await API.get('/social/apple/redirect');
       
       // Backend returns: { success: true, data: { redirect_url: "..." }, message: "..." }
@@ -117,12 +115,11 @@ class OAuthService {
         throw new Error('Invalid shop domain format. Please use format like "mystore.myshopify.com"');
       }
 
-      const state = this.generateState();
-      
+      // Let backend handle state management entirely
       sessionStorage.setItem('oauth_provider', 'shopify');
       sessionStorage.setItem('shopify_domain', shopDomain);
       
-      // Get redirect URL from backend - backend handles redirect_uri internally
+      // Get redirect URL from backend - backend handles state and redirect_uri
       const response = await API.get('/social/shopify/redirect', {
         params: {
           shop: shopDomain
@@ -156,27 +153,16 @@ class OAuthService {
       throw new Error('Authorization code not received');
     }
 
-    if (!state) {
-      throw new Error('State parameter missing');
-    }
-
-    // Extract provider from state
-    const [provider, actualState] = state.split('_', 2);
-    
-    if (!this.verifyState(actualState)) {
-      throw new Error('Invalid state parameter - possible CSRF attack');
-    }
-
-    // Get stored provider
+    // Get stored provider (no state validation since backend handles it)
     const storedProvider = sessionStorage.getItem('oauth_provider');
     sessionStorage.removeItem('oauth_provider');
 
-    if (provider !== storedProvider) {
-      throw new Error('Provider mismatch');
+    if (!storedProvider) {
+      throw new Error('No OAuth provider found in session');
     }
 
-    // Handle callback with backend
-    return await this.handleProviderCallback(provider, urlParams);
+    // Handle callback with backend - let backend validate state
+    return await this.handleProviderCallback(storedProvider, urlParams);
   }
 
   // Handle provider callback via backend
