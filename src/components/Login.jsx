@@ -83,6 +83,13 @@ const Login = () => {
     const shopDomain = prompt('Enter your Shopify shop domain (e.g., mystore.myshopify.com):');
     if (!shopDomain) return;
     
+    // Validate shop domain format
+    const shopDomainRegex = /^[a-zA-Z0-9-]+\.myshopify\.com$/;
+    if (!shopDomainRegex.test(shopDomain)) {
+      setError('Invalid shop domain format. Please use format: mystore.myshopify.com');
+      return;
+    }
+    
     setOauthLoading('shopify');
     setError("");
     

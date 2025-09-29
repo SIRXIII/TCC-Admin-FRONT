@@ -19,6 +19,8 @@ const OAuthCallback = () => {
         const loginStatus = searchParams.get('login');
         const provider = searchParams.get('provider');
         
+        console.log('OAuth callback received:', { token: !!token, loginStatus, provider });
+        
         if (token && loginStatus === 'success') {
           // Store token directly from URL parameters
           localStorage.setItem('auth_token', token);
