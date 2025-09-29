@@ -1,0 +1,12 @@
+RewriteEngine On
+
+# Handle client-side routing for React
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} ^/api/social/
+RewriteRule ^ /index.html [QSA,L]
+
+# Fallback to index.html for all other routes
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ /index.html [QSA,L]

@@ -39,7 +39,13 @@ class OAuthService {
   async initiateGoogleLogin() {
     try {
       sessionStorage.setItem('oauth_provider', 'google');
-      const response = await API.get('/social/google/redirect');
+      
+      // Tell backend to use non-API callback URL
+      const callbackUrl = `${window.location.origin}/oauth/google/callback`;
+      const response = await API.get('/social/google/redirect', {
+        params: { redirect_uri: callbackUrl }
+      });
+      
       const redirectUrl = response.data.data?.redirect_url || response.data.redirect_url;
       if (redirectUrl) window.location.href = redirectUrl;
       else throw new Error('No redirect URL received from server');
@@ -51,7 +57,13 @@ class OAuthService {
   async initiateAppleLogin() {
     try {
       sessionStorage.setItem('oauth_provider', 'apple');
-      const response = await API.get('/social/apple/redirect');
+      
+      // Tell backend to use non-API callback URL
+      const callbackUrl = `${window.location.origin}/oauth/apple/callback`;
+      const response = await API.get('/social/apple/redirect', {
+        params: { redirect_uri: callbackUrl }
+      });
+      
       const redirectUrl = response.data.data?.redirect_url || response.data.redirect_url;
       if (redirectUrl) window.location.href = redirectUrl;
       else throw new Error('No redirect URL received from server');
@@ -70,7 +82,14 @@ class OAuthService {
       sessionStorage.setItem('oauth_provider', 'shopify');
       sessionStorage.setItem('shopify_domain', shopDomain);
 
-      const response = await API.get('/social/shopify/redirect', { params: { shop: shopDomain } });
+      // Tell backend to use non-API callback URL
+      const callbackUrl = `${window.location.origin}/oauth/shopify/callback`;
+      const response = await API.get('/social/shopify/redirect', { 
+        params: { 
+          shop: shopDomain,
+          redirect_uri: callbackUrl
+        }
+      });
       const redirectUrl = response.data.data?.redirect_url || response.data.redirect_url;
       if (redirectUrl) window.location.href = redirectUrl;
       else throw new Error('No redirect URL received from server');

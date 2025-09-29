@@ -18,7 +18,7 @@ const Login = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const [error, setError] = useState("");
   const [oauthLoading, setOauthLoading] = useState(null);
-  const { login, loginWithGoogle, loginWithApple, loginWithShopify } = useAuth();
+  const { login } = useAuth();
 
 
   const handleSubmit = async (e) => {
@@ -34,37 +34,34 @@ const Login = () => {
   };
 
   // OAuth handlers
-  const handleGoogleLogin = async () => {
+  const handleGoogleLogin = () => {
     setOauthLoading('google');
     setError("");
-    try {
-      await loginWithGoogle();
-    } catch (err) {
-      setError(err.message);
-      setOauthLoading(null);
-    }
+    
+    // Direct redirect to backend OAuth endpoint
+    const API_URL = import.meta.env.VITE_API_URL || 'https://travelclothingclub-admin.online/api';
+    window.location.href = `${API_URL}/social/google/redirect`;
   };
 
-  const handleAppleLogin = async () => {
+  const handleAppleLogin = () => {
     setOauthLoading('apple');
     setError("");
-    try {
-      await loginWithApple();
-    } catch (err) {
-      setError(err.message);
-      setOauthLoading(null);
-    }
+    
+    // Direct redirect to backend OAuth endpoint
+    const API_URL = import.meta.env.VITE_API_URL || 'https://travelclothingclub-admin.online/api';
+    window.location.href = `${API_URL}/social/apple/redirect`;
   };
 
-  const handleShopifyLogin = async () => {
+  const handleShopifyLogin = () => {
+    const shopDomain = prompt('Enter your Shopify shop domain (e.g., mystore.myshopify.com):');
+    if (!shopDomain) return;
+    
     setOauthLoading('shopify');
     setError("");
-    try {
-      await loginWithShopify();
-    } catch (err) {
-      setError(err.message);
-      setOauthLoading(null);
-    }
+    
+    // Direct redirect to backend OAuth endpoint
+    const API_URL = import.meta.env.VITE_API_URL || 'https://travelclothingclub-admin.online/api';
+    window.location.href = `${API_URL}/social/shopify/redirect?shop=${encodeURIComponent(shopDomain)}`;
   };
 
   useEffect(() => {

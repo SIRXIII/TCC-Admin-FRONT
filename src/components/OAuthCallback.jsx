@@ -1,94 +1,66 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import API from '../services/api';
-import oauthService from '../services/oauthService';
 
 const OAuthCallback = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { setAuthFromExternal } = useAuth();
 
-  // OAuth callback handler
-  const handleOAuthCallback = async (provider, code, state) => {
-    try {
-      // Call backend API directly with proper JSON response
-      const response = await API.get(`/social/${provider}/callback`, {
-        params: { code, state }
-      });
-      
-      // Your backend returns: { success: true, message: "...", data: { user: {...}, token: "60|..." } }
-      const data = response.data;
-      
-      if (data.success && data.data && data.data.token) {
-        const { user, token } = data.data;
-        
-        // Store token directly in localStorage (matching your backend response)
-        localStorage.setItem("auth_token", token);
-        localStorage.setItem("auth_user", JSON.stringify(user));
-        localStorage.setItem("type", user.type);
-        
-        // Set API authorization header for all future requests
-        API.defaults.headers.Authorization = `Bearer ${token}`;
-        
-        // Clean up OAuth session data
-        oauthService.cleanup();
-        
-        // Also use AuthContext to update state
-        setAuthFromExternal({ user, token });
-        
-        // Navigate to dashboard - this will now work perfectly!
-        navigate('/dashboard', { replace: true });
-      } else {
-        throw new Error(data.message || 'Invalid response from server');
-      }
-    } catch (err) {
-      throw new Error(err.response?.data?.message || err.message || 'Authentication failed');
-    }
-  };
 
   useEffect(() => {
     const processCallback = async () => {
       try {
-        // Get code and state from URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-        const state = urlParams.get('state');
+        // Check for token in URL parameters (from backend redirect)
+        const token = searchParams.get('token');
+        const loginStatus = searchParams.get('login');
+        const provider = searchParams.get('provider');
         
-        if (!code) {
-          throw new Error('No authorization code received');
+        if (token && loginStatus === 'success') {
+          // Store token directly from URL parameters
+          localStorage.setItem('auth_token', token);
+          
+          // Set API authorization header
+          API.defaults.headers.Authorization = `Bearer ${token}`;
+          
+          // Get user data with the token
+          try {
+            const userResponse = await API.get('/user');
+            const userData = userResponse.data.data || userResponse.data;
+            
+            localStorage.setItem('auth_user', JSON.stringify(userData));
+            localStorage.setItem('type', userData.type);
+            
+            // Update auth context
+            setAuthFromExternal({ user: userData, token });
+            
+            // Navigate to dashboard
+            navigate('/dashboard', { replace: true });
+          } catch (userErr) {
+            console.error('Failed to fetch user data:', userErr);
+            // Still navigate to dashboard, user data can be fetched later
+            navigate('/dashboard', { replace: true });
+          }
+        } else {
+          const errorMsg = searchParams.get('error') || 'Authentication failed';
+          throw new Error(errorMsg);
         }
-
-        // Determine provider from current path or state
-        const provider = getProviderFromPath();
-        
-        await handleOAuthCallback(provider, code, state);
-        // Success - user will be redirected by AuthContext
       } catch (err) {
-        // Clean up on error
-        oauthService.cleanup();
         setError(err.message || 'Authentication failed');
         // Redirect to login after showing error briefly
         setTimeout(() => {
-          navigate('/login');
+          navigate('/login?error=' + encodeURIComponent(err.message));
         }, 3000);
       } finally {
         setLoading(false);
       }
     };
 
-    // Helper function to get provider from URL path
-    const getProviderFromPath = () => {
-      const path = window.location.pathname;
-      if (path.includes('/google/')) return 'google';
-      if (path.includes('/apple/')) return 'apple';
-      if (path.includes('/shopify/')) return 'shopify';
-      return 'google'; // default
-    };
-
     processCallback();
-  }, [navigate]);
+  }, [navigate, searchParams, setAuthFromExternal]);
 
   if (loading) {
     return (
