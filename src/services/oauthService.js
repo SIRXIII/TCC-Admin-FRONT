@@ -101,10 +101,10 @@ class OAuthService {
 
       if (provider === 'shopify') sessionStorage.removeItem('shopify_domain');
 
-      localStorage.setItem("auth_token", responseData?.data.token);
-      localStorage.setItem("auth_user", JSON.stringify(responseData?.data.user));
-      localStorage.setItem("type", responseData?.data.user.type);
-      API.defaults.headers.Authorization = `Bearer ${responseData?.data.token}`;
+      localStorage.setItem("auth_token", responseData.token);
+      localStorage.setItem("auth_user", JSON.stringify(responseData.user));
+      localStorage.setItem("type", responseData.user.type);
+      API.defaults.headers.Authorization = `Bearer ${responseData.token}`;
 
       if (navigate) navigate("/");
       return responseData;
@@ -116,8 +116,6 @@ class OAuthService {
 
   isOAuthCallback() {
     const urlParams = new URLSearchParams(window.location.search);
-
-    console.log("isOAuthCallback", urlParams);
     return urlParams.has('code') && urlParams.has('state');
   }
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import API from '../services/api';
+import oauthService from '../services/oauthService';
 
 const OAuthCallback = () => {
   const [loading, setLoading] = useState(true);
@@ -17,16 +18,27 @@ const OAuthCallback = () => {
         params: { code, state }
       });
       
-      // Your backend returns: { success: true, message: "...", data: { user: {...}, token: "..." } }
+      // Your backend returns: { success: true, message: "...", data: { user: {...}, token: "60|..." } }
       const data = response.data;
       
       if (data.success && data.data && data.data.token) {
         const { user, token } = data.data;
         
-        // Use AuthContext to properly set authentication state
+        // Store token directly in localStorage (matching your backend response)
+        localStorage.setItem("auth_token", token);
+        localStorage.setItem("auth_user", JSON.stringify(user));
+        localStorage.setItem("type", user.type);
+        
+        // Set API authorization header for all future requests
+        API.defaults.headers.Authorization = `Bearer ${token}`;
+        
+        // Clean up OAuth session data
+        oauthService.cleanup();
+        
+        // Also use AuthContext to update state
         setAuthFromExternal({ user, token });
         
-        // Navigate to dashboard - this will now work properly!
+        // Navigate to dashboard - this will now work perfectly!
         navigate('/dashboard', { replace: true });
       } else {
         throw new Error(data.message || 'Invalid response from server');
@@ -54,6 +66,8 @@ const OAuthCallback = () => {
         await handleOAuthCallback(provider, code, state);
         // Success - user will be redirected by AuthContext
       } catch (err) {
+        // Clean up on error
+        oauthService.cleanup();
         setError(err.message || 'Authentication failed');
         // Redirect to login after showing error briefly
         setTimeout(() => {
