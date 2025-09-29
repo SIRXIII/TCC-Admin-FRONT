@@ -66,10 +66,11 @@ class OAuthService {
       // Backend returns: { success: true, data: { redirect_url: "..." }, message: "..." }
       const redirectUrl = response.data.data?.redirect_url || response.data.redirect_url;
 
-      console.log("redirect google url", redirectUrl);
+    
 
       if (redirectUrl) {
-        window.location.href = redirectUrl;
+        // window.location.href = redirectUrl;
+        handleCallback(redirectUrl);
       } else {
         throw new Error('No redirect URL received from server');
       }
