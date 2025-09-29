@@ -7,6 +7,7 @@ import { FaTimes } from "react-icons/fa";
 import axios from "axios";
 import API from "../../services/api";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const Dropdown = ({
   label,
@@ -69,6 +70,8 @@ const Dropdown = ({
   );
 };
 const AddRiders = () => {
+
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -80,11 +83,13 @@ const AddRiders = () => {
     vehicle_type: "",
     vehicle_name:"",
     license_plate: "",
-    // licenseImage: null,  `
+  
   });
 
   const [profileImage, setProfileImage] = useState(rid_image);
   const [licenseImages, setLicenseImages] = useState({ front: null, back: null });
+    const [errors, setErrors] = useState({});
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
