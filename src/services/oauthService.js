@@ -4,10 +4,11 @@ import CryptoJS from 'crypto-js';
 class OAuthService {
   constructor() {
     this.baseURL = import.meta.env.VITE_API_URL || "https://travelclothingclub-admin.online/api";
-    this.redirectUri = `${window.location.origin}/auth/callback`;
+    this.redirectUri = `${window.location.origin}/auth/callback`; // default generic
     this.useProviderSpecificCallbacks = true;
   }
 
+  // build frontend redirect URI for Google/Apple/Shopify
   getRedirectUri(provider = null) {
     if (this.useProviderSpecificCallbacks && provider) {
       return `${window.location.origin}/auth/${provider}/callback`;
@@ -36,30 +37,35 @@ class OAuthService {
     }
   }
 
-  async initiateGoogleLogin() {
+  // --- Login initiators ---
+  async initiateLogin(provider) {
     try {
-      sessionStorage.setItem('oauth_provider', 'google');
-      const response = await API.get('/social/google/redirect');
-      const redirectUrl = response.data.data?.redirect_url || response.data.redirect_url;
+      sessionStorage.setItem('oauth_provider', provider);
 
-      console.log("redirectUrl", redirectUrl, response);
-      if (redirectUrl) window.location.href = redirectUrl;
-      else throw new Error('No redirect URL received from server');
+      const response = await API.get(`/social/${provider}/redirect`, {
+        params: {
+          redirect_uri: this.getRedirectUri(provider), // tell backend where to send Google response
+          state: this.generateState(),
+        },
+      });
+
+      const redirectUrl = response.data.data?.redirect_url || response.data.redirect_url;
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      } else {
+        throw new Error('No redirect URL received from server');
+      }
     } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to initiate Google login');
+      throw new Error(error.response?.data?.message || `Failed to initiate ${provider} login`);
     }
   }
 
+  async initiateGoogleLogin() {
+    return this.initiateLogin('google');
+  }
+
   async initiateAppleLogin() {
-    try {
-      sessionStorage.setItem('oauth_provider', 'apple');
-      const response = await API.get('/social/apple/redirect');
-      const redirectUrl = response.data.data?.redirect_url || response.data.redirect_url;
-      if (redirectUrl) window.location.href = redirectUrl;
-      else throw new Error('No redirect URL received from server');
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'Failed to initiate Apple login');
-    }
+    return this.initiateLogin('apple');
   }
 
   async initiateShopifyLogin() {
@@ -72,7 +78,14 @@ class OAuthService {
       sessionStorage.setItem('oauth_provider', 'shopify');
       sessionStorage.setItem('shopify_domain', shopDomain);
 
-      const response = await API.get('/social/shopify/redirect', { params: { shop: shopDomain } });
+      const response = await API.get('/social/shopify/redirect', {
+        params: {
+          shop: shopDomain,
+          redirect_uri: this.getRedirectUri('shopify'),
+          state: this.generateState(),
+        },
+      });
+
       const redirectUrl = response.data.data?.redirect_url || response.data.redirect_url;
       if (redirectUrl) window.location.href = redirectUrl;
       else throw new Error('No redirect URL received from server');
@@ -81,6 +94,7 @@ class OAuthService {
     }
   }
 
+  // --- Handle callback ---
   async handleCallback(urlParams, navigate) {
     const code = urlParams.get('code');
     const state = urlParams.get('state');
@@ -88,6 +102,11 @@ class OAuthService {
 
     if (error) throw new Error(`OAuth error: ${error}`);
     if (!code) throw new Error('Authorization code not received');
+
+    // verify state (optional but good)
+    if (!this.verifyState(state)) {
+      throw new Error('Invalid OAuth state');
+    }
 
     const storedProvider = sessionStorage.getItem('oauth_provider');
     sessionStorage.removeItem('oauth_provider');
@@ -103,10 +122,15 @@ class OAuthService {
 
       if (provider === 'shopify') sessionStorage.removeItem('shopify_domain');
 
-      localStorage.setItem("auth_token", responseData?.data.token);
-      localStorage.setItem("auth_user", JSON.stringify(responseData?.data.user));
-      localStorage.setItem("type", responseData?.data.user.type);
-      API.defaults.headers.Authorization = `Bearer ${responseData?.data.token}`;
+      const token = responseData?.data?.token;
+      const user = responseData?.data?.user;
+
+      if (token && user) {
+        localStorage.setItem("auth_token", token);
+        localStorage.setItem("auth_user", JSON.stringify(user));
+        localStorage.setItem("type", user.type);
+        API.defaults.headers.Authorization = `Bearer ${token}`;
+      }
 
       if (navigate) navigate("/");
       return responseData;
@@ -116,10 +140,30 @@ class OAuthService {
     }
   }
 
+  // --- Token login (optional) ---
+  async loginWithToken(provider, token) {
+    try {
+      const response = await API.post(`/social/${provider}/token`, { token });
+      const responseData = response.data.data || response.data;
+
+      const authToken = responseData?.data?.token;
+      const user = responseData?.data?.user;
+
+      if (authToken && user) {
+        localStorage.setItem("auth_token", authToken);
+        localStorage.setItem("auth_user", JSON.stringify(user));
+        localStorage.setItem("type", user.type);
+        API.defaults.headers.Authorization = `Bearer ${authToken}`;
+      }
+
+      return responseData;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Token login failed');
+    }
+  }
+
   isOAuthCallback() {
     const urlParams = new URLSearchParams(window.location.search);
-
-    console.log("isOAuthCallback", urlParams);
     return urlParams.has('code') && urlParams.has('state');
   }
 
