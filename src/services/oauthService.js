@@ -5,7 +5,7 @@ class OAuthService {
   constructor() {
     this.baseURL = import.meta.env.VITE_API_URL || "https://travelclothingclub-admin.online/api";
     this.redirectUri = `${window.location.origin}/auth/callback`;
-    
+
     // Set this to true if you want provider-specific callback URLs
     this.useProviderSpecificCallbacks = true;
   }
@@ -59,15 +59,15 @@ class OAuthService {
     try {
       // Let backend handle state management entirely
       sessionStorage.setItem('oauth_provider', 'google');
-      
+
       // Get redirect URL from backend - backend handles state and redirect_uri
       const response = await API.get('/social/google/redirect');
-      
+
       // Backend returns: { success: true, data: { redirect_url: "..." }, message: "..." }
       const redirectUrl = response.data.data?.redirect_url || response.data.redirect_url;
 
       console.log("redirect google url", redirectUrl);
-      
+
       if (redirectUrl) {
         window.location.href = redirectUrl;
       } else {
@@ -83,13 +83,13 @@ class OAuthService {
     try {
       // Let backend handle state management entirely
       sessionStorage.setItem('oauth_provider', 'apple');
-      
+
       // Get redirect URL from backend - backend handles state and redirect_uri
       const response = await API.get('/social/apple/redirect');
-      
+
       // Backend returns: { success: true, data: { redirect_url: "..." }, message: "..." }
       const redirectUrl = response.data.data?.redirect_url || response.data.redirect_url;
-      
+
       if (redirectUrl) {
         window.location.href = redirectUrl;
       } else {
@@ -105,14 +105,14 @@ class OAuthService {
     try {
       // For Shopify, we need the shop domain
       const shopDomain = prompt('Please enter your Shopify shop domain (e.g., mystore.myshopify.com):');
-      
+
       if (!shopDomain) {
         throw new Error('Shop domain is required for Shopify authentication');
       }
 
       // Basic validation for shop domain
       const shopDomainRegex = /^[a-zA-Z0-9-]+\.myshopify\.com$|^[a-zA-Z0-9-]+\.(com|net|org|co\.uk|ca|au|de|fr|it|es|nl|dk|se|no|fi|ie|be|at|ch|pl|cz|hu|pt|gr|bg|ro|hr|sk|si|lv|lt|ee|lu|mt|cy)$/;
-      
+
       if (!shopDomainRegex.test(shopDomain)) {
         throw new Error('Invalid shop domain format. Please use format like "mystore.myshopify.com"');
       }
@@ -120,17 +120,17 @@ class OAuthService {
       // Let backend handle state management entirely
       sessionStorage.setItem('oauth_provider', 'shopify');
       sessionStorage.setItem('shopify_domain', shopDomain);
-      
+
       // Get redirect URL from backend - backend handles state and redirect_uri
       const response = await API.get('/social/shopify/redirect', {
         params: {
           shop: shopDomain
         }
       });
-      
+
       // Backend returns: { success: true, data: { redirect_url: "..." }, message: "..." }
       const redirectUrl = response.data.data?.redirect_url || response.data.redirect_url;
-      
+
       if (redirectUrl) {
         window.location.href = redirectUrl;
       } else {
@@ -148,8 +148,6 @@ class OAuthService {
     const state = urlParams.get('state');
     const error = urlParams.get('error');
 
-
-    console.log("handleCallback test response", code, state, error);
 
     if (error) {
       throw new Error(`OAuth error: ${error} - ${urlParams.get('error_description') || 'Unknown error'}`);
@@ -173,30 +171,33 @@ class OAuthService {
 
   // Handle provider callback via backend
   async handleProviderCallback(provider, urlParams) {
-        console.log("handleProviderCallback", provider, urlParams);
+    console.log("handleProviderCallback", provider, urlParams);
 
     try {
-     
+
       const response = await API.get(`/social/${provider}/callback?${urlParams.toString()}`);
-      
-      // Backend returns: { success: true, data: { user: {...}, token: "..." }, message: "..." }
-        console.log("test response", response, provider, urlParams);
+
       const responseData = response.data.data || response.data;
-      
+
       // Clean up stored data
       if (provider === 'shopify') {
         sessionStorage.removeItem('shopify_domain');
       }
-      
-      return responseData;
+
+      // return responseData;
+      localStorage.setItem("auth_token", responseData?.data.token);
+      localStorage.setItem("auth_user", JSON.stringify(responseData?.data.user));
+      localStorage.setItem("type", responseData?.data.user.type);
+      API.defaults.headers.Authorization = `Bearer ${responseData?.data.token}`;
+      navigate("/");
     } catch (error) {
       // Clean up on error
       if (provider === 'shopify') {
         sessionStorage.removeItem('shopify_domain');
       }
-      
+
       throw new Error(
-        error.response?.data?.message || 
+        error.response?.data?.message ||
         'Failed to authenticate with OAuth provider'
       );
     }
@@ -208,12 +209,12 @@ class OAuthService {
       const response = await API.post(`/social/${provider}/token`, {
         access_token: accessToken  // Backend expects 'access_token', not 'token'
       });
-      
+
       // Backend returns: { success: true, data: { user: {...}, token: "..." }, message: "..." }
       return response.data.data || response.data;
     } catch (error) {
       throw new Error(
-        error.response?.data?.message || 
+        error.response?.data?.message ||
         'Failed to authenticate with token'
       );
     }
@@ -223,12 +224,12 @@ class OAuthService {
   getProviderFromCallback() {
     const urlParams = new URLSearchParams(window.location.search);
     const state = urlParams.get('state');
-    
+
     if (state) {
       const [provider] = state.split('_', 1);
       return ['google', 'apple', 'shopify'].includes(provider) ? provider : null;
     }
-    
+
     return null;
   }
 
