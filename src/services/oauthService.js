@@ -65,6 +65,8 @@ class OAuthService {
       
       // Backend returns: { success: true, data: { redirect_url: "..." }, message: "..." }
       const redirectUrl = response.data.data?.redirect_url || response.data.redirect_url;
+
+      console.log("redirect google url", redirectUrl);
       
       if (redirectUrl) {
         window.location.href = redirectUrl;
@@ -141,9 +143,13 @@ class OAuthService {
 
   // Handle OAuth callback and exchange code for token
   async handleCallback(urlParams) {
+
     const code = urlParams.get('code');
     const state = urlParams.get('state');
     const error = urlParams.get('error');
+
+
+    console.log("handleCallback test response", code, state, error);
 
     if (error) {
       throw new Error(`OAuth error: ${error} - ${urlParams.get('error_description') || 'Unknown error'}`);
@@ -167,9 +173,10 @@ class OAuthService {
 
   // Handle provider callback via backend
   async handleProviderCallback(provider, urlParams) {
+        console.log("handleProviderCallback", provider, urlParams);
+
     try {
-      // Laravel Socialite handles the callback automatically
-      // We just need to hit the callback endpoint and let Laravel do the work
+     
       const response = await API.get(`/social/${provider}/callback?${urlParams.toString()}`);
       
       // Backend returns: { success: true, data: { user: {...}, token: "..." }, message: "..." }
