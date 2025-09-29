@@ -4,6 +4,7 @@ import profile from "../assets/SVG/img.svg";
 import bell from "../assets/SVG/bell.svg";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import DefaultProfile from "../assets/Images/rid_profile.jpg";
 
 const Header = ({ toggleSidebar }) => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -158,12 +159,10 @@ const Header = ({ toggleSidebar }) => {
             className="flex items-center gap-2 focus:outline-none hover:bg-gray-50 p-2 rounded-lg transition-colors"
           >
             <img
-              src={user?.profile_photo?.url || user?.avatar || profile}
+              src={user?.profile_photo}
               alt="Profile"
-              className="w-12 h-12 rounded-[10px] object-cover"
-              onError={(e) => {
-                e.target.src = profile; // Fallback to default profile image
-              }}
+              className="w-12 h-12 rounded-[10px]"
+              onError={(e) => { e.currentTarget.src = DefaultProfile; }}
             />
             
             <span className="text-base font-medium text-left text-[#232323] hidden md:inline leading-[150%]">
