@@ -26,6 +26,7 @@ import RefundsDetail from "./pages/Refunds/RefundsDetail";
 import UpdateRider from "./pages/Riders/UpdateRider";
 import TwoFactor from "./components/TwoFactor";
 import ProtectedRoute from "./components/ProtectedRoute";
+import OAuthCallback from "./components/OAuthCallback";
 
 const queryClient = new QueryClient();
 
