@@ -41,6 +41,8 @@ class OAuthService {
       sessionStorage.setItem('oauth_provider', 'google');
       const response = await API.get('/social/google/redirect');
       const redirectUrl = response.data.data?.redirect_url || response.data.redirect_url;
+
+      console.log("redirectUrl", redirectUrl, response);
       if (redirectUrl) window.location.href = redirectUrl;
       else throw new Error('No redirect URL received from server');
     } catch (error) {
