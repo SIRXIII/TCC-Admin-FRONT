@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 const Header = ({ toggleSidebar }) => {
   const [showDropdown, setShowDropdown] = useState(false);
-  const { user, notifications, markAsRead, markAllAsRead } = useAuth();
+  const { user, notifications, markAsRead, markAllAsRead, logout } = useAuth();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
   const profileRef = useRef(null);
@@ -152,28 +152,31 @@ const Header = ({ toggleSidebar }) => {
           )}
         </div>
 
-        <div className="flex items-center gap-3" ref={profileRef}>
+        <div className="flex items-center gap-3 relative" ref={profileRef}>
           <button
             onClick={toggleDropdown}
             className="flex items-center gap-2 focus:outline-none hover:bg-gray-50 p-2 rounded-lg transition-colors"
           >
             <img
-              src={user?.profile_photo}
+              src={user?.profile_photo?.url || user?.avatar || profile}
               alt="Profile"
-              className="w-12 h-12 rounded-[10px]"
+              className="w-12 h-12 rounded-[10px] object-cover"
+              onError={(e) => {
+                e.target.src = profile; // Fallback to default profile image
+              }}
             />
             
             <span className="text-base font-medium text-left text-[#232323] hidden md:inline leading-[150%]">
-              {user?.name} <br />
+              {user?.name || user?.first_name + ' ' + user?.last_name || 'User'} <br />
               <span className="text-xs font-medium text-[#9A9A9A] hidden md:inline leading-[150%]">
-                {user?.email}
+                {user?.email || 'user@example.com'}
               </span>
             </span>
             <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform duration-200 ${profileDropdown ? 'rotate-180' : ''}`} strokeWidth={2.5} />
           </button>
 
           {profileDropdown && (
-            <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+            <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
               <button
                 onClick={() => {
                   navigate('/settings');
@@ -184,9 +187,13 @@ const Header = ({ toggleSidebar }) => {
                 <span>Settings</span>
               </button>
               <button
-                onClick={() => { 
-                  logout(); 
-                  setProfileDropdown(false); 
+                onClick={async () => { 
+                  setProfileDropdown(false);
+                  try {
+                    await logout();
+                  } catch (error) {
+                    console.error('Logout failed:', error);
+                  }
                 }}  
                 className="flex items-center w-full px-4 py-3 text-sm text-[#4F4F4F] hover:bg-[#FEF2E6] transition-colors border-t border-gray-100"
               >

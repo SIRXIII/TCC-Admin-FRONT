@@ -37,12 +37,12 @@ const OAuthCallback = () => {
             // Update auth context
             setAuthFromExternal({ user: userData, token });
             
-            // Force a page reload to ensure auth context is fully updated
-            window.location.href = '/';
+              // Navigate to dashboard
+              navigate('/dashboard', { replace: true });
           } catch (userErr) {
             console.error('Failed to fetch user data:', userErr);
-            // Force a page reload even if user fetch fails
-            window.location.href = '/';
+            // Still navigate to dashboard even if user fetch fails
+            navigate('/dashboard', { replace: true });
           }
         } else {
           const errorMsg = searchParams.get('error') || 'Authentication failed';

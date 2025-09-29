@@ -127,9 +127,9 @@ export const AuthProvider = ({ children }) => {
     setUser(data.user);
     localStorage.setItem("auth_token", data.token);
     localStorage.setItem("auth_user", JSON.stringify(data.user));
-    localStorage.setItem("type", data.user.type);
+    localStorage.setItem("type", data.user.type || "admin");
     API.defaults.headers.Authorization = `Bearer ${data.token}`;
-    navigate("/");
+    navigate("/dashboard");
   };
 
   // OAuth login methods
