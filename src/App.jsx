@@ -41,9 +41,11 @@ const App = () => {
           <Route path="/two-factor" element={<TwoFactor />} />
 
  {/* OAuth Callback Routes */}
-          <Route path="/api/social/google/callback" element={<OAuthCallback />} />
+          {/* <Route path="/api/social/google/callback" element={<OAuthCallback />} />
           <Route path="/api/social/apple/callback" element={<OAuthCallback />} />
-          <Route path="/api/social/shopify/callback" element={<OAuthCallback />} />
+          <Route path="/api/social/shopify/callback" element={<OAuthCallback />} /> */}
+
+          <Route path="/oauth/callback" element={<OAuthCallback />} />
          
           <Route
             element={
