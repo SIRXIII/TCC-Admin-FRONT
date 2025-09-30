@@ -79,23 +79,39 @@ const Login = () => {
     window.location.href = `${API_URL}/social/apple/redirect`;
   };
 
-  const handleShopifyLogin = () => {
-    const shopDomain = prompt('Enter your Shopify shop domain (e.g., mystore.myshopify.com):');
-    if (!shopDomain) return;
-    
-    // Validate shop domain format
-    const shopDomainRegex = /^[a-zA-Z0-9-]+\.myshopify\.com$/;
-    if (!shopDomainRegex.test(shopDomain)) {
-      setError('Invalid shop domain format. Please use format: mystore.myshopify.com');
-      return;
+  const handleShopifyLogin = async () => {
+    try {
+      setOauthLoading('shopify');
+      setError("");
+      
+      const shopDomain = prompt('Enter your Shopify shop domain (e.g., mystore.myshopify.com):');
+      if (!shopDomain) {
+        setOauthLoading(null);
+        return;
+      }
+      
+      // Validate shop domain format
+      const shopDomainRegex = /^[a-zA-Z0-9-]+\.myshopify\.com$/;
+      if (!shopDomainRegex.test(shopDomain)) {
+        setError('Invalid shop domain format. Please use format: mystore.myshopify.com');
+        setOauthLoading(null);
+        return;
+      }
+      
+      // Use oauthService for consistency
+      const oauthService = (await import('../services/oauthService')).default;
+      
+      // Store shop domain for the service
+      sessionStorage.setItem('shopify_domain', shopDomain);
+      
+      // Direct redirect to backend OAuth endpoint
+      const API_URL = import.meta.env.VITE_API_URL || 'https://travelclothingclub-admin.online/api';
+      window.location.href = `${API_URL}/social/shopify/redirect?shop=${encodeURIComponent(shopDomain)}`;
+      
+    } catch (error) {
+      setError(error.message || 'Failed to initiate Shopify login');
+      setOauthLoading(null);
     }
-    
-    setOauthLoading('shopify');
-    setError("");
-    
-    // Direct redirect to backend OAuth endpoint
-    const API_URL = import.meta.env.VITE_API_URL || 'https://travelclothingclub-admin.online/api';
-    window.location.href = `${API_URL}/social/shopify/redirect?shop=${encodeURIComponent(shopDomain)}`;
   };
 
   useEffect(() => {
@@ -293,10 +309,10 @@ const Login = () => {
           </div>
 
           <p className="text-center text-base font-inter text-gray-600 mt-6">
-            Don’t have an account?{" "}
+            {/* Don’t have an account?{" "}
             <Link to="/signup" className="text-[#F77F00] fw6 ">
               Sign up
-            </Link>
+            </Link> */}
           </p>
         </div>
       </div>

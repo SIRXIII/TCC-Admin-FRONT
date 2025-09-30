@@ -151,9 +151,7 @@ export const AuthProvider = ({ children }) => {
 
   const loginWithShopify = async () => {
     try {
-      // Shopify login is handled directly in the Login component
-      // This method is kept for compatibility but not used
-      throw new Error("Shopify login should be handled directly in Login component");
+      return await oauthService.initiateShopifyLogin();
     } catch (error) {
       throw new Error(error.message || "Failed to initiate Shopify login");
     }
