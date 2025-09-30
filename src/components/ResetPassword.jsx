@@ -10,7 +10,7 @@ const ResetPassword = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    email: searchParams.get('email') || "",
+    email: decodeURIComponent(searchParams.get('email') || ""),
     token: searchParams.get('token') || "",
     password: "",
     password_confirmation: ""
@@ -26,6 +26,10 @@ const ResetPassword = () => {
     // Check if token and email are present
     if (!formData.token || !formData.email) {
       setError("Invalid reset link. Please request a new password reset.");
+      console.log("Reset password error - Token:", formData.token, "Email:", formData.email);
+    } else {
+      setError(""); // Clear error if both are present
+      console.log("Reset password success - Token:", formData.token, "Email:", formData.email);
     }
   }, [formData.token, formData.email]);
 

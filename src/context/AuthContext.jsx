@@ -250,7 +250,16 @@ export const AuthProvider = ({ children }) => {
     }
 
     if (!isAuthenticated() && !pending2FA) {
-      if (location.pathname !== "/login" && location.pathname !== "/signup") {
+      const publicRoutes = [
+        "/login", 
+        "/signup", 
+        "/forgot-password", 
+        "/reset-password",
+        "/oauth/google/callback",
+        "/oauth/apple/callback", 
+        "/oauth/shopify/callback"
+      ];
+      if (!publicRoutes.includes(location.pathname)) {
         navigate("/login");
       }
     }
@@ -262,7 +271,8 @@ export const AuthProvider = ({ children }) => {
     }
 
     if (isAuthenticated()) {
-      if (location.pathname === "/login" || location.pathname === "/signup") {
+      const authRedirectRoutes = ["/login", "/signup"];
+      if (authRedirectRoutes.includes(location.pathname)) {
         navigate(location.state?.from || "/", { replace: true });
       }
     }
