@@ -158,7 +158,7 @@ const Header = ({ toggleSidebar }) => {
             className="flex items-center gap-2 focus:outline-none hover:bg-gray-50 p-2 rounded-lg transition-colors"
           >
             <img
-              src={user?.profile_photo}
+              src={user?.profile_photo }
               alt="Profile"
               className="w-12 h-12 rounded-[10px]"
             />
