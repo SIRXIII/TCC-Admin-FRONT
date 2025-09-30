@@ -226,9 +226,9 @@ const Login = () => {
                 />
                 <span className="fw5 text-[#6C6C6C]">Remember me</span>
               </label>
-              <a href="/" className="text-[#F77F00] hover:underline fw5">
+              <Link to="/forgot-password" className="text-[#F77F00] hover:underline fw5">
                 Forgot password?
-              </a>
+              </Link>
             </div>
 
             <button
