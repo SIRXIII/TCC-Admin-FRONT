@@ -19,3 +19,8 @@ export const getTopPartners = async () => {
   return response.data;
 };
 
+export const getOrderStats = async () => {
+  const response = await API.get("/orders");
+  return response.data;
+};
+

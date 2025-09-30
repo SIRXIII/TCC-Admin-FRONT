@@ -18,7 +18,7 @@ const MonthlyOrdersTrend = () => {
   ];
   const yAxisValues = [25, 20, 15, 10, 5];
   const chartHeight = 314;
-  const chartWidth = 1018;
+  const chartWidth = 1000; // Full width for better visibility
   const lineHeight = 109;
 
   const maxValue = Math.max(...ordersData);
@@ -47,9 +47,9 @@ const MonthlyOrdersTrend = () => {
           ))}
         </div>
 
-        <div className="relative border-l border-b border-[#D5D7DA] w-[1018px] h-[314px]">
+        <div className="relative border-l border-b border-[#D5D7DA] w-full h-[314px]">
           <svg
-            className="w-[1018px] h-[314px]"
+            className="w-full h-[314px]"
             viewBox={`0 0 ${chartWidth} ${chartHeight}`}
             preserveAspectRatio="none"
           >
@@ -61,7 +61,7 @@ const MonthlyOrdersTrend = () => {
             />
           </svg>
 
-          <div className="absolute -bottom-6 left-0 flex justify-between w-[1018px] h-[21px] fw4 text-sm leading-[150%] tracking-[-0.03em] text-center text-[#4B5563]">
+          <div className="absolute -bottom-6 left-0 flex justify-between w-full h-[21px] fw4 text-sm leading-[150%] tracking-[-0.03em] text-center text-[#4B5563]">
             {months.map((month, index) => (
               <div key={index} className="flex-1 text-center">
                 {month}
