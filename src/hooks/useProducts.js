@@ -28,6 +28,7 @@ export const useStatusUpdateProduct = () => {
     mutationFn: ({ id, status }) => statusUpdateProduct(id, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+  
     },
   });
 };

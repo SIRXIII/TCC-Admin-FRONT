@@ -81,15 +81,15 @@ const AddRiders = () => {
     insurance_expire_date: "",
     assigned_region: [],
     vehicle_type: "",
-    vehicle_name:"",
+    vehicle_name: "",
     license_plate: "",
-  
+
   });
 
   const [profileImage, setProfileImage] = useState(rid_image);
   const [licenseImages, setLicenseImages] = useState({ front: null, back: null });
-    const [errors, setErrors] = useState({});
-  
+  const [errors, setErrors] = useState({});
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -110,14 +110,14 @@ const AddRiders = () => {
   };
 
 
-  
-    const handleDelete = (type, index = null) => {
-      if (type === "profile") {
-        setProfileImage(rid_image);
-      } else if (type === "license") {
-        setLicenseImages((prev) => prev.filter((_, i) => i !== index));
-      }
-    };
+
+  const handleDelete = (type, index = null) => {
+    if (type === "profile") {
+      setProfileImage(rid_image);
+    } else if (type === "license") {
+      setLicenseImages((prev) => prev.filter((_, i) => i !== index));
+    }
+  };
 
 
   const handleSubmit = async (e) => {
@@ -149,8 +149,6 @@ const AddRiders = () => {
       navigate("/riders");
       setErrors({});
     } catch (err) {
-
-      console.log(err)
       if (err.response?.data?.errors) {
         setErrors(err.response.data.errors);
       } else {
@@ -247,124 +245,142 @@ const AddRiders = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="relative">
-              <input
-                type="text"
-                id="first_name"
-                name="first_name"
-                value={formData.first_name}
-                onChange={handleChange}
-                className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
-                placeholder=" "
-              />
-              <label
-                htmlFor="first_name"
-                className="absolute text-sm ms-4 text-[#232323]  duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
-              >
-                First Name
-              </label>
+            <div>
+              <div className="relative">
+
+
+                <input
+                  type="text"
+                  id="first_name"
+                  name="first_name"
+                  value={formData.first_name}
+                  onChange={handleChange}
+                  className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
+                  placeholder=" "
+                />
+                <label
+                  htmlFor="first_name"
+                  className="absolute text-sm ms-4 text-[#232323]  duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
+                >
+                  First Name
+                </label>
+              </div>
+              {errors.first_name && (
+                <p className="text-red-500 text-xs mt-1 ms-2">{errors.first_name[0]}</p>
+              )}
             </div>
-            <div className="relative">
-              <input
-                type="text"
-                id="last_name"
-                name="last_name"
-                value={formData.last_name}
-                onChange={handleChange}
-                className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
-                placeholder=" "
-              />
-              <label
-                htmlFor="last_name"
-                className="absolute text-sm ms-4 text-[#232323]  duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
-              >
-                Last Name
-              </label>
+            <div>
+              <div className="relative">
+                <input
+                  type="text"
+                  id="last_name"
+                  name="last_name"
+                  value={formData.last_name}
+                  onChange={handleChange}
+                  className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
+                  placeholder=" "
+                />
+                <label
+                  htmlFor="last_name"
+                  className="absolute text-sm ms-4 text-[#232323]  duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
+                >
+                  Last Name
+                </label>
+              </div>
+              {errors.last_name && (
+                <p className="text-red-500 text-xs mt-1 ms-2">{errors.last_name[0]}</p>
+              )}
             </div>
 
-            <div className="relative">
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
-                placeholder=" "
-              />
-              <label
-                htmlFor="email"
-                className="absolute text-sm ms-4 text-[#232323]  duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
-              >
-                Email
-              </label>
+            <div>
+              <div className="relative">
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
+                  placeholder=" "
+                />
+                <label
+                  htmlFor="email"
+                  className="absolute text-sm ms-4 text-[#232323]  duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
+                >
+                  Email
+                </label>
+              </div>
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1 ms-2">{errors.email[0]}</p>
+              )}
+            </div>
+            <div>
+              <div className="relative">
+                <input
+                  type="numeric"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                   onInput={(e) => {
+                  
+                    e.target.value = e.target.value.replace(/[^0-9+()\-\s]/g, "");
+                  
+                }}
+                  className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
+                  placeholder=" "
+                />
+                <label
+                  htmlFor="phone"
+                  className="absolute text-sm ms-4 text-[#232323]  duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
+                >
+                  Phone Number
+                </label>
+              </div>
+              {errors.phone && (
+                <p className="text-red-500 text-xs mt-1 ms-2">{errors.phone[0]}</p>
+              )}
+            </div>
+            <div>
+              <div className="relative">
+                <input
+                  type="text"
+                  id="address"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
+                  placeholder=" "
+                />
+                <label htmlFor="address" className="absolute text-sm ms-4 text-[#232323]  duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4">
+                  Address
+                </label>
+              </div>
+              {errors.address && (
+                <p className="text-red-500 text-xs mt-1 ms-2">{errors.address[0]}</p>
+              )}
             </div>
 
-            <div className="relative">
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
-                placeholder=" "
-              />
-              <label
-                htmlFor="phone"
-                className="absolute text-sm ms-4 text-[#232323]  duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
-              >
-                Phone Number
-              </label>
-            </div>
-
-            {/* <div className="relative md:col-span-2">
-              <input
-                type="text"
-                id="address"
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                className="block p-4 pt-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
-                placeholder=" "
-              />
-              <label
-                htmlFor="address"
-                className="absolute text-sm ms-4 text-[#232323]  duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
-              >
-                Address
-              </label>
-            </div> */}
-            <div className="relative">
-              <input
-                type="text"
-                id="address"
-                name="address"
-                value={formData.address}
-                onChange={handleChange}
-                className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
-                placeholder=" "
-              />
-              <label htmlFor="address" className="absolute text-sm ms-4 text-[#232323]  duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4">
-                Address
-              </label>
-            </div>
-
-            <div className="relative">
-              <input
-                type="date"
-                id="insurance_expire_date"
-                name="insurance_expire_date"
-                value={formData.insurance_expire_date}
-                onChange={handleChange}
-                className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
-              />
-              <label
-                htmlFor="insurance_expire_date"
-                className="absolute text-sm ms-4 text-[#232323]  duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
-              >
-                Insurance Expire Date
-              </label>
+            <div>
+              <div className="relative">
+                <input
+                  type="date"
+                  id="insurance_expire_date"
+                  name="insurance_expire_date"
+                  value={formData.insurance_expire_date}
+                  onChange={handleChange}
+                  className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
+                />
+                <label
+                  htmlFor="insurance_expire_date"
+                  className="absolute text-sm ms-4 text-[#232323]  duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
+                >
+                  Insurance Expire Date
+                </label>
+              </div>
+              {errors.insurance_expire_date && (
+                <p className="text-red-500 text-xs mt-1 ms-2">{errors.insurance_expire_date[0]}</p>
+              )}
             </div>
           </div>
         </div>
@@ -375,78 +391,99 @@ const AddRiders = () => {
         >
           <h2 className="text-lg text-[#232323] fw6">Work Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="relative">
+            <div>
+              <div className="relative">
 
-              <Dropdown
-                label="Select Assigned Region"
-                options={["Brooklyn", "Queens", "Manhattan"]}
-                multiple={true}
-                value={formData.assigned_region}
-                onChange={(val) =>
-                  setFormData((prev) => ({ ...prev, assigned_region: val }))
-                }
-                className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer appearance-none focus:outline-none"
-                dropdownClass="w-full"
-              />
-              <label
-                htmlFor="assigned_region"
-                className="absolute text-sm ms-4 text-[#232323]  duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
-              >
-                Assigned Region
-              </label>
+                <Dropdown
+                  label="Select Assigned Region"
+                  options={["Brooklyn", "Queens", "Manhattan"]}
+                  multiple={true}
+                  value={formData.assigned_region}
+                  onChange={(val) =>
+                    setFormData((prev) => ({ ...prev, assigned_region: val }))
+                  }
+                  className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer appearance-none focus:outline-none"
+                  dropdownClass="w-full"
+                />
+                <label
+                  htmlFor="assigned_region"
+                  className="absolute text-sm ms-4 text-[#232323]  duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
+                >
+                  Assigned Region
+                </label>
+              </div>
+              {errors.assigned_region && (
+                <p className="text-red-500 text-xs mt-1 ms-2">{errors.assigned_region[0]}</p>
+              )}
             </div>
+            <div>
 
-            <div className="relative">
-              <Dropdown
-                label="Select Vehicle Type"
-                options={["Bike", "Car", "Scooter", "Van"]}
-                multiple={false}
-                value={formData.vehicle_type}
-                onChange={(val) =>
-                  setFormData((prev) => ({ ...prev, vehicle_type: val }))
-                }
-                dropdownClass="w-full"
-              />
-              <label
-                htmlFor="vehicle_type"
-                className="absolute text-sm ms-4 text-[#232323]  duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
-              >
-                Vehicle Type
-              </label>
+              <div className="relative">
+                <Dropdown
+                  label="Select Vehicle Type"
+                  options={["Bike", "Car", "Scooter", "Van"]}
+                  multiple={false}
+                  value={formData.vehicle_type}
+                  onChange={(val) =>
+                    setFormData((prev) => ({ ...prev, vehicle_type: val }))
+                  }
+                  dropdownClass="w-full"
+                />
+                <label
+                  htmlFor="vehicle_type"
+                  className="absolute text-sm ms-4 text-[#232323]  duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
+                >
+                  Vehicle Type
+                </label>
+              </div>
+              {errors.vehicle_type && (
+                <p className="text-red-500 text-xs mt-1 ms-2">{errors.vehicle_type[0]}</p>
+              )}
             </div>
+            <div>
 
-            <div className="relative">
-              <input
-                type="text"
-                id="vehicle_name"
-                name="vehicle_name"
-                value={formData.vehicle_name}
-                onChange={handleChange}
-                className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
-                placeholder=" "
-              />
-              <label htmlFor="vehicle_name" className="absolute text-sm ms-4 text-[#232323]  duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4">
-                Vehicle Name
-              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  id="vehicle_name"
+                  name="vehicle_name"
+                  value={formData.vehicle_name}
+                  onChange={handleChange}
+                  className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
+                  placeholder=" "
+                />
+                <label htmlFor="vehicle_name" className="absolute text-sm ms-4 text-[#232323]  duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4">
+                  Vehicle Name
+                </label>
+              </div>
+              {errors.vehicle_name && (
+                <p className="text-red-500 text-xs mt-1 ms-2">{errors.vehicle_name[0]}</p>
+              )}
             </div>
+            <div>
 
-            <div className="relative">
-              <input
-                type="text"
-                id="license_plate"
-                name="license_plate"
-                value={formData.license_plate}
-                onChange={handleChange}
-                className="block p-4 pt-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
-                placeholder=" "
-              />
-              <label
-                htmlFor="license_plate"
-                className="absolute text-sm ms-4 text-[#232323] duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
-              >
-                License Plate
-              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  id="license_plate"
+                  name="license_plate"
+                  value={formData.license_plate}
+                  onChange={handleChange}
+                  className="block p-4 pt-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
+                  placeholder=" "
+                />
+                <label
+                  htmlFor="license_plate"
+                  className="absolute text-sm ms-4 text-[#232323] duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
+                >
+                  License Plate
+                </label>
+              </div>
+              {errors.license_plate && (
+                <p className="text-red-500 text-xs mt-1 ms-2">{errors.license_plate[0]}</p>
+              )}
             </div>
+            <div></div>
           </div>
         </div>
 
@@ -455,25 +492,7 @@ const AddRiders = () => {
           style={{ boxShadow: "0px 0px 3px 0px #00000033" }}
         >
           <h1 className="text-lg text-[#232323] fw6">License</h1>
-          {/* <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center">
-            <input
-              type="file"
-              name="licenseImage"
-              onChange={handleFileChange}
-              className="hidden"
-              id="licenseImage"
-            />
-            <label
-              htmlFor="licenseImage"
-              className="cursor-pointer flex flex-col items-center"
-            >
-              <img src={Upload} alt="" className="w-8 h-8 mb-2" />
-              <p className="text-base fw6 text-[#6C6C6C]">
-                Upload license image.
-              </p>
-              <p className="text-xs text-[#9A9A9A]">Only PNG, JPG allowed.</p>
-            </label>
-          </div> */}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
             <div
@@ -548,7 +567,7 @@ const AddRiders = () => {
                   </button>
                 </div>
               ) : (
-                // <p className="text-sm text-gray-500">Upload License Back</p>
+
                 <div className="cursor-pointer flex flex-col items-center">
                   <img src={Upload} alt="" className="w-8 h-8 mb-2" />
                   <p className="text-base fw6 text-[#6C6C6C]">

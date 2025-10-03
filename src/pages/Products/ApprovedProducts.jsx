@@ -6,6 +6,7 @@ import ActionMenu from "../../components/Partners/ActionMenu";
 import { useStatusUpdateProduct } from "../../hooks/useProducts";
 import DefaultProfile from "../../assets/Images/trv_profile.jpg"
 import productImg from "../../assets/Images/Pro_img.jpg";
+import { toast } from "react-toastify";
 
 
 
@@ -34,9 +35,26 @@ const ApprovedProducts = ({ paginatedProducts = [], openActionId, setOpenActionI
   };
 
   const handleSuspendProduct = (id, status) => {
-    statusUpdate({ id: id, status: status });
+    statusUpdate(
+      { id, status },
+      {
+        onSuccess: (res) => {
 
-  }
+          if (res?.data?.success) {
+            toast.success(
+              `Product ${status === "accept" ? "activated" : "suspended"} successfully!`
+            );
+          } else {
+            toast.error(res?.message || "Failed to update product status");
+          }
+
+          fetchProduct();
+        },
+
+      }
+    );
+  };
+
 
   const renderSortIcon = (key) => {
     return (
@@ -163,7 +181,7 @@ const ApprovedProducts = ({ paginatedProducts = [], openActionId, setOpenActionI
                     src={p.partner?.profile_photo}
                     alt={p.partner?.name}
                     className="w-8 h-8 rounded-full"
-                  onError={(e) => { e.currentTarget.src = DefaultProfile; }}
+                    onError={(e) => { e.currentTarget.src = DefaultProfile; }}
 
                   />
                   <div>
@@ -211,30 +229,37 @@ const ApprovedProducts = ({ paginatedProducts = [], openActionId, setOpenActionI
                     setOpenActionId={setOpenActionId}
                     paginatedPartners={paginatedProducts}
                     items={[
-
                       {
                         label: "View",
                         type: "link",
                         to: `/products/productsdetail/${p.id}`,
                       },
-                      {
-                        label: "Accept",
-                        onClick: () => handleSuspendProduct(p.id, "accept"),
-                      },
-                      {
-                        label: "Reject",
-                        onClick: () => handleSuspendProduct(p.id, "reject"),
-                      },
+                      ...(p.status !== "Active"
+                        ? [
+                          {
+                            label: "Accept",
+                            onClick: () => handleSuspendProduct(p.id, "accept"),
+                          },
+                        ]
+                        : []),
+                      ...(p.status !== "Suspended"
+                        ? [
+                          {
+                            label: "Reject",
+                            onClick: () => handleSuspendProduct(p.id, "reject"),
+                          },
+                        ]
+                        : []),
                       {
                         label: "Request Information",
-                        onClick: (p) => {
+                        onClick: () => {
                           setSelectedProduct(p);
                           setIsDialogOpen(true);
                         },
-
                       },
                     ]}
                   />
+
                   <ProductReqInfo
                     isOpen={isDialogOpen}
                     onClose={() => setIsDialogOpen(false)}

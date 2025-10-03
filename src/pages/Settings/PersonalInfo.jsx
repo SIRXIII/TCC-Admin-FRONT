@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import API from "../../services/api";
 import Rid_image from "../../assets/Images/rid_profile.jpg";
 import { toast } from "react-toastify";
+import { useAuth } from "../../context/AuthContext";
 
 const PersonalInfo = () => {
+  const { setUser } = useAuth();
   const currentUser = JSON.parse(localStorage.getItem("auth_user")) || {};
 
   const [formData, setFormData] = useState({
@@ -13,7 +15,7 @@ const PersonalInfo = () => {
     phone: currentUser.phone || "",
   });
 
-  const [image, setImage] = useState(null); 
+  const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(
     currentUser.profile_photo ?? Rid_image
   );
@@ -28,7 +30,7 @@ const PersonalInfo = () => {
     });
     setImage(null);
     setPreview(
-      currentUser.profile_photo ??  Rid_image
+      currentUser.profile_photo ?? Rid_image
     );
   };
 
@@ -52,7 +54,7 @@ const PersonalInfo = () => {
       data.append("user_id", currentUser.id);
       Object.keys(formData).forEach((key) => data.append(key, formData[key]));
       if (image) {
-        data.append("profile_photo", image); 
+        data.append("profile_photo", image);
       }
 
       const response = await API.post("/profile/update", data, {
@@ -60,11 +62,12 @@ const PersonalInfo = () => {
       });
 
       localStorage.setItem("auth_user", JSON.stringify(response.data.user));
-     
+      setUser(response.data.user);
+
       toast.success("Profile updated successfully!")
     } catch (err) {
       console.error(err);
-     
+
       toast.error("Failed to update profile")
     } finally {
       setLoading(false);
@@ -78,14 +81,14 @@ const PersonalInfo = () => {
           Personal Information
         </h2>
 
-        
+
         <div className="flex gap-4 items-center">
           <img
             src={preview}
             alt="profile"
             className="w-18 h-18 rounded-[10px] object-cover object-center"
-           onError={(e) => { e.currentTarget.src = Rid_image; }}
-            
+            onError={(e) => { e.currentTarget.src = Rid_image; }}
+
           />
           <div className="flex gap-2">
             <label className="cursor-pointer border border-[#F77F00] bg-[#FEF2E6] rounded-lg p-3 text-xs fw6 text-[#F77F00] hover:bg-[#F77F00] hover:text-[#FFFFFF]">
@@ -115,25 +118,37 @@ const PersonalInfo = () => {
           {["first_name", "last_name", "email", "phone"].map((field) => (
             <div className="relative" key={field}>
               <input
-                type={field === "email" ? "email" : "text"}
+                type={
+                  field === "email" ? "email" : field === "phone" ? "tel" : "text"
+                }
                 id={field}
                 name={field}
-                value={formData[field]}
+                value={formData[field] ?? ""}
                 onChange={handleChange}
+                onInput={(e) => {
+                  if (field === "phone") {
+                    e.target.value = e.target.value.replace(/[^0-9+()\-\s]/g, "");
+                  }
+                }}
                 className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
                 placeholder=" "
+                inputMode={field === "phone" ? "tel" : undefined}
+                pattern={field === "phone" ? "^\\+?[0-9\\s()\\-]*$" : undefined}
+                autoComplete={field === "email" ? "email" : field === "phone" ? "tel" : "name"}
+                maxLength={field === "phone" ? 20 : undefined}
               />
               <label
                 htmlFor={field}
                 className="absolute text-sm ms-4 text-[#232323] duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 
-                peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 
-                peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
+                            peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 
+                            peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
               >
                 {field.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase())}
               </label>
             </div>
           ))}
         </div>
+
 
         {/* Actions */}
         <div className="flex justify-end gap-2">
