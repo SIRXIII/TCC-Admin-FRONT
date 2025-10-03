@@ -162,7 +162,7 @@ const Header = ({ toggleSidebar }) => {
               src={user?.profile_photo || DefaultProfile}
               alt="Profile"
               className="w-12 h-12 rounded-[10px]"
-              onError={(e) => { e.currentTarget.src = user?.profile_photo || DefaultProfile; }}
+              // onError={(e) => { e.currentTarget.src = user?.profile_photo || DefaultProfile; }}
             />
             
             <span className="text-base font-medium text-left text-[#232323] hidden md:inline leading-[150%]">

@@ -314,7 +314,7 @@ const AddRiders = () => {
                 <p className="text-red-500 text-xs mt-1 ms-2">{errors.email[0]}</p>
               )}
             </div>
-            <div>
+            {/* <div>
               <div className="relative">
                 <input
                   type="numeric"
@@ -340,7 +340,45 @@ const AddRiders = () => {
               {errors.phone && (
                 <p className="text-red-500 text-xs mt-1 ms-2">{errors.phone[0]}</p>
               )}
-            </div>
+            </div> */}
+            <div>
+  <div className="relative">
+    <input
+      type="tel"
+      id="phone"
+      name="phone"
+      value={formData.phone}
+      onChange={(e) => {
+       
+        let digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+
+        if (digits.length > 3 && digits.length <= 6) {
+          digits = `${digits.slice(0, 3)}-${digits.slice(3)}`;
+        } else if (digits.length > 6) {
+          digits = `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+        }
+
+        e.target.value = digits;
+        handleChange(e);
+      }}
+      className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
+      placeholder="Phone (e.g. 212-456-7890)"
+      inputMode="tel"
+      pattern="^\d{3}-\d{3}-\d{4}$"
+      maxLength={12} 
+    />
+    <label
+      htmlFor="phone"
+      className="absolute text-sm ms-4 text-[#232323] duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
+    >
+      Phone Number
+    </label>
+  </div>
+  {errors.phone && (
+    <p className="text-red-500 text-xs mt-1 ms-2">{errors.phone[0]}</p>
+  )}
+</div>
+
             <div>
               <div className="relative">
                 <input

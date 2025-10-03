@@ -74,6 +74,14 @@ const PersonalInfo = () => {
     }
   };
 
+  const formatPhone = (value) => {
+    const digits = value.replace(/\D/g, "").slice(0, 10); // allow max 10 digits
+
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+  };
+
   return (
     <div className="flex-1 bg-white p-6 rounded-lg border border-[#00000033]">
       <div className="flex flex-col gap-6 rounded-lg bg-[#FFFFFF]">
@@ -118,25 +126,25 @@ const PersonalInfo = () => {
           {["first_name", "last_name", "email", "phone"].map((field) => (
             <div className="relative" key={field}>
               <input
-                type={
-                  field === "email" ? "email" : field === "phone" ? "tel" : "text"
-                }
+                type={field === "email" ? "email" : field === "phone" ? "tel" : "text"}
                 id={field}
                 name={field}
-                value={formData[field] ?? ""}
-                onChange={handleChange}
-                onInput={(e) => {
+                value={field === "phone" ? formData[field] ?? "" : formData[field] ?? ""}
+                onChange={(e) => {
                   if (field === "phone") {
-                    e.target.value = e.target.value.replace(/[^0-9+()\-\s]/g, "");
+                    const formatted = formatPhone(e.target.value);
+                    e.target.value = formatted;
                   }
+                  handleChange(e);
                 }}
                 className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
-                placeholder=" "
+                placeholder="Phone (e.g. 212-456-7890)"
                 inputMode={field === "phone" ? "tel" : undefined}
-                pattern={field === "phone" ? "^\\+?[0-9\\s()\\-]*$" : undefined}
+                pattern={field === "phone" ? "^\\d{3}-\\d{3}-\\d{4}$" : undefined}
                 autoComplete={field === "email" ? "email" : field === "phone" ? "tel" : "name"}
-                maxLength={field === "phone" ? 20 : undefined}
+                maxLength={field === "phone" ? 12 : undefined}
               />
+
               <label
                 htmlFor={field}
                 className="absolute text-sm ms-4 text-[#232323] duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 

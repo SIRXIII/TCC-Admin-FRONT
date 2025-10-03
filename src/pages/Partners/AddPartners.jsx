@@ -7,7 +7,7 @@ import axios from "axios";
 import API from "../../services/api";
 import { FaTimes } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify"; 
+import { toast } from "react-toastify";
 
 const AddPartners = () => {
   const navigate = useNavigate();
@@ -245,9 +245,22 @@ const AddPartners = () => {
                     id="phonenumber"
                     name="phone"
                     value={formData.phone}
-                    onChange={handleChange}
+                    // onChange={handleChange}
+                    onChange={(e) => {
+
+                      let digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+
+                      if (digits.length > 3 && digits.length <= 6) {
+                        digits = `${digits.slice(0, 3)}-${digits.slice(3)}`;
+                      } else if (digits.length > 6) {
+                        digits = `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+                      }
+
+                      e.target.value = digits;
+                      handleChange(e);
+                    }}
                     className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border-1 border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
-                    placeholder=" "
+                    placeholder="Phone (e.g. 212-456-7890)"
                   />
                   <label
                     htmlFor="phonenumber"
