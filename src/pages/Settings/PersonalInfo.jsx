@@ -66,9 +66,14 @@ const PersonalInfo = () => {
 
       toast.success("Profile updated successfully!")
     } catch (err) {
-      console.error(err);
 
-      toast.error("Failed to update profile")
+
+      Object.values(err.response.data.errors).forEach(messages => {
+        messages.forEach(message => {
+          toast.error(message);
+        });
+      });
+
     } finally {
       setLoading(false);
     }
