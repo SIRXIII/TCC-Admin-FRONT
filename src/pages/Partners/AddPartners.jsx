@@ -8,6 +8,8 @@ import API from "../../services/api";
 import { FaTimes } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import TimePicker from "react-time-picker";
+import CustomTimePicker from "../../components/CustomTimePicker";
 
 const AddPartners = () => {
   const navigate = useNavigate();
@@ -16,8 +18,9 @@ const AddPartners = () => {
     email: "",
     phone: "",
     ownerName: "",
-    days: "",
-    storetime: "",
+    days: [],
+    store_start_time: "",
+    store_end_time: "",
     address: "",
     location: "",
     businesstype: "",
@@ -37,6 +40,36 @@ const AddPartners = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  const daysOrder = [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
+
+  // Handle day selection (max 2)
+  const handleDaySelect = (day) => {
+    setFormData((prev) => {
+      let updatedDays = [...prev.days];
+      if (updatedDays.includes(day)) {
+        updatedDays = updatedDays.filter((d) => d !== day);
+      } else if (updatedDays.length < 2) {
+        updatedDays.push(day);
+      }
+      return { ...prev, days: updatedDays };
+    });
+  };
+
+  const handleTimeChange = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const selectedDaysDisplay =
+    formData.days.length > 0 ? formData.days.join(" - ") : "";
 
   const handleFileChange = (e, type, side) => {
     const file = e.target.files[0];
@@ -190,6 +223,9 @@ const AddPartners = () => {
                   </button>
                 </div>
               </div>
+                {errors.profileImage  && (
+                  <p className="text-red-500 text-xs mt-1">{errors.profileImage[0]}</p>
+                )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4   leading-[100%] tracking-[-5%]">
               <div>
@@ -245,7 +281,7 @@ const AddPartners = () => {
                     id="phonenumber"
                     name="phone"
                     value={formData.phone}
-                    // onChange={handleChange}
+
                     onChange={(e) => {
 
                       let digits = e.target.value.replace(/\D/g, "").slice(0, 10);
@@ -296,52 +332,54 @@ const AddPartners = () => {
                   <p className="text-red-500 text-xs mt-1">{errors.ownerName[0]}</p>
                 )}
               </div>
-
               <div>
                 <div className="relative">
-                  <input
-                    type="text"
-                    id="days"
-                    name="days"
-                    value={formData.days}
-                    onChange={handleChange}
-                    className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border-1 border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
-                    placeholder=" "
-                  />
+                  <div className="block p-3 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9]">
+                    <CustomTimePicker
+                      onChange={(value) => handleTimeChange("store_start_time", value)}
+                      value={formData.store_start_time}
+                      format="hh:mm a"
+                    />
+                  </div>
                   <label
-                    htmlFor="days"
-                    className="absolute text-sm ms-4 text-gray-500  duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323]  peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto   start-1"
+                    htmlFor="store_start_time"
+                    className="absolute text-sm ms-4 text-gray-500 -translate-y-4 scale-75 top-2 z-10 bg-white px-2"
                   >
-                    Store Availability Days
+                    Store Start Time
                   </label>
                 </div>
-                {errors.days && (
-                  <p className="text-red-500 text-xs mt-1">{errors.days[0]}</p>
+                {errors.store_start_time && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.store_start_time[0]}
+                  </p>
                 )}
               </div>
 
+              {/* Store End Time */}
               <div>
                 <div className="relative">
-                  <input
-                    type="text"
-                    id="storetime"
-                    name="storetime"
-                    value={formData.storetime}
-                    onChange={handleChange}
-                    className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border-1 border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
-                    placeholder=" "
-                  />
+                  <div className="block p-3 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9]">
+                  
+                    <CustomTimePicker
+                      onChange={(value) => handleTimeChange("store_end_time", value)}
+                      value={formData.store_end_time}
+                      format="hh:mm a"
+                    />
+                  </div>
                   <label
-                    htmlFor="storetime"
-                    className="absolute text-sm ms-4 text-gray-500  duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323]  peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto   start-1"
+                    htmlFor="store_end_time"
+                    className="absolute text-sm ms-4 text-gray-500 -translate-y-4 scale-75 top-2 z-10 bg-white px-2"
                   >
-                    Store Timing
+                    Store End Time
                   </label>
                 </div>
-                {errors.storetime && (
-                  <p className="text-red-500 text-xs mt-1">{errors.storetime[0]}</p>
+                {errors.store_end_time && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.store_end_time[0]}
+                  </p>
                 )}
               </div>
+
 
               <div>
                 <div className="relative md:col-span-2">
@@ -365,41 +403,45 @@ const AddPartners = () => {
                   <p className="text-red-500 text-xs mt-1">{errors.address[0]}</p>
                 )}
               </div>
-            </div>
-          </div>
-          <div
-            className="p-6 flex flex-col gap-6 rounded-lg bg-[#FFFFFF]"
-            style={{ boxShadow: "0px 0px 3px 0px #00000033" }}
-          >
-            <h2 className="text-lg text-[#232323]  fw6 leading-[150%] tracking-[-3%]">
-              Business Type
-            </h2>
-            <div className="relative fw4  leading-[100%] tracking-[-5%]">
-              <select
-                id="businesstype"
-                name="businesstype"
-                value={formData.businesstype}
-                onChange={handleChange}
-                className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer appearance-none"
 
-              >
-                <option value=""></option>
-                <option value="Luxury Fashion Rentals">Luxury Fashion Rentals</option>
-                <option value="Art Gallery">Art Gallery</option>
-              </select>
-              <label
-                htmlFor="businesstype"
-                className="absolute text-base ms-4 text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 
-              peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 peer-focus:text-[#232323]"
-              >
-                Business Type
-              </label>
-              <FiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6C6C6C] pointer-events-none w-5 h-5 " />
+              <div>
+                <div className="relative md:col-span-1">
+                  <div className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9]">
+                    <div className="flex flex-wrap gap-2">
+                      {daysOrder.map((day) => (
+                        <button
+                          key={day}
+                          type="button"
+                          onClick={() => handleDaySelect(day)}
+                          className={`px-3 py-1 rounded-full text-sm border ${formData.days.includes(day)
+                            ? "bg-[#F77F00] text-white border-[#F77F00]"
+                            : "border-gray-300 text-[#232323]"
+                            }`}
+                        >
+                          {day}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <label
+                    htmlFor="days"
+                    className="absolute text-sm ms-4 text-gray-500 -translate-y-4 scale-75 top-2 z-10 bg-white px-2"
+                  >
+                    Store Availability Days
+                  </label>
+                </div>
+                {selectedDaysDisplay && (
+                  <p className="text-sm text-[#232323] mt-2">
+                    Selected: <span className="font-medium">{selectedDaysDisplay}</span>
+                  </p>
+                )}
+                {errors.days && (
+                  <p className="text-red-500 text-xs mt-1">{errors.days[0]}</p>
+                )}
+              </div>
             </div>
-            {errors.email && (
-              <p className="text-red-500 text-xs mt-1">{errors.email[0]}</p>
-            )}
           </div>
+
 
           <div
             className="p-6 flex flex-col gap-6 rounded-lg bg-white"
@@ -504,16 +546,28 @@ const AddPartners = () => {
                 <div className="relative">
                   <input
                     type="text"
-                    id="id"
+                    id="tax_id"
                     name="tax_id"
                     value={formData.tax_id}
-                    onChange={handleChange}
+                    onChange={(e) => {
+                      const value = e.target.value;
+
+                      if (/^\d*$/.test(value)) {
+                        handleChange(e);
+                      }
+                    }}
+                    onKeyPress={(e) => {
+
+                      if (!/[0-9]/.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
                     className="block p-4 pt-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border-1 border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
-                    placeholder=" "
+                    placeholder="e.g: 08796"
                   />
                   <label
                     htmlFor="tax_id"
-                    className="absolute text-sm ms-4 text-gray-500  duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323]  peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto   start-1"
+                    className="absolute text-sm ms-4 text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
                   >
                     Tax ID
                   </label>

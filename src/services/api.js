@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://travelclothingclub-admin.online/api",
+  baseURL: import.meta.env.VITE_API_URL || "http://tcc-admin-back.test/api",
   withCredentials: true, 
 });
 

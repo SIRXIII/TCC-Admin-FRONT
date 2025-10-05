@@ -6,12 +6,15 @@ import { Link, useParams } from "react-router-dom";
 import { getOrderById } from "../../services/orderService";
 import productImg from "../../assets/Images/Pro_img.jpg";
 import DefaultProfile from "../../assets/Images/trv_profile.jpg";
+import ImagePreviewGallery from "../../components/ImagePreviewGallery";
 
 
 const OrdersDetail = () => {
 
   const { id } = useParams();
   const [order, setOrder] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+
 
   console.log("first order", order);
 
@@ -130,6 +133,7 @@ const OrdersDetail = () => {
                           src={item?.product_image || productImg}
                           alt={item?.product_name}
                           className="w-12 h-12 rounded-xl object-cover "
+                          onClick={() => setPreviewImage(item?.product_image || productImg)}
                           onError={(e) => { e.currentTarget.src = productImg; }}
                         />
                         <p className="text-sm fw5">{item.product_name}</p>
@@ -202,14 +206,20 @@ const OrdersDetail = () => {
                 <h2 className="text-lg fw6  text-[#232323]">Customer</h2>
                 <div className="flex items-center gap-2.5">
                   <img
-                    src={order?.traveler?.profile_photo}
+                    src={order?.traveler?.profile_photo || DefaultProfile}
                     alt={order?.traveler?.name}
                     className="w-10 h-10 rounded-xl object-cover"
+                    onClick={() => setPreviewImage(order?.traveler?.profile_photo || DefaultProfile)}
                     onError={(e) => { e.currentTarget.src = DefaultProfile; }}
                   />
                   <div>
                     <p className="text-sm fw6 text-[#232323]">{order?.traveler.name}</p>
-                    <p className="text-xs fw4 text-[#6C6C6C]">{order?.traveler.email}</p>
+                    <p className="text-xs fw4 mb-1 text-[#6C6C6C]"> <a href={`mailto:${order?.traveler.email}`} className="hover:underline">{order?.traveler.email}</a></p>
+                    <p className="text-xs text-[#6C6C6C]">
+                      <a href={`tel:${order?.traveler.phone}`} className="hover:underline">
+                        {order?.traveler.phone}
+                      </a>
+                    </p>
                   </div>
                 </div>
               </div>
@@ -218,15 +228,27 @@ const OrdersDetail = () => {
                 <h2 className="text-lg fw6  text-[#232323]">Partner</h2>
                 <div className="flex items-center gap-2.5">
                   <img
-                    src={order?.partner.profile_photo}
+                    src={order?.partner.profile_photo || DefaultProfile}
                     alt={order?.partner.name}
                     className="w-10 h-10 rounded-xl object-cover"
-                          onError={(e) => { e.currentTarget.src = DefaultProfile; }}
+                    onClick={() => setPreviewImage(order?.partner?.profile_photo || DefaultProfile)}
+
+                    onError={(e) => { e.currentTarget.src = DefaultProfile; }}
 
                   />
                   <div>
                     <p className="fw6 text-sm text-[#232323]">{order?.partner.name}</p>
-                    <p className="text-xs text-[#6C6C6C]">{order?.partner.email}</p>
+                    <p className="text-xs mb-1 text-[#6C6C6C]">
+                      <a href={`mailto:${order?.partner.email}`} className="hover:underline">
+                        {order?.partner.email}
+                      </a>
+                    </p>
+                    <p className="text-xs text-[#6C6C6C]">
+                      <a href={`tel:${order?.partner.phone}`} className="hover:underline">
+                        {order?.partner.phone}
+                      </a>
+                    </p>
+
                   </div>
                 </div>
                 <p className="mt-3 text-xs text-[#232323]">{order?.partner.address}</p>
@@ -237,15 +259,25 @@ const OrdersDetail = () => {
                   <h2 className="text-lg fw6  text-[#232323]">Rider</h2>
                   <div className="flex items-center gap-2.5">
                     <img
-                      src={order?.rider.profile_photo}
+                      src={order?.rider.profile_photo || DefaultProfile}
                       alt={order?.rider.name}
                       className="w-10 h-10 rounded-xl object-cover"
-                          onError={(e) => { e.currentTarget.src = DefaultProfile; }}
+                      onClick={() => setPreviewImage(order?.rider?.profile_photo || DefaultProfile)}
+
+                      onError={(e) => { e.currentTarget.src = DefaultProfile; }}
 
                     />
                     <div>
                       <p className="fw6 text-sm text-[#232323]">{order?.rider.name}</p>
-                      <p className="text-xs text-[#6C6C6C]">{order?.rider.email}</p>
+
+                      <p className="text-xs fw4 mb-1 text-[#6C6C6C]"> <a href={`mailto:${order?.rider.email}`} className="hover:underline">{order?.rider.email}</a></p>
+
+                      <p className="text-xs text-[#6C6C6C]">
+                        <a href={`tel:${order?.rider.phone}`} className="hover:underline">
+                          {order?.rider.phone}
+                        </a>
+                      </p>
+
                     </div>
                   </div>
                   <p className="mt-3 text-xs text-[#232323]">{order?.rider.address}</p>
@@ -254,8 +286,14 @@ const OrdersDetail = () => {
               <div className="flex flex-col bg-white p-6 gap-6 rounded-lg shadow-sm">
                 <h2 className="text-lg fw6 text-[#232323]">Contact Person</h2>
                 <p className="fw5 text-sm text-[#232323]">{order?.traveler.name}</p>
-                <p className="text-sm fw4 text-[#232323]">{order?.traveler.email}</p>
-                <p className="text-sm fw4 text-[#6C6C6C] ">{order?.traveler.phone}</p>
+                <p className="text-xs fw4 mb-1 text-[#6C6C6C]"> <a href={`mailto:${order?.traveler.email}`} className="hover:underline">{order?.traveler.email}</a></p>
+                <p className="text-xs text-[#6C6C6C]">
+                  <a href={`tel:${order?.traveler.phone}`} className="hover:underline">
+                    {order?.traveler.phone}
+                  </a>
+                </p>
+
+
               </div>
 
               {shippingAddress ? (
@@ -286,6 +324,8 @@ const OrdersDetail = () => {
           </div>
         </div>
       </div>
+      <ImagePreviewGallery imageUrl={previewImage} onClose={() => setPreviewImage(null)} />
+
     </div>
   );
 };

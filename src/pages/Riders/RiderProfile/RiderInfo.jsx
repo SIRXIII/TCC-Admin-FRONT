@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { useDownloadRiderZip } from "../../../hooks/useRiders";
 import riderImg from "../../../assets/Images/rid_profile.jpg";
+import ImagePreviewGallery from "../../../components/ImagePreviewGallery";
 
 
 const RiderInfo = ({ items, riderId }) => {
+    const [previewImage, setPreviewImage] = useState(null);
 
 
   const { mutate: downloadZip, isLoading } = useDownloadRiderZip();
@@ -18,14 +20,20 @@ const RiderInfo = ({ items, riderId }) => {
                 <img
                   src={item.image}
                   alt={item.value}
-                  className="w-14 h-14 rounded-xl object-cover"
+                  className="w-14 h-14 rounded-xl object-cover cursor-pointer"
+                  onClick={() => setPreviewImage(item.image)}
                   onError={(e) => { e.currentTarget.src = riderImg; }}
                   
                 />
                 <div className="fw4">
                   <p className="text-lg fw6 text-[#232323]">{item.value}</p>
                   {item.email && (
-                    <p className="text-xs text-[#6C6C6C]">{item.email}</p>
+                    // <p className="text-xs text-[#6C6C6C]">{item.email}</p>
+                    <p className="text-xs text-[#6C6C6C]">
+                      <a href={`mailto:${item?.email}`} className="hover:underline">
+                        {item?.email}
+                      </a>
+                    </p>
                   )}
                 </div>
               </div>
@@ -52,7 +60,21 @@ const RiderInfo = ({ items, riderId }) => {
               <span className="w-40 text-[#6C6C6C]">{item.label}</span>
               <span className=" text-[#9A9A9A]"> : </span>
 
-              <span className=" text-[#232323] ">{item.value}</span>
+              <span className=" text-[#232323] ">
+                
+                 {item.label.toLowerCase().includes("email") ? (
+                  <a href={`mailto:${item.value}`} className="hover:underline">
+                    {item.value}
+                  </a>
+                ) : item.label.toLowerCase().includes("phone") ? (
+                  <a href={`tel:${item.value}`} className="hover:underline">
+                    {item.value}
+                  </a>
+                ) : (
+                  item.value
+                )}
+
+              </span>
             </div>
 
             {/* {item.actions && (
@@ -97,6 +119,7 @@ const RiderInfo = ({ items, riderId }) => {
           </div>
         );
       })}
+      <ImagePreviewGallery imageUrl={previewImage} onClose={() => setPreviewImage(null)} />
     </div>
   );
 };

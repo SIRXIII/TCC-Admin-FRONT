@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 // import productImg from "../../../assets";
 import productImg from "../../../assets/Images/Pro_img.jpg";
+import ImagePreviewGallery from "../../../components/ImagePreviewGallery";
 
 const InfoList = ({ items }) => {
 
+    const [previewImage, setPreviewImage] = useState(null);
+  
   const statusColors = {
     Pending: "bg-[#E1FDFD] text-[#3E77B0]",
     Active: "bg-[#E7F7ED]  text-[#088B3A]",
@@ -24,8 +27,10 @@ const InfoList = ({ items }) => {
                   src={item.image}
                   alt={item.value}
                   className="w-14 h-14 rounded-xl object-cover"
+                  onClick={() => setPreviewImage(item.image ?? productImg)}
+
                   onError={(e) => { e.currentTarget.src = productImg; }}
-                  
+
                 />
                 <div>
                   <p className="text-lg fw6 text-[#232323]">
@@ -39,9 +44,8 @@ const InfoList = ({ items }) => {
 
               {item.status && (
                 <span
-                 className={`px-2 py-1 rounded-md text-xs font-medium ${
-                          statusColors[item.status] || "bg-gray-100 text-gray-600"
-                        }`}
+                  className={`px-2 py-1 rounded-md text-xs font-medium ${statusColors[item.status] || "bg-gray-100 text-gray-600"
+                    }`}
                 >
                   {item.status}
                 </span>
@@ -68,10 +72,10 @@ const InfoList = ({ items }) => {
               ) : item.label === "Product Verification Status" ? (
                 <span
                   className={` py-1 text-xs fw5${item.value === "Verified"
-                      ? " text-[#088B3A]"
-                      : item.value === "Pending"
-                        ? "bg-yellow-100 text-yellow-600"
-                        : "bg-red-100 text-red-600"
+                    ? " text-[#088B3A]"
+                    : item.value === "Pending"
+                      ? "bg-yellow-100 text-yellow-600"
+                      : "bg-red-100 text-red-600"
                     }`}
                 >
                   {item.value}
@@ -84,6 +88,8 @@ const InfoList = ({ items }) => {
           </div>
         );
       })}
+      <ImagePreviewGallery imageUrl={previewImage} onClose={() => setPreviewImage(null)} />
+
     </div>
   );
 };

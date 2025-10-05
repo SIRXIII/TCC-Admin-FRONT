@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FiChevronDown } from "react-icons/fi";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import API from "../../services/api";
 import echo from "../../../echo";
 import DefaultProfile from "../../assets/Images/rid_profile.jpg";
@@ -166,7 +166,14 @@ const ChatSupport = () => {
 
 
       <div className="flex gap-2 items-center">
-        <img src={backward} alt="backward" className="w-6 h-6" />
+       
+        <Link to="/support" className="group">
+              <img
+                src={backward}
+                alt="backward"
+                className="w-6 h-6 transform transition-transform duration-300 group-hover:-translate-x-1"
+              />
+            </Link>
         <h2 className="text-xl fw6 font-roboto text-[#232323]">{ticket?.ticket_id}</h2>
       </div>
 

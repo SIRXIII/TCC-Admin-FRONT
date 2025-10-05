@@ -89,3 +89,56 @@ input[type="checkbox"] {
   font-weight: 900;
 }
 
+.react-time-picker {
+  width: 100%;
+  background: transparent !important;
+}
+
+.react-time-picker__wrapper {
+  border: none !important;
+  background: transparent !important;
+  border-radius: 0.5rem !important;
+  padding: 0 !important;
+}
+
+.react-time-picker__inputGroup {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.react-time-picker__inputGroup input {
+  border: none !important;
+  outline: none !important;
+  width: 100%;
+  background: transparent !important;
+  color: #111827; /* Tailwind gray-900 */
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.react-time-picker__button {
+  display: none !important; /* hides the clock icon */
+}
+
+/* Remove the gray popup background */
+.react-time-picker__clock {
+  display: none !important; /* hides the whole analog picker */
+}
+
+.react-time-picker__clear-button {
+  display: none !important;
+}
+
+/* Remove dropdown popper background */
+.react-time-picker__inputGroup:focus-within {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Remove highlight from dropdown picker */
+.react-time-picker__inputGroup input:focus {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+

@@ -5,6 +5,7 @@ import { getTravelerById } from "../../services/travelerService";
 import DefaultProfile from "../../assets/Images/trv_profile.jpg";
 import Pagination from "../../components/Pagination";
 import Orders from "../../components/Orders";
+import ImagePreviewGallery from "../../components/ImagePreviewGallery";
 
 
 const TravelerProfile = () => {
@@ -13,6 +14,8 @@ const TravelerProfile = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
+  const [previewImage, setPreviewImage] = useState(null);
+
 
   useEffect(() => {
     const fetchTraveler = async () => {
@@ -112,7 +115,9 @@ const TravelerProfile = () => {
               <img
                 src={traveler.profile_photo}
                 alt="Traveler"
-                className="w-14 h-14 rounded-xl object-cover object-center"
+                className="w-14 h-14 rounded-xl object-cover object-center cursor-pointer"
+                onClick={() => setPreviewImage(traveler.profile_photo || URL(DefaultProfile))}
+
                 onError={(e) => {
                   e.currentTarget.src = DefaultProfile;
                 }}
@@ -121,11 +126,16 @@ const TravelerProfile = () => {
                 <h3 className="text-lg fw6 text-[#232323]">
                   {traveler.name}
                 </h3>
-                <p className="text-xs text-[#6C6C6C]">{traveler.email}</p>
+                {/* <p className="text-xs text-[#6C6C6C]">{traveler.email}</p> */}
+                <p className="text-xs text-[#6C6C6C]">
+                  <a href={`mailto:${traveler?.email}`} className="hover:underline">
+                    {traveler?.email}
+                  </a>
+                </p>
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 ">
+            <div className="flex flex-col gap-3">
               {[
                 { label: "Full Name", value: traveler.name },
                 { label: "Email", value: traveler.email },
@@ -135,10 +145,23 @@ const TravelerProfile = () => {
                 <div className="flex text-xs fw5 gap-3" key={item.label}>
                   <p className="text-[#9A9A9A] w-1/3">{item.label}</p>
                   <p className="text-[#9A9A9A]">:</p>
-                  <p className="text-[#232323] w-2/3">{item.value}</p>
+                  <p className="text-[#232323] w-2/3">
+                    {item.label === "Email" ? (
+                      <a href={`mailto:${item.value}`} className="hover:underline">
+                        {item.value}
+                      </a>
+                    ) : item.label === "Phone" ? (
+                      <a href={`tel:${item.value}`} className="hover:underline">
+                        {item.value}
+                      </a>
+                    ) : (
+                      item.value
+                    )}
+                  </p>
                 </div>
               ))}
             </div>
+
 
 
             <hr className="border border-[#D9D9D9]" />
@@ -171,11 +194,11 @@ const TravelerProfile = () => {
           </div>
 
           {shippingAddress && (
-            <div className="p-6 flex flex-col gap-6 rounded-lg bg-white" style={{ boxShadow: "0px 0px 3px 0px #00000033" }}>
-              <h2 className="text-lg fw6 text-[#232323]">
-                Shipping Address
-              </h2>
-
+            <div
+              className="p-6 flex flex-col gap-6 rounded-lg bg-white"
+              style={{ boxShadow: "0px 0px 3px 0px #00000033" }}
+            >
+              <h2 className="text-lg fw6 text-[#232323]">Shipping Address</h2>
 
               <div className="flex flex-col gap-3">
                 {[
@@ -187,12 +210,21 @@ const TravelerProfile = () => {
                   <div className="flex text-xs fw5 gap-3" key={item.label}>
                     <p className="text-[#9A9A9A] w-1/3">{item.label}</p>
                     <p className="text-[#9A9A9A]">:</p>
-                    <p className="text-[#232323] w-2/3">{item.value}</p>
+                    <p className="text-[#232323] w-2/3">
+                      {item.label === "Phone Number" ? (
+                        <a href={`tel:${item.value}`} className="hover:underline">
+                          {item.value}
+                        </a>
+                      ) : (
+                        item.value
+                      )}
+                    </p>
                   </div>
                 ))}
               </div>
             </div>
           )}
+
 
 
           {billingAddress && (
@@ -212,7 +244,15 @@ const TravelerProfile = () => {
                   <div className="flex text-xs fw5 gap-3" key={item.label}>
                     <p className="text-[#9A9A9A] w-1/3">{item.label}</p>
                     <p className="text-[#9A9A9A]">:</p>
-                    <p className="text-[#232323] w-2/3">{item.value}</p>
+                    <p className="text-[#232323] w-2/3">
+                      {item.label === "Phone Number" ? (
+                        <a href={`tel:${item.value}`} className="hover:underline">
+                          {item.value}
+                        </a>
+                      ) : (
+                        item.value
+                      )}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -221,9 +261,11 @@ const TravelerProfile = () => {
 
         </div>
 
-      
+
         <Orders order={traveler} />
       </div>
+      <ImagePreviewGallery imageUrl={previewImage} onClose={() => setPreviewImage(null)} />
+
     </div>
   );
 };

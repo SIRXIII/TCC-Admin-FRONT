@@ -5,14 +5,12 @@ import PartnerInfo from "./PartnerInfo";
 const Details = ({ partner }) => {
 
 
+  console.log("partners--------------------", partner);
   if (!partner) return <div>Loading partner details...</div>;
 
   const activeProducts = partner.products.filter(p => p.status === "active").length;
   const pendingProducts = partner.products.filter(p => p.status === "inactive").length;
 
-  // const totalRevenue = partner.order
-  // .filter(o => o.status === "delivered")
-  // .reduce((sum, o) => sum + parseFloat(o.total_price), 0);
 
   const partnerInfo = {
     items: [
@@ -27,7 +25,7 @@ const Details = ({ partner }) => {
       { label: "Owner", value: partner?.name },
       { label: "Address", value: partner?.address },
       { label: "Phone", value: partner?.phone },
-      { label: "Store Timing", value: partner?.store_available_days + " " + partner?.store_available_time },
+      { label: "Store Timing", value: partner?.store_available_days + " " + partner?.store_available_start_time + " - " +  partner?.store_available_end_time},
     ],
   };
 
@@ -72,7 +70,7 @@ const Details = ({ partner }) => {
       },
       {
         label: "Store Timing",
-        value: partner.store_available_days + " " + partner.store_available_time,
+        value: partner.store_available_days + " " + partner.store_available_start_time + "-" + partner.store_available_end_time,
       },
     ],
   };
