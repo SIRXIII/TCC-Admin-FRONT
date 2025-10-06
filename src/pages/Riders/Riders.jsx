@@ -9,6 +9,7 @@ import Eye from "../../assets/SVG/eye.svg";
 import Edit from "../../assets/SVG/edit.svg";
 import { useRiders } from "../../hooks/useRiders";
 import Pagination from "../../components/Pagination";
+import Breadcrumb from "../../components/Breadcrumb";
 
 
 const Riders = () => {
@@ -144,11 +145,18 @@ const Riders = () => {
   return (
     <div className="gap-6 p-2">
       <div className="flex flex-col  gap-4">
-        <div className="flex items-center text-xs leading-[150%] tracking-[-3%]">
+        {/* <div className="flex items-center text-xs leading-[150%] tracking-[-3%]">
           <p className="text-[#6C6C6C]">Dashboard</p>
           <span className="mx-2 text-[#9A9A9A]">/</span>
           <p className="text-[#F77F00]">Riders</p>
-        </div>
+        </div> */}
+         <Breadcrumb
+          items={[
+            { label: "Dashboard", path: "/" },
+           
+            { label: "Riders" },
+          ]}
+        />
         <div className="flex justify-between   gap-4">
           <div className="gap-2">
             <h2 className="text-2xl fw6 font-roboto text-[#232323] leading-[140%] tracking-[-3%]">

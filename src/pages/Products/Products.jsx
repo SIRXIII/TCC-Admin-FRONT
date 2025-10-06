@@ -5,6 +5,7 @@ import PendingProducts from "./PendingProducts";
 import Pagination from "../../components/Pagination";
 import productsData from "../../data/ProductsData";
 import { useProducts } from "../../hooks/useProducts";
+import Breadcrumb from "../../components/Breadcrumb";
 
 const Products = () => {
 
@@ -114,11 +115,18 @@ const Products = () => {
   return (
     <div className="flex flex-col gap-6 p-3">
       <div className="flex flex-col gap-4">
-        <div className="flex items-center text-xs gap-1">
+        {/* <div className="flex items-center text-xs gap-1">
           <p className="text-[#6C6C6C]">Dashboard</p>
           <span className="mx-2 text-[#9A9A9A]">/</span>
           <p className="text-[#F77F00]">Products</p>
-        </div>
+        </div> */}
+         <Breadcrumb
+                    items={[
+                      { label: "Dashboard", path: "/" },
+                     
+                      { label: "Products" },
+                    ]}
+                  />
         <div>
           <h2 className="text-2xl font-semibold text-[#232323]">Products</h2>
           <p className="text-[#232323] text-sm">

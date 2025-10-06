@@ -10,6 +10,7 @@ import { getPartnerById } from "../../services/partnerService";
 import { useStatusUpdatePartner } from "../../hooks/usePartners";
 import { toast } from "react-toastify";
 import Orders from "../../components/Orders";
+import Breadcrumb from "../../components/Breadcrumb";
 
 const PartnerProfile = () => {
   const { id } = useParams();
@@ -59,13 +60,21 @@ useEffect(() => {
 
   return (
     <div className="flex flex-col p-3 gap-6">
-      <div className="flex items-center text-xs fw4  text-[#6C6C6C] gap-1 leading-[150%] tracking-[-3%]">
+      {/* <div className="flex items-center text-xs fw4  text-[#6C6C6C] gap-1 leading-[150%] tracking-[-3%]">
         <span>Dashboard</span>
         <span>/</span>
         <span>Partners</span>
         <span>/</span>
         <span className="text-[#F77F00] capitalize">Details</span>
-      </div>
+      </div> */}
+       <Breadcrumb
+          items={[
+            { label: "Dashboard", path: "/" },
+            { label: "Partners", path: "/partners" },
+           
+            { label: "Details" },
+          ]}
+        />
 
       <div className="flex  items-center justify-between">
         <div className="flex flex-col gap-2">

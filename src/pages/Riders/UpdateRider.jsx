@@ -6,6 +6,7 @@ import { FaTimes } from "react-icons/fa";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import API from "../../services/api";
 import { toast } from "react-toastify";
+import Breadcrumb from "../../components/Breadcrumb";
 
 const Dropdown = ({ label, options = [], multiple = false, value, onChange, triggerClass, dropdownClass, error }) => {
     const [open, setOpen] = useState(false);
@@ -184,13 +185,21 @@ const UpdateRider = () => {
 
 
             <div className="flex flex-col gap-4">
-                <div className="flex items-center text-xs gap-1 text-[#6C6C6C]">
+                {/* <div className="flex items-center text-xs gap-1 text-[#6C6C6C]">
                     <p>Dashboard</p>
                     <span className="mx-1 text-[#9A9A9A]">/</span>
                     <p>Riders</p>
                     <span className="mx-1 text-[#9A9A9A]">/</span>
                     <p className="text-[#F77F00]">Update Rider</p>
-                </div>
+                </div> */}
+                <Breadcrumb
+            items={[
+              { label: "Dashboard", path: "/" },
+              { label: "Riders", path: "/riders" },
+
+              { label: "Update Rider" },
+            ]}
+          />
                 <div className="flex items-center justify-between">
                     <div className="flex flex-col gap-2.5">
                         <div className="flex gap-3 items-center">

@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 import productImg from "../../assets/Images/Pro_img.jpg";
 import DefaultProfile from "../../assets/Images/trv_profile.jpg";
 import ImagePreviewGallery from "../../components/ImagePreviewGallery";
+import Breadcrumb from "../../components/Breadcrumb";
 
 const RefundsDetail = () => {
   const { id } = useParams();
@@ -73,13 +74,16 @@ const RefundsDetail = () => {
   return (
     <div className="flex flex-col p-2">
       <div className="flex flex-col gap-4">
-        <div className="flex items-center text-xs gap-1 text-[#6C6C6C]">
-          <p>Dashboard</p>
-          <span className="mx-1 text-[#9A9A9A]">/</span>
-          <p>Refund </p>
-          <span className="mx-1 text-[#9A9A9A]">/</span>
-          <p className="text-[#F77F00]">Details</p>
-        </div>
+
+        <Breadcrumb
+          items={[
+            { label: "Dashboard", path: "/" },
+            { label: "Refund", path: "/refund" },
+            { label: "Details" },
+          ]}
+        />
+
+
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-1">
             <div className="flex gap-3 items-center">
@@ -285,7 +289,7 @@ const RefundsDetail = () => {
                   />
                   <div className="flex flex-col gap-1">
                     <p className="fw6 text-sm text-[#232323]">{partner?.name}</p>
-                  
+
                     <p className="text-xs text-[#6C6C6C]">
                       <a href={`mailto:${partner?.email}`} className="hover:underline">
                         {partner?.email}
@@ -316,7 +320,7 @@ const RefundsDetail = () => {
                   />
                   <div className="flex flex-col gap-1">
                     <p className="text-sm fw6 text-[#232323]">{rider?.name}</p>
-                   
+
                     <p className="text-xs text-[#6C6C6C]">
                       <a href={`mailto:${rider?.email}`} className="hover:underline">
                         {rider?.email}

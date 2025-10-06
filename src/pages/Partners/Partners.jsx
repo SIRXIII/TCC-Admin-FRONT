@@ -8,6 +8,7 @@ import { usePartners } from "../../hooks/usePartners";
 import Pagination from "../../components/Pagination";
 import { FaPlus } from "react-icons/fa";
 import SuspendedPartners from "./SuspendedPartners";
+import Breadcrumb from "../../components/Breadcrumb";
 
 const Partners = () => {
 
@@ -75,7 +76,8 @@ const Partners = () => {
       const fullName = `${partner.name ?? ""}`.toLowerCase();
       return (
         fullName.includes(search.toLowerCase()) ||
-        partner.email?.toLowerCase().includes(search.toLowerCase())
+        partner.email?.toLowerCase().includes(search.toLowerCase()) ||
+        partner.business_name?.toLowerCase().includes(search.toLowerCase())
       );
     });
 
@@ -103,11 +105,18 @@ const Partners = () => {
   return (
     <div className="flex flex-col top-[120px] left-[281px] gap-6 p-3">
       <div className="flex flex-col gap-4">
-        <div className="flex items-center text-xs gap-1  fw4 leading-[150%] tracking-[-3%]">
+        {/* <div className="flex items-center text-xs gap-1  fw4 leading-[150%] tracking-[-3%]">
           <p className="text-[#6C6C6C]">Dashboard</p>
           <span className="mx-2 text-[#9A9A9A]">/</span>
           <p className="text-[#F77F00]">Partners</p>
-        </div>
+        </div> */}
+         <Breadcrumb
+          items={[
+            { label: "Dashboard", path: "/" },
+            
+            { label: "Partners" },
+          ]}
+        />
 
         <div className="flex justify-between gap-4 ">
           <div className="gap-2">

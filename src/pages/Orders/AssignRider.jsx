@@ -10,6 +10,7 @@ import { useRiders } from "../../hooks/useRiders";
 import Pagination from "../../components/Pagination";
 import API from "../../services/api";
 import { toast } from "react-toastify";
+import Breadcrumb from "../../components/Breadcrumb";
 
 const AssignRider = () => {
   const navigate = useNavigate();
@@ -116,13 +117,21 @@ const AssignRider = () => {
   return (
     <div className="gap-6 p-2">
       <div className="flex flex-col gap-4">
-        <div className="flex items-center text-xs leading-[150%] tracking-[-3%]">
+        {/* <div className="flex items-center text-xs leading-[150%] tracking-[-3%]">
           <p className="text-[#6C6C6C]">Dashboard</p>
           <span className="mx-2 text-[#9A9A9A]">/</span>
           <p className="text-[#6C6C6C]">Orders </p>
           <span className="mx-2 text-[#9A9A9A]">/</span>
           <p className="text-[#F77F00]"> Assign Order</p>
-        </div>
+        </div> */}
+         <Breadcrumb
+            items={[
+              { label: "Dashboard", path: "/" },
+              { label: "Orders", path: "/orders" },
+
+              { label: "Assign Rider" },
+            ]}
+          />
         <div className="flex gap-3 items-center">
           <Link to="/orders" className="group">
             <img

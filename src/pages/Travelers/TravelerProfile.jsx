@@ -6,6 +6,7 @@ import DefaultProfile from "../../assets/Images/trv_profile.jpg";
 import Pagination from "../../components/Pagination";
 import Orders from "../../components/Orders";
 import ImagePreviewGallery from "../../components/ImagePreviewGallery";
+import Breadcrumb from "../../components/Breadcrumb";
 
 
 const TravelerProfile = () => {
@@ -87,13 +88,14 @@ const TravelerProfile = () => {
     <div className="flex flex-col p-4 top-[120px] left-[281px] gap-6">
 
       <div className="flex flex-col gap-4">
-        <div className="flex items-center text-xs gap-1 text-[#6C6C6C]">
+        {/* <div className="flex items-center text-xs gap-1 text-[#6C6C6C]">
           <p>Dashboard</p>
           <span className="mx-1 text-[#9A9A9A]">/</span>
           <p>Traveler</p>
           <span className="mx-1 text-[#9A9A9A]">/</span>
           <p className="text-[#F77F00]">Traveler Details</p>
-        </div>
+        </div> */}
+        p
         <div className="flex flex-col gap-3">
 
           <h2 className="text-2xl fw6 font-roboto text-[#232323]">Traveler Details</h2>

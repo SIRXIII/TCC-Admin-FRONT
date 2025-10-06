@@ -10,6 +10,7 @@ import { useStatusUpdateRider } from "../../hooks/useRiders";
 import { toast } from "react-toastify";
 import PartnerOrders from "../Partners/PartnersProfile/PartnerOrders";
 import Orders from "../../components/Orders";
+import Breadcrumb from "../../components/Breadcrumb";
 
 const RiderProfile = () => {
   const { id } = useParams();
@@ -34,7 +35,25 @@ const RiderProfile = () => {
     }
   }, [id]);
 
-  if (!rider) return <p>Loading...</p>;
+  if (!rider) return <p>
+
+    <div className="flex flex-col justify-center items-center h-100 gap-2">
+      <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-orange-500"></div>
+
+
+      <p className="text-orange-500 fw5 flex items-center">
+        Loading Riders
+        <span className="flex space-x-1 ml-1 text-2xl font-bold leading-none">
+          <span className="animate-bounce">.</span>
+          <span className="animate-bounce" style={{ animationDelay: "0.2s" }}>.</span>
+          <span className="animate-bounce" style={{ animationDelay: "0.4s" }}>.</span>
+        </span>
+      </p>
+
+
+    </div>
+
+  </p>;
 
   const handleRiderStatus = (rider) => {
     const newStatus = rider.status === "Active" ? "suspended" : "active";
@@ -61,13 +80,21 @@ const RiderProfile = () => {
 
   return (
     <div className="flex flex-col p-3 gap-6">
-      <div className="flex items-center text-xs fw4  text-[#6C6C6C] gap-1 leading-[150%] tracking-[-3%]">
+      {/* <div className="flex items-center text-xs fw4  text-[#6C6C6C] gap-1 leading-[150%] tracking-[-3%]">
         <span>Dashboard</span>
         <span>/</span>
         <span>Rider</span>
         <span>/</span>
         <span className="text-[#F77F00] capitalize">Details</span>
-      </div>
+      </div> */}
+      <Breadcrumb
+        items={[
+          { label: "Dashboard", path: "/" },
+          { label: "Riders", path: "/riders" },
+
+          { label: "Details" },
+        ]}
+      />
 
       <div className="flex  items-center justify-between">
         <div className="flex flex-col gap-2">
@@ -99,7 +126,7 @@ const RiderProfile = () => {
           >
             {rider && rider?.status === "Active" ? "Suspended" : "Active"}
           </button>
-          <Link to={`/riders/update-rider/${id}`}  className="border border-[#F77F00] bg-[#FEF2E6] rounded-lg px-4 py-2 text-sm text-[#F77F00] hover:bg-[#F77F00] hover:text-white transition">
+          <Link to={`/riders/update-rider/${id}`} className="border border-[#F77F00] bg-[#FEF2E6] rounded-lg px-4 py-2 text-sm text-[#F77F00] hover:bg-[#F77F00] hover:text-white transition">
             Edit Partner Information
           </Link>
         </div>

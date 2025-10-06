@@ -8,6 +8,7 @@ import axios from "axios";
 import API from "../../services/api";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import Breadcrumb from "../../components/Breadcrumb";
 
 const Dropdown = ({
   label,
@@ -165,13 +166,21 @@ const AddRiders = () => {
     >
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-4">
-          <div className="flex items-center text-xs gap-1 text-[#6C6C6C]">
+          {/* <div className="flex items-center text-xs gap-1 text-[#6C6C6C]">
             <p>Dashboard</p>
             <span className="mx-1 text-[#9A9A9A]">/</span>
             <p>Riders</p>
             <span className="mx-1 text-[#9A9A9A]">/</span>
             <p className="text-[#F77F00]">Add Rider</p>
-          </div>
+          </div> */}
+           <Breadcrumb
+        items={[
+          { label: "Dashboard", path: "/" },
+          { label: "Riders", path: "/riders" },
+
+          { label: "Add Rider" },
+        ]}
+      />
           <div className="flex items-center justify-between">
             <div className="flex flex-col gap-2.5">
               <div className="flex gap-3 items-center">
@@ -342,42 +351,42 @@ const AddRiders = () => {
               )}
             </div> */}
             <div>
-  <div className="relative">
-    <input
-      type="tel"
-      id="phone"
-      name="phone"
-      value={formData.phone}
-      onChange={(e) => {
-       
-        let digits = e.target.value.replace(/\D/g, "").slice(0, 10);
+              <div className="relative">
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={(e) => {
 
-        if (digits.length > 3 && digits.length <= 6) {
-          digits = `${digits.slice(0, 3)}-${digits.slice(3)}`;
-        } else if (digits.length > 6) {
-          digits = `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
-        }
+                    let digits = e.target.value.replace(/\D/g, "").slice(0, 10);
 
-        e.target.value = digits;
-        handleChange(e);
-      }}
-      className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
-      placeholder="Phone (e.g. 212-456-7890)"
-      inputMode="tel"
-      pattern="^\d{3}-\d{3}-\d{4}$"
-      maxLength={12} 
-    />
-    <label
-      htmlFor="phone"
-      className="absolute text-sm ms-4 text-[#232323] duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
-    >
-      Phone Number
-    </label>
-  </div>
-  {errors.phone && (
-    <p className="text-red-500 text-xs mt-1 ms-2">{errors.phone[0]}</p>
-  )}
-</div>
+                    if (digits.length > 3 && digits.length <= 6) {
+                      digits = `${digits.slice(0, 3)}-${digits.slice(3)}`;
+                    } else if (digits.length > 6) {
+                      digits = `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+                    }
+
+                    e.target.value = digits;
+                    handleChange(e);
+                  }}
+                  className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
+                  placeholder="Phone (e.g. 212-456-7890)"
+                  inputMode="tel"
+                  pattern="^\d{3}-\d{3}-\d{4}$"
+                  maxLength={12}
+                />
+                <label
+                  htmlFor="phone"
+                  className="absolute text-sm ms-4 text-[#232323] duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
+                >
+                  Phone Number
+                </label>
+              </div>
+              {errors.phone && (
+                <p className="text-red-500 text-xs mt-1 ms-2">{errors.phone[0]}</p>
+              )}
+            </div>
 
             <div>
               <div className="relative">

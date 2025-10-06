@@ -9,6 +9,7 @@ import { useStatusUpdateProduct } from "../../hooks/useProducts";
 import { toast } from "react-toastify";
 import productImg from "../../assets/Images/Pro_img.jpg";
 import ImagePreviewGallery from "../../components/ImagePreviewGallery";
+import Breadcrumb from "../../components/Breadcrumb";
 
 
 const ProductsDetail = () => {
@@ -123,13 +124,21 @@ const ProductsDetail = () => {
 
   return (
     <div className="flex flex-col p-2  gap-6">
-      <div className="flex items-center text-xs fw4  text-[#6C6C6C] gap-1 leading-[150%] tracking-[-3%]">
+      {/* <div className="flex items-center text-xs fw4  text-[#6C6C6C] gap-1 leading-[150%] tracking-[-3%]">
         <span>Dashboard</span>
         <span>/</span>
         <span>Products</span>
         <span>/</span>
         <span className="text-[#F77F00] capitalize">Details</span>
-      </div>
+      </div> */}
+       <Breadcrumb
+            items={[
+              { label: "Dashboard", path: "/" },
+              { label: "Products", path: "/products" },
+
+              { label: "Details" },
+            ]}
+          />
 
       <div className="flex  items-center justify-between">
         <div className="flex flex-col gap-2">

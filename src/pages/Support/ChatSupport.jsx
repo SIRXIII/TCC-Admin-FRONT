@@ -6,6 +6,7 @@ import echo from "../../../echo";
 import DefaultProfile from "../../assets/Images/rid_profile.jpg";
 import backward from "../../assets/SVG/backward.svg";
 import notics from "../../assets/SVG/notics.svg";
+import Breadcrumb from "../../components/Breadcrumb";
 
 const ChatSupport = () => {
   const { id } = useParams();
@@ -47,7 +48,7 @@ const ChatSupport = () => {
   }, [ticket]);
 
 
-  console.log("tickets", ticket);
+  // console.log("tickets", ticket);
   const safeDate = (val) => {
     if (!val) return new Date(0);
     return new Date(val.replace(" ", "T"));
@@ -156,13 +157,14 @@ const ChatSupport = () => {
   return (
     <div className="flex flex-col gap-6 p-3">
 
-      <div className="flex items-center text-xs gap-1 leading-[150%] tracking-[-3%]">
-        <p className="text-[#6C6C6C]">Dashboard</p>
-        <span className="text-[#9A9A9A]">/</span>
-        <p className="text-[#6C6C6C]">Support Ticket</p>
-        <span className="text-[#9A9A9A]">/</span>
-        <p className="text-[#F77F00]">Details</p>
-      </div>
+      <Breadcrumb
+                  items={[
+                    { label: "Dashboard", path: "/" },
+                    { label: "Support Ticket", path: "/support" },
+      
+                    { label: "Details" },
+                  ]}
+                />
 
 
       <div className="flex gap-2 items-center">

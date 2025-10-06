@@ -10,6 +10,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import TimePicker from "react-time-picker";
 import CustomTimePicker from "../../components/CustomTimePicker";
+import Breadcrumb from "../../components/Breadcrumb";
 
 const AddPartners = () => {
   const navigate = useNavigate();
@@ -144,13 +145,15 @@ const AddPartners = () => {
     >
       <div className="flex flex-col p-4 top-[120px] left-[281px] gap-6">
         <div className="flex flex-col gap-4">
-          <div className="flex items-center text-xs gap-1 text-[#6C6C6C]">
-            <p>Dashboard</p>
-            <span className="mx-1 text-[#9A9A9A]">/</span>
-            <p>Partners </p>
-            <span className="mx-1 text-[#9A9A9A]">/</span>
-            <p className="text-[#F77F00]">Add Partner</p>
-          </div>
+
+          <Breadcrumb
+            items={[
+              { label: "Dashboard", path: "/" },
+              { label: "Partners", path: "/partners" },
+
+              { label: "Add Partner" },
+            ]}
+          />
           <div className="flex items-center justify-between">
             <div className="flex flex-col gap-1">
 
@@ -223,9 +226,9 @@ const AddPartners = () => {
                   </button>
                 </div>
               </div>
-                {errors.profileImage  && (
-                  <p className="text-red-500 text-xs mt-1">{errors.profileImage[0]}</p>
-                )}
+              {errors.profileImage && (
+                <p className="text-red-500 text-xs mt-1">{errors.profileImage[0]}</p>
+              )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4   leading-[100%] tracking-[-5%]">
               <div>
@@ -359,7 +362,7 @@ const AddPartners = () => {
               <div>
                 <div className="relative">
                   <div className="block p-3 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9]">
-                  
+
                     <CustomTimePicker
                       onChange={(value) => handleTimeChange("store_end_time", value)}
                       value={formData.store_end_time}

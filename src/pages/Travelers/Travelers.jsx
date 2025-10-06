@@ -11,6 +11,7 @@ import {
 import DefaultProfile from "../../assets/Images/trv_profile.jpg";
 import DeleteButton from "../../components/Dialogs/DeleteButton";
 import Pagination from "../../components/Pagination";
+import Breadcrumb from "../../components/Breadcrumb";
 
 const Travelers = () => {
   const navigate = useNavigate();
@@ -194,11 +195,18 @@ const Travelers = () => {
   return (
     <div className="gap-6 mb-10">
       <div className="flex flex-col p-3 gap-4">
-        <div className="flex items-center text-xs leading-[150%] tracking-[-3%]">
+        {/* <div className="flex items-center text-xs leading-[150%] tracking-[-3%]">
           <p className="text-[#6C6C6C]">Dashboard</p>
           <span className="mx-2 text-[#9A9A9A]">/</span>
           <p className="text-[#F77F00]">Travelers</p>
-        </div>
+        </div> */}
+         <Breadcrumb
+          items={[
+            { label: "Dashboard", path: "/" },
+           
+            { label: "Travelers" },
+          ]}
+        />
 
         <h2 className="text-2xl fw6 font-roboto text-[#232323] leading-[140%] tracking-[-3%]">
           Travelers

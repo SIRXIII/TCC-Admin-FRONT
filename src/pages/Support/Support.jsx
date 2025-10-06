@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Pagination from "../../components/Pagination";
 import DefaultProfile from "../../assets/Images/rid_profile.jpg";
 import API from "../../services/api";
+import Breadcrumb from "../../components/Breadcrumb";
 
 const Support = () => {
   const navigate = useNavigate();
@@ -155,11 +156,18 @@ const Support = () => {
     <div className="flex flex-col gap-6 p-3">
     
       <div className="flex flex-col gap-4">
-        <div className="flex items-center text-xs gap-1 leading-[150%] tracking-[-3%]">
+        {/* <div className="flex items-center text-xs gap-1 leading-[150%] tracking-[-3%]">
           <p className="text-[#6C6C6C]">Dashboard</p>
           <span className=" text-[#9A9A9A]">/</span>
           <p className="text-[#F77F00]">Support</p>
-        </div>
+        </div> */}
+        <Breadcrumb 
+                    items={[
+                      { label: "Dashboard", path: "/" },
+                     
+                      { label: "Support" },
+                    ]}
+                  />
         <div>
           <h2 className="text-2xl font-roboto fw6 text-[#232323]">Support Ticket</h2>
           <p className="text-[#232323] text-sm">

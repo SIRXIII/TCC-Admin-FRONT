@@ -7,6 +7,7 @@ import { getOrderById } from "../../services/orderService";
 import productImg from "../../assets/Images/Pro_img.jpg";
 import DefaultProfile from "../../assets/Images/trv_profile.jpg";
 import ImagePreviewGallery from "../../components/ImagePreviewGallery";
+import Breadcrumb from "../../components/Breadcrumb";
 
 
 const OrdersDetail = () => {
@@ -53,13 +54,21 @@ const OrdersDetail = () => {
   return (
     <div className="flex flex-col p-2">
       <div className="flex flex-col gap-4">
-        <div className="flex items-center text-xs gap-1 text-[#6C6C6C]">
+        {/* <div className="flex items-center text-xs gap-1 text-[#6C6C6C]">
           <p>Dashboard</p>
           <span className="mx-1 text-[#9A9A9A]">/</span>
           <p>Orders </p>
           <span className="mx-1 text-[#9A9A9A]">/</span>
           <p className="text-[#F77F00]">Assign Order</p>
-        </div>
+        </div> */}
+         <Breadcrumb
+            items={[
+              { label: "Dashboard", path: "/" },
+              { label: "Orders", path: "/orders" },
+
+              { label: "Assign Order" },
+            ]}
+          />
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-1">
             <div className="flex gap-3 items-center">
