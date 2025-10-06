@@ -82,9 +82,9 @@ const ApprovedPartners = ({
 
           <th
             className="px-4 py-3 cursor-pointer select-none"
-            onClick={() => handleSort("category")}
+            onClick={() => handleSort("business_name")}
           >
-            Category {renderSortIcon("category")}
+            Business Name {renderSortIcon("business_name")}
           </th>
 
           <th
@@ -149,7 +149,7 @@ const ApprovedPartners = ({
             </td>
 
             <td className="px-4 py-3 text-[#4F4F4F]">{partner.name}</td>
-            <td className="px-4 py-3">{partner.category}</td>
+            <td className="px-4 py-3">{partner.business_name}</td>
             <td className="px-4 py-3">{partner.products?.length || 0}</td>
             <td className="px-4 py-3">{partner.location}</td>
 
@@ -193,6 +193,12 @@ const ApprovedPartners = ({
                       label: "Suspend",
                       onClick: () => handleSuspendPartner(partner.id),
                     },
+                    {
+                      label: "Edit",
+                      type: "link",
+                      to: `/partners/update-partner/${partner.id}`
+
+                    }
                   ]}
                 />
               </div>

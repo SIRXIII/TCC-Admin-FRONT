@@ -301,12 +301,12 @@ const Refunds = () => {
                             >
                               View Detail
                             </button>
-                            <button
+                            {/* <button
                               className="px-4 py-2 gap-2.5 hover:bg-[#FEF2E6] w-full text-left text-sm"
                               onClick={() => navigate(`/support/chatsupport`)}
                             >
                               Chat Support
-                            </button>
+                            </button> */}
                           </div>
                         )}
                       </td>

@@ -95,7 +95,15 @@ const TravelerProfile = () => {
           <span className="mx-1 text-[#9A9A9A]">/</span>
           <p className="text-[#F77F00]">Traveler Details</p>
         </div> */}
-        p
+          <Breadcrumb
+                  items={[
+                    { label: "Dashboard", path: "/" },
+                    { label: "Traveler", path: "/travelers" },
+      
+                    { label: "Traveler Details" },
+                  ]}
+                />
+
         <div className="flex flex-col gap-3">
 
           <h2 className="text-2xl fw6 font-roboto text-[#232323]">Traveler Details</h2>

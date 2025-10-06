@@ -29,6 +29,7 @@ import UpdateRider from "./pages/Riders/UpdateRider";
 import TwoFactor from "./components/TwoFactor";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OAuthCallback from "./components/OAuthCallback";
+import UpdatePartner from "./pages/Partners/UpdatePartner";
 
 const queryClient = new QueryClient();
 
@@ -75,6 +76,8 @@ const App = () => {
           
             <Route path="/partners/add-partner" element={<AddPartners />} />
             <Route path="/partners/profile/:id" element={<PartnerProfile />} />
+            <Route path="/partners/update-partner/:id" element={<UpdatePartner />} />
+
 
          
             <Route path="/riders/add-rider" element={<AddRiders />} />
