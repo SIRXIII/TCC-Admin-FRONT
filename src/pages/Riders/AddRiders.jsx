@@ -10,6 +10,9 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import Breadcrumb from "../../components/Breadcrumb";
 
+const GEOAPIFY_KEY = import.meta.env.VITE_APP_GEOAPIFY_KEY;
+
+
 const Dropdown = ({
   label,
   options = [],
@@ -79,6 +82,8 @@ const AddRiders = () => {
     email: "",
     phone: "",
     address: "",
+    latitude: "",
+    longitude: "",
     insurance_expire_date: "",
     assigned_region: [],
     vehicle_type: "",
@@ -86,6 +91,7 @@ const AddRiders = () => {
     license_plate: "",
 
   });
+  const [suggestions, setSuggestions] = useState([]);
 
   const [profileImage, setProfileImage] = useState(rid_image);
   const [licenseImages, setLicenseImages] = useState({ front: null, back: null });
@@ -159,6 +165,40 @@ const AddRiders = () => {
   };
 
 
+    const handleAddressChange = async (e) => {
+    const value = e.target.value;
+    handleChange(e);
+
+    if (value.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+
+      const res = await axios.get(
+        `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(
+          value
+        )}&apiKey=${GEOAPIFY_KEY}`
+      );
+      setSuggestions(res.data.features);
+    } catch (err) {
+      console.error("Geoapify error:", err);
+    }
+  };
+
+  const handleSelectAddress = (place) => {
+    const formatted = place.properties.formatted;
+    const lat = place.geometry.coordinates[1];
+    const lon = place.geometry.coordinates[0];
+
+    setFormData({ ...formData, address: formatted, latitude: lat, longitude: lon });
+    setSuggestions([]);
+
+    // // Optional: Open in Google Maps
+    // window.open(`https://www.google.com/maps?q=${lat},${lon}`, "_blank");
+  };
+
   return (
     <form
       onSubmit={handleSubmit}
@@ -166,13 +206,7 @@ const AddRiders = () => {
     >
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-4">
-          {/* <div className="flex items-center text-xs gap-1 text-[#6C6C6C]">
-            <p>Dashboard</p>
-            <span className="mx-1 text-[#9A9A9A]">/</span>
-            <p>Riders</p>
-            <span className="mx-1 text-[#9A9A9A]">/</span>
-            <p className="text-[#F77F00]">Add Rider</p>
-          </div> */}
+         
            <Breadcrumb
         items={[
           { label: "Dashboard", path: "/" },
@@ -395,18 +429,71 @@ const AddRiders = () => {
                   id="address"
                   name="address"
                   value={formData.address}
-                  onChange={handleChange}
+                  onChange={handleAddressChange}
                   className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] peer focus:outline-none"
                   placeholder=" "
                 />
                 <label htmlFor="address" className="absolute text-sm ms-4 text-[#232323]  duration-300 transform -translate-y-4 scale-75 top-2 bg-white px-2 peer-placeholder-shown:top-1/2 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4">
                   Address
                 </label>
+
+                {suggestions.length > 0 && (
+                    <ul className="absolute z-50 bg-white border border-gray-300 rounded-lg shadow-md mt-1 w-full max-h-48 overflow-y-auto">
+                      {suggestions.map((s, i) => (
+                        <li
+                          key={i}
+                          onClick={() => handleSelectAddress(s)}
+                          className="px-3 py-2 hover:bg-orange-100 cursor-pointer text-sm"
+                        >
+                          {s.properties.formatted}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
               </div>
               {errors.address && (
                 <p className="text-red-500 text-xs mt-1 ms-2">{errors.address[0]}</p>
               )}
             </div>
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Latitude */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    id="latitude"
+                    name="latitude"
+                    value={formData.latitude}
+                    disabled
+                    placeholder="Address latitude"
+                    className="block p-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border border-[#D9D9D9]"
+                  />
+                  <label
+                    htmlFor="latitude"
+                    className="absolute text-sm ms-4 text-gray-500 -translate-y-4 scale-75 top-2 z-10 bg-white px-2"
+                  >
+                    Latitude
+                  </label>
+                </div>
+
+                {/* Longitude */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    id="longitude"
+                    name="longitude"
+                    value={formData.longitude}
+                    disabled
+                    placeholder="Address longitude"
+                    className="block p-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border border-[#D9D9D9]"
+                  />
+                  <label
+                    htmlFor="longitude"
+                    className="absolute text-sm ms-4 text-gray-500 -translate-y-4 scale-75 top-2 z-10 bg-white px-2"
+                  >
+                    Longitude
+                  </label>
+                </div>
+              </div>
 
             <div>
               <div className="relative">

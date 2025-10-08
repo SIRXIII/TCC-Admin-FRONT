@@ -94,12 +94,12 @@ const ApprovedPartners = ({
             Products {renderSortIcon("productsCount")}
           </th>
 
-          <th
+          {/* <th
             className="px-4 py-3 cursor-pointer select-none"
             onClick={() => handleSort("location")}
           >
             Location {renderSortIcon("location")}
-          </th>
+          </th> */}
 
           <th
             className="px-4 py-3 cursor-pointer select-none"
@@ -151,7 +151,7 @@ const ApprovedPartners = ({
             <td className="px-4 py-3 text-[#4F4F4F]">{partner.name}</td>
             <td className="px-4 py-3">{partner.business_name}</td>
             <td className="px-4 py-3">{partner.products?.length || 0}</td>
-            <td className="px-4 py-3">{partner.location}</td>
+            {/* <td className="px-4 py-3">{partner.location}</td> */}
 
             <td className="px-4 py-3">
               <span

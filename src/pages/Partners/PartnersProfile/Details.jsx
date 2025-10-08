@@ -5,11 +5,24 @@ import PartnerInfo from "./PartnerInfo";
 const Details = ({ partner }) => {
 
 
-  console.log("partners--------------------", partner);
   if (!partner) return <div>Loading partner details...</div>;
 
   const activeProducts = partner.products.filter(p => p.status === "active").length;
   const pendingProducts = partner.products.filter(p => p.status === "inactive").length;
+
+let storeAvailability = {};
+if (partner?.availability) {
+  if (typeof partner.availability === "string") {
+    try {
+      storeAvailability = JSON.parse(partner.availability);
+    } catch (e) {
+      console.error("Invalid JSON in availability:", e);
+      storeAvailability = {};
+    }
+  } else if (typeof partner.availability === "object") {
+    storeAvailability = partner.availability;
+  }
+}
 
 
   const partnerInfo = {
@@ -23,10 +36,10 @@ const Details = ({ partner }) => {
       { label: "Business Name", value: partner?.business_name },
       { label: "Email", value: partner?.email },
       { label: "Owner", value: partner?.name },
-      { label: "Address", value: partner?.address },
+      // { label: "Address", value: partner?.address },
+      { label: "Address", value: partner?.address, latitude: partner?.latitude, longitude: partner?.longitude },
       { label: "Phone", value: partner?.phone },
-      { label: "Store Timing", value: partner?.store_available_days + " " + partner?.store_available_start_time + " - " +  partner?.store_available_end_time},
-    ],
+      ],
   };
 
   const businessDetails = {
@@ -68,10 +81,7 @@ const Details = ({ partner }) => {
         label: "Inspection Status",
         value: partner.status === 'active' ? "Completed" : "Not Completed",
       },
-      {
-        label: "Store Timing",
-        value: partner.store_available_days + " " + partner.store_available_start_time + "-" + partner.store_available_end_time,
-      },
+     
     ],
   };
 
@@ -88,6 +98,15 @@ const Details = ({ partner }) => {
     ],
   };
 
+const availableDays = Object.entries(storeAvailability)
+  .filter(([day, info]) => info.checked)
+  .map(([day, info]) => ({
+    label: day,
+    value: `${info.start_time} - ${info.end_time}`,
+  }));
+
+
+
   return (
 
 
@@ -97,6 +116,13 @@ const Details = ({ partner }) => {
           <h3 className="text-lg fw6">Partner Information</h3>
           <PartnerInfo items={partnerInfo.items} partnerId={partner.id} />
         </div>
+
+
+        <div className="bg-[#FFFFFF]  shadow rounded-lg p-6 flex flex-col gap-6">
+          <h3 className="text-lg fw6">Store Timing</h3>
+          <PartnerInfo items={availableDays} partnerId={partner.id} />
+        </div>
+
 
         <div className="bg-[#FFFFFF]  shadow rounded-lg p-6 flex flex-col gap-6">
           <h3 className="text-lg fw6">Support & Rating</h3>

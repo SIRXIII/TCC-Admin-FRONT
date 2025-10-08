@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getTopTravelers, getTopPartners, getStates, getOrderStats } from "../services/dashboardService";
+import { getTopTravelers, getTopPartners, getStates, getOrderStats, latestNotification } from "../services/dashboardService";
 
 export const useWidgets = () => {
   return useQuery({
@@ -28,6 +28,18 @@ export const useTopPartners = () => {
     select: (res) => res.data,
   });
 };
+
+
+
+export const useLatestNotification = () => {
+  return useQuery({
+    queryKey: ["notifications"],
+    queryFn: latestNotification,
+    select: (res) => res.data,
+  });
+};
+
+
 
 export const useOrderStats = () => {
   return useQuery({

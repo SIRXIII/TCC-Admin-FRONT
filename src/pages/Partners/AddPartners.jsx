@@ -11,6 +11,12 @@ import { toast } from "react-toastify";
 import TimePicker from "react-time-picker";
 import CustomTimePicker from "../../components/CustomTimePicker";
 import Breadcrumb from "../../components/Breadcrumb";
+import StoreAvailabilityCard from "../../components/StoreAvailabilityCard";
+
+
+const GEOAPIFY_KEY = import.meta.env.VITE_APP_GEOAPIFY_KEY;
+
+console.log("adasdasdasdasdasdas", GEOAPIFY_KEY)
 
 const AddPartners = () => {
   const navigate = useNavigate();
@@ -23,13 +29,15 @@ const AddPartners = () => {
     store_start_time: "",
     store_end_time: "",
     address: "",
-    location: "",
+    latitude: "",
+    longitude: "",
     businesstype: "",
     tax_id: "",
     owner_name: "",
     licenseImage: null,
     ownerIdImage: null,
   });
+  const [suggestions, setSuggestions] = useState([]);
   const [profileImage, setProfileImage] = useState(par_profile);
   const [licenseImages, setLicenseImages] = useState({ front: null, back: null });
   const [ownerIdImages, setOwnerIdImages] = useState({ front: null, back: null });
@@ -42,35 +50,32 @@ const AddPartners = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const daysOrder = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
 
-  // Handle day selection (max 2)
-  const handleDaySelect = (day) => {
-    setFormData((prev) => {
-      let updatedDays = [...prev.days];
-      if (updatedDays.includes(day)) {
-        updatedDays = updatedDays.filter((d) => d !== day);
-      } else if (updatedDays.length < 2) {
-        updatedDays.push(day);
-      }
-      return { ...prev, days: updatedDays };
-    });
+  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+  const [availability, setAvailability] = useState(
+    Object.fromEntries(days.map(day => [day, { checked: false, start_time: "", end_time: "" }]))
+  );
+
+  const handleCheckboxChange = (day) => {
+    setAvailability(prev => ({
+      ...prev,
+      [day]: {
+        ...prev[day],
+        checked: !prev[day].checked,
+        ...(prev[day].checked ? { start_time: "", end_time: "" } : {}),
+      },
+    }));
   };
 
-  const handleTimeChange = (key, value) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
+  const handleTimeChange = (day, field, value) => {
+    setAvailability(prev => ({
+      ...prev,
+      [day]: { ...prev[day], [field]: value },
+    }));
   };
 
-  const selectedDaysDisplay =
-    formData.days.length > 0 ? formData.days.join(" - ") : "";
+
 
   const handleFileChange = (e, type, side) => {
     const file = e.target.files[0];
@@ -119,6 +124,9 @@ const AddPartners = () => {
       if (ownerIdImages.front) payload.append("ownerId_front", ownerIdImages.front);
       if (ownerIdImages.back) payload.append("ownerId_back", ownerIdImages.back);
 
+      if (availability && typeof availability === "object") {
+        payload.append("availability", JSON.stringify(availability));
+      }
 
       const res = await API.post("/partner/store", payload, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -136,6 +144,42 @@ const AddPartners = () => {
       }
     }
   };
+
+
+  const handleAddressChange = async (e) => {
+    const value = e.target.value;
+    handleChange(e);
+
+    if (value.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+
+      const res = await axios.get(
+        `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(
+          value
+        )}&apiKey=${GEOAPIFY_KEY}`
+      );
+      setSuggestions(res.data.features);
+    } catch (err) {
+      console.error("Geoapify error:", err);
+    }
+  };
+
+  const handleSelectAddress = (place) => {
+    const formatted = place.properties.formatted;
+    const lat = place.geometry.coordinates[1];
+    const lon = place.geometry.coordinates[0];
+
+    setFormData({ ...formData, address: formatted, latitude: lat, longitude: lon });
+    setSuggestions([]);
+
+    // // Optional: Open in Google Maps
+    // window.open(`https://www.google.com/maps?q=${lat},${lon}`, "_blank");
+  };
+
 
 
   return (
@@ -335,114 +379,96 @@ const AddPartners = () => {
                   <p className="text-red-500 text-xs mt-1">{errors.ownerName[0]}</p>
                 )}
               </div>
+
+
+
               <div>
+
                 <div className="relative">
-                  <div className="block p-3 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9]">
-                    <CustomTimePicker
-                      onChange={(value) => handleTimeChange("store_start_time", value)}
-                      value={formData.store_start_time}
-                      format="hh:mm a"
-                    />
-                  </div>
-                  <label
-                    htmlFor="store_start_time"
-                    className="absolute text-sm ms-4 text-gray-500 -translate-y-4 scale-75 top-2 z-10 bg-white px-2"
-                  >
-                    Store Start Time
-                  </label>
-                </div>
-                {errors.store_start_time && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.store_start_time[0]}
-                  </p>
-                )}
-              </div>
-
-              {/* Store End Time */}
-              <div>
-                <div className="relative">
-                  <div className="block p-3 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9]">
-
-                    <CustomTimePicker
-                      onChange={(value) => handleTimeChange("store_end_time", value)}
-                      value={formData.store_end_time}
-                      format="hh:mm a"
-                    />
-                  </div>
-                  <label
-                    htmlFor="store_end_time"
-                    className="absolute text-sm ms-4 text-gray-500 -translate-y-4 scale-75 top-2 z-10 bg-white px-2"
-                  >
-                    Store End Time
-                  </label>
-                </div>
-                {errors.store_end_time && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.store_end_time[0]}
-                  </p>
-                )}
-              </div>
-
-
-              <div>
-                <div className="relative md:col-span-2">
                   <input
                     type="text"
                     id="address"
                     name="address"
                     value={formData.address}
-                    onChange={handleChange}
-                    className="block p-4 pt-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border-1 border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
-                    placeholder=" "
+                    onChange={handleAddressChange}
+                    placeholder="Enter address"
+                    className="block p-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border border-[#D9D9D9]"
                   />
                   <label
-                    htmlFor="Address"
-                    className="absolute text-sm ms-4 text-gray-500  duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323]  peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto   start-1"
+                    htmlFor="address"
+                    className="absolute text-sm ms-4 text-gray-500 -translate-y-4 scale-75 top-2 z-10 bg-white px-2"
                   >
                     Address
                   </label>
+
+                  {suggestions.length > 0 && (
+                    <ul className="absolute z-50 bg-white border border-gray-300 rounded-lg shadow-md mt-1 w-full max-h-48 overflow-y-auto">
+                      {suggestions.map((s, i) => (
+                        <li
+                          key={i}
+                          onClick={() => handleSelectAddress(s)}
+                          className="px-3 py-2 hover:bg-orange-100 cursor-pointer text-sm"
+                        >
+                          {s.properties.formatted}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
                 {errors.address && (
                   <p className="text-red-500 text-xs mt-1">{errors.address[0]}</p>
                 )}
               </div>
 
-              <div>
-                <div className="relative md:col-span-1">
-                  <div className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9]">
-                    <div className="flex flex-wrap gap-2">
-                      {daysOrder.map((day) => (
-                        <button
-                          key={day}
-                          type="button"
-                          onClick={() => handleDaySelect(day)}
-                          className={`px-3 py-1 rounded-full text-sm border ${formData.days.includes(day)
-                            ? "bg-[#F77F00] text-white border-[#F77F00]"
-                            : "border-gray-300 text-[#232323]"
-                            }`}
-                        >
-                          {day}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Latitude */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    id="latitude"
+                    name="latitude"
+                    value={formData.latitude}
+                    disabled
+                    placeholder="Address latitude"
+                    className="block p-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border border-[#D9D9D9]"
+                  />
                   <label
-                    htmlFor="days"
+                    htmlFor="latitude"
                     className="absolute text-sm ms-4 text-gray-500 -translate-y-4 scale-75 top-2 z-10 bg-white px-2"
                   >
-                    Store Availability Days
+                    Latitude
                   </label>
                 </div>
-                {selectedDaysDisplay && (
-                  <p className="text-sm text-[#232323] mt-2">
-                    Selected: <span className="font-medium">{selectedDaysDisplay}</span>
-                  </p>
-                )}
-                {errors.days && (
-                  <p className="text-red-500 text-xs mt-1">{errors.days[0]}</p>
-                )}
+
+                {/* Longitude */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    id="longitude"
+                    name="longitude"
+                    value={formData.longitude}
+                    disabled
+                    placeholder="Address longitude"
+                    className="block p-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border border-[#D9D9D9]"
+                  />
+                  <label
+                    htmlFor="longitude"
+                    className="absolute text-sm ms-4 text-gray-500 -translate-y-4 scale-75 top-2 z-10 bg-white px-2"
+                  >
+                    Longitude
+                  </label>
+                </div>
               </div>
+
             </div>
+          </div>
+
+          <div>
+            <StoreAvailabilityCard
+              availability={availability}
+              handleCheckboxChange={handleCheckboxChange}
+              handleTimeChange={handleTimeChange}
+            />
           </div>
 
 
@@ -453,6 +479,45 @@ const AddPartners = () => {
             <h1 className="text-lg text-[#232323]  fw6 leading-[150%] tracking-[-3%]">
               Business Verification
             </h1>
+
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4  fw4 leading-[100%] tracking-[-5%]">
+              <div>
+                <div className="relative">
+                  <input
+                    type="text"
+                    id="tax_id"
+                    name="tax_id"
+                    value={formData.tax_id}
+                    onChange={(e) => {
+                      const value = e.target.value;
+
+                      if (/^\d*$/.test(value)) {
+                        handleChange(e);
+                      }
+                    }}
+                    onKeyPress={(e) => {
+
+                      if (!/[0-9]/.test(e.key)) {
+                        e.preventDefault();
+                      }
+                    }}
+                    className="block p-4 pt-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border-1 border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
+                    placeholder="e.g: 08796"
+                  />
+                  <label
+                    htmlFor="tax_id"
+                    className="absolute text-sm ms-4 text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
+                  >
+                    Tax ID
+                  </label>
+                </div>
+                {errors.tax_id && (
+                  <p className="text-red-500 text-xs mt-1">{errors.tax_id[0]}</p>
+                )}
+              </div>
+
+
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -544,66 +609,7 @@ const AddPartners = () => {
 
 
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4  fw4 leading-[100%] tracking-[-5%]">
-              <div>
-                <div className="relative">
-                  <input
-                    type="text"
-                    id="tax_id"
-                    name="tax_id"
-                    value={formData.tax_id}
-                    onChange={(e) => {
-                      const value = e.target.value;
 
-                      if (/^\d*$/.test(value)) {
-                        handleChange(e);
-                      }
-                    }}
-                    onKeyPress={(e) => {
-
-                      if (!/[0-9]/.test(e.key)) {
-                        e.preventDefault();
-                      }
-                    }}
-                    className="block p-4 pt-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border-1 border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
-                    placeholder="e.g: 08796"
-                  />
-                  <label
-                    htmlFor="tax_id"
-                    className="absolute text-sm ms-4 text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
-                  >
-                    Tax ID
-                  </label>
-                </div>
-                {errors.tax_id && (
-                  <p className="text-red-500 text-xs mt-1">{errors.tax_id[0]}</p>
-                )}
-              </div>
-
-
-              <div>
-                <div className="relative">
-                  <input
-                    type="text"
-                    id="location"
-                    name="location"
-                    value={formData.location}
-                    onChange={handleChange}
-                    className="block p-4 pt-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border-1 border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
-                    placeholder=" "
-                  />
-                  <label
-                    htmlFor="location"
-                    className="absolute text-sm ms-4 text-gray-500  duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323]  peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto   start-1"
-                  >
-                    Location
-                  </label>
-                </div>
-                {errors.location && (
-                  <p className="text-red-500 text-xs mt-1">{errors.location[0]}</p>
-                )}
-              </div>
-            </div>
 
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">

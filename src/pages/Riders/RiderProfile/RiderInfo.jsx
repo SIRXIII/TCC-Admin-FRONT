@@ -3,9 +3,11 @@ import { useDownloadRiderZip } from "../../../hooks/useRiders";
 import riderImg from "../../../assets/Images/rid_profile.jpg";
 import ImagePreviewGallery from "../../../components/ImagePreviewGallery";
 
+const GEOAPIFY_KEY = import.meta.env.VITE_APP_GEOAPIFY_KEY;
+
 
 const RiderInfo = ({ items, riderId }) => {
-    const [previewImage, setPreviewImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
 
 
   const { mutate: downloadZip, isLoading } = useDownloadRiderZip();
@@ -23,7 +25,7 @@ const RiderInfo = ({ items, riderId }) => {
                   className="w-14 h-14 rounded-xl object-cover cursor-pointer"
                   onClick={() => setPreviewImage(item.image)}
                   onError={(e) => { e.currentTarget.src = riderImg; }}
-                  
+
                 />
                 <div className="fw4">
                   <p className="text-lg fw6 text-[#232323]">{item.value}</p>
@@ -61,8 +63,8 @@ const RiderInfo = ({ items, riderId }) => {
               <span className=" text-[#9A9A9A]"> : </span>
 
               <span className=" text-[#232323] ">
-                
-                 {item.label.toLowerCase().includes("email") ? (
+
+                {item.label.toLowerCase().includes("email") ? (
                   <a href={`mailto:${item.value}`} className="hover:underline">
                     {item.value}
                   </a>
@@ -70,9 +72,23 @@ const RiderInfo = ({ items, riderId }) => {
                   <a href={`tel:${item.value}`} className="hover:underline">
                     {item.value}
                   </a>
-                ) : (
-                  item.value
-                )}
+                )
+                  : item.label.toLowerCase().includes("address") ? (
+                    <a
+                      href={
+                        item.latitude && item.longitude
+                          ? `https://www.google.com/maps?q=${item.latitude},${item.longitude}`
+                          : `https://www.google.com/maps/search/?api=${GEOAPIFY_KEY}&query=${encodeURIComponent(item.value)}`
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline"
+                    >
+                      {item.value}
+                    </a>
+                  ) : (
+                    item.value
+                  )}
 
               </span>
             </div>

@@ -8,6 +8,8 @@ import Orders from "../../components/Orders";
 import ImagePreviewGallery from "../../components/ImagePreviewGallery";
 import Breadcrumb from "../../components/Breadcrumb";
 
+const GEOAPIFY_KEY = import.meta.env.VITE_APP_GEOAPIFY_KEY;
+
 
 const TravelerProfile = () => {
   const { id } = useParams();
@@ -67,6 +69,8 @@ const TravelerProfile = () => {
 
   const shippingAddress = traveler.addresses.find(a => a.type === "shipping");
   const billingAddress = traveler.addresses.find(a => a.type === "billing");
+
+  console.log("billingAddress", billingAddress);
 
 
 
@@ -225,7 +229,20 @@ const TravelerProfile = () => {
                         <a href={`tel:${item.value}`} className="hover:underline">
                           {item.value}
                         </a>
-                      ) : (
+                      ) : item.label === "Address" ? (
+              <a
+                href={
+                  shippingAddress.latitude && shippingAddress.longitude
+                    ? `https://www.google.com/maps?q=${shippingAddress.latitude},${shippingAddress.longitude}`
+                    : `https://www.google.com/maps/search/?api=${GEOAPIFY_KEY}&query=${encodeURIComponent(item.value)}`
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                {item.value}
+              </a>
+            ) : (
                         item.value
                       )}
                     </p>
@@ -237,7 +254,7 @@ const TravelerProfile = () => {
 
 
 
-          {billingAddress && (
+          {/* {billingAddress && (
             <div className="p-6 flex flex-col gap-6 rounded-lg bg-white" style={{ boxShadow: "0px 0px 3px 0px #00000033" }}>
               <h2 className="text-lg fw6 text-[#232323]">
                 Billing Address
@@ -267,7 +284,52 @@ const TravelerProfile = () => {
                 ))}
               </div>
             </div>
-          )}
+          )} */}
+
+{billingAddress && (
+  <div
+    className="p-6 flex flex-col gap-6 rounded-lg bg-white"
+    style={{ boxShadow: "0px 0px 3px 0px #00000033" }}
+  >
+    <h2 className="text-lg fw6 text-[#232323]">Billing Address</h2>
+
+    <div className="flex flex-col gap-3">
+      {[
+        { label: "Name", value: billingAddress.name },
+        { label: "Country", value: billingAddress.country },
+        { label: "Phone Number", value: billingAddress.phone },
+        { label: "Address", value: billingAddress.address },
+      ].map((item) => (
+        <div className="flex text-xs fw5 gap-3" key={item.label}>
+          <p className="text-[#9A9A9A] w-1/3">{item.label}</p>
+          <p className="text-[#9A9A9A]">:</p>
+          <p className="text-[#232323] w-2/3">
+            {item.label === "Phone Number" ? (
+              <a href={`tel:${item.value}`} className="hover:underline">
+                {item.value}
+              </a>
+            ) : item.label === "Address" ? (
+              <a
+                href={
+                  billingAddress.latitude && billingAddress.longitude
+                    ? `https://www.google.com/maps?q=${billingAddress.latitude},${billingAddress.longitude}`
+                    : `https://www.google.com/maps/search/?api=${GEOAPIFY_KEY}&query=${encodeURIComponent(item.value)}`
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                {item.value}
+              </a>
+            ) : (
+              item.value
+            )}
+          </p>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
 
         </div>
 

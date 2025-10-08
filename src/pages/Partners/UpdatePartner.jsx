@@ -9,133 +9,137 @@ import CustomTimePicker from "../../components/CustomTimePicker";
 import backward from "../../assets/SVG/backward.svg";
 import par_profile from "../../assets/Images/par_profile.png";
 import Upload from "../../assets/SVG/upload.svg";
+import StoreAvailabilityCard from "../../components/StoreAvailabilityCard";
+import axios from "axios";
 
+
+const GEOAPIFY_KEY = import.meta.env.VITE_APP_GEOAPIFY_KEY;
+
+
+console.log("GEOAPIFY_KEY update ", GEOAPIFY_KEY)
 const UpdatePartner = () => {
-    const { id } = useParams(); // Get partner ID from URL
+    const { id } = useParams(); 
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         businessName: "",
         email: "",
         phone: "",
         ownerName: "",
-        days: [],
-        store_start_time: "",
-        store_end_time: "",
+
         address: "",
-        location: "",
+        latitude: "",
+        longitude: "",
         businesstype: "",
         tax_id: "",
         owner_name: "",
         licenseImage: null,
         ownerIdImage: null,
     });
+
+      const [suggestions, setSuggestions] = useState([]);
+    
     const [profileImage, setProfileImage] = useState(par_profile);
     const [licenseImages, setLicenseImages] = useState({ front: null, back: null });
     const [ownerIdImages, setOwnerIdImages] = useState({ front: null, back: null });
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(true);
 
-    const daysOrder = [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-    ];
+    const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-    const formatTime = (timeStr) => {
-        if (!timeStr) return "";
+    const [availability, setAvailability] = useState(
+        Object.fromEntries(daysOfWeek.map(day => [day, { checked: false, start_time: "", end_time: "" }]))
+    );
 
-        // Handle 24-hour format like "19:00:00"
-        const [hourStr, minuteStr] = timeStr.split(":");
-        let hour = parseInt(hourStr, 10);
-        const minute = minuteStr || "00";
-        const period = hour >= 12 ? "PM" : "AM";
+    const handleCheckboxChange = (day) => {
+        setAvailability(prev => ({
+            ...prev,
+            [day]: {
+                ...prev[day],
+                checked: !prev[day].checked,
+                ...(prev[day].checked ? { start_time: "", end_time: "" } : {})
+            }
+        }));
+    };
 
-        if (hour === 0) hour = 12;
-        else if (hour > 12) hour -= 12;
-
-        return `${hour.toString().padStart(2, "0")}:${minute.padStart(2, "0")} ${period}`;
+    const handleTimeChange = (day, key, value) => {
+        setAvailability(prev => ({
+            ...prev,
+            [day]: {
+                ...prev[day],
+                [key]: value
+            }
+        }));
     };
 
 
-    // Fetch partner data on component mount
     useEffect(() => {
         const fetchPartner = async () => {
             try {
                 const res = await API.get(`/partners/${id}`);
                 const data = res.data.data;
-                console.log("response", res.data.data);
-                setFormData({
+
+                // Parse backend availability safely
+                let parsedAvailability = {};
+                if (data.availability) {
+                    try {
+                        parsedAvailability = typeof data.availability === "string"
+                            ? JSON.parse(data.availability)
+                            : data.availability;
+                    } catch (err) {
+                        console.error("Invalid availability JSON:", err);
+                    }
+                }
+
+                // Merge with default state
+                const updatedAvailability = { ...availability };
+                Object.keys(parsedAvailability).forEach(day => {
+                    updatedAvailability[day] = parsedAvailability[day];
+                });
+                setAvailability(updatedAvailability);
+
+                // Set other form data
+                setFormData(prev => ({
+                    ...prev,
                     businessName: data.business_name || "",
                     email: data.email || "",
                     phone: data.phone || "",
                     ownerName: data.name || "",
-                    days: Array.isArray(data.store_available_days)
-                        ? data.store_available_days
-                        : (typeof data.store_available_days === "string"
-                            ? data.store_available_days
-                                .replace(/\s*-\s*/g, ",")
-                                .split(",")
-                                .map(d => d.trim())
-                            : []),
-
-                    store_start_time: formatTime(data.store_available_start_time) || "",
-
-                    store_end_time: formatTime(data.store_available_end_time) || "",
-
                     address: data.address || "",
-                    location: data.location || "",
-                    businesstype: data.businesstype || "",
+                    latitude: data.latitude || "",
+                    longitude: data.longitude || "",
+                    businesstype: data.category || "",
                     tax_id: data.tax_id || "",
                     owner_name: data.owner_name || "",
-                    licenseImage: null,
-                    ownerIdImage: null,
-                });
+                }));
 
                 setProfileImage(data.profile_photo || par_profile);
+
                 setLicenseImages({
-                    front: data.documents.license[0].file_path || null,
-                    back: data.documents.license[1].file_path || null,
+                    front: data.documents.license[0]?.file_path || null,
+                    back: data.documents.license[1]?.file_path || null,
                 });
                 setOwnerIdImages({
-                    front: data.documents.owner_id_card[0].file_path || null,
-                    back: data.documents.owner_id_card[1].file_path || null,
+                    front: data.documents.owner_id_card[0]?.file_path || null,
+                    back: data.documents.owner_id_card[1]?.file_path || null,
                 });
+
                 setLoading(false);
             } catch (err) {
                 toast.error("Failed to fetch partner data!");
                 setLoading(false);
             }
         };
+
         fetchPartner();
     }, [id]);
 
+  
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleDaySelect = (day) => {
-        setFormData((prev) => {
-            let updatedDays = [...prev.days];
-            if (updatedDays.includes(day)) {
-                updatedDays = updatedDays.filter((d) => d !== day);
-            } else if (updatedDays.length < 2) {
-                updatedDays.push(day);
-            }
-            return { ...prev, days: updatedDays };
-        });
-    };
-
-    const handleTimeChange = (key, value) => {
-        setFormData((prev) => ({ ...prev, [key]: value }));
-    };
-
-    const selectedDaysDisplay =
-        formData.days.length > 0 ? formData.days.join(" - ") : "";
+  
 
     const handleFileChange = (e, type, side) => {
         const file = e.target.files[0];
@@ -172,6 +176,10 @@ const UpdatePartner = () => {
                     payload.append(key, formData[key]);
                 }
             });
+
+            if (availability && typeof availability === "object") {
+        payload.append("availability", JSON.stringify(availability));
+      }
 
             if (profileImage && profileImage !== par_profile) {
                 const profileInput = document.getElementById("profileImage");
@@ -213,6 +221,41 @@ const UpdatePartner = () => {
     if (loading) {
         return <div>Loading...</div>;
     }
+
+
+      const handleAddressChange = async (e) => {
+    const value = e.target.value;
+    handleChange(e);
+
+    if (value.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+
+      const res = await axios.get(
+        `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(
+          value
+        )}&apiKey=${GEOAPIFY_KEY}`
+      );
+      setSuggestions(res.data.features);
+    } catch (err) {
+      console.error("Geoapify error:", err);
+    }
+  };
+
+  const handleSelectAddress = (place) => {
+    const formatted = place.properties.formatted;
+    const lat = place.geometry.coordinates[1];
+    const lon = place.geometry.coordinates[0];
+
+    setFormData({ ...formData, address: formatted, latitude: lat, longitude: lon });
+    setSuggestions([]);
+
+    // // Optional: Open in Google Maps
+    // window.open(`https://www.google.com/maps?q=${lat},${lon}`, "_blank");
+  };
 
     return (
         <form
@@ -399,50 +442,7 @@ const UpdatePartner = () => {
                                     <p className="text-red-500 text-xs mt-1">{errors.ownerName[0]}</p>
                                 )}
                             </div>
-                            <div>
-                                <div className="relative">
-                                    <div className="block p-3 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9]">
-                                        <CustomTimePicker
-                                            onChange={(value) => handleTimeChange("store_start_time", value)}
-                                            value={formData.store_start_time}
-                                            format="hh:mm a"
-                                        />
-                                    </div>
-                                    <label
-                                        htmlFor="store_start_time"
-                                        className="absolute text-sm ms-4 text-gray-500 -translate-y-4 scale-75 top-2 z-10 bg-white px-2"
-                                    >
-                                        Store Start Time
-                                    </label>
-                                </div>
-                                {errors.store_start_time && (
-                                    <p className="text-red-500 text-xs mt-1">
-                                        {errors.store_start_time[0]}
-                                    </p>
-                                )}
-                            </div>
-                            <div>
-                                <div className="relative">
-                                    <div className="block p-3 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9]">
-                                        <CustomTimePicker
-                                            onChange={(value) => handleTimeChange("store_end_time", value)}
-                                            value={formData.store_end_time}
-                                            format="hh:mm a"
-                                        />
-                                    </div>
-                                    <label
-                                        htmlFor="store_end_time"
-                                        className="absolute text-sm ms-4 text-gray-500 -translate-y-4 scale-75 top-2 z-10 bg-white px-2"
-                                    >
-                                        Store End Time
-                                    </label>
-                                </div>
-                                {errors.store_end_time && (
-                                    <p className="text-red-500 text-xs mt-1">
-                                        {errors.store_end_time[0]}
-                                    </p>
-                                )}
-                            </div>
+
                             <div>
                                 <div className="relative md:col-span-2">
                                     <input
@@ -450,7 +450,7 @@ const UpdatePartner = () => {
                                         id="address"
                                         name="address"
                                         value={formData.address}
-                                        onChange={handleChange}
+                                        onChange={handleAddressChange}
                                         className="block p-4 pt-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border-1 border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
                                         placeholder=" "
                                     />
@@ -460,48 +460,78 @@ const UpdatePartner = () => {
                                     >
                                         Address
                                     </label>
+
+                                      {suggestions.length > 0 && (
+                    <ul className="absolute z-50 bg-white border border-gray-300 rounded-lg shadow-md mt-1 w-full max-h-48 overflow-y-auto">
+                      {suggestions.map((s, i) => (
+                        <li
+                          key={i}
+                          onClick={() => handleSelectAddress(s)}
+                          className="px-3 py-2 hover:bg-orange-100 cursor-pointer text-sm"
+                        >
+                          {s.properties.formatted}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                                 </div>
                                 {errors.address && (
                                     <p className="text-red-500 text-xs mt-1">{errors.address[0]}</p>
                                 )}
                             </div>
-                            <div>
-                                <div className="relative md:col-span-1">
-                                    <div className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9]">
-                                        <div className="flex flex-wrap gap-2">
-                                            {daysOrder.map((day) => (
-                                                <button
-                                                    key={day}
-                                                    type="button"
-                                                    onClick={() => handleDaySelect(day)}
-                                                    className={`px-3 py-1 rounded-full text-sm border ${formData.days.includes(day)
-                                                        ? "bg-[#F77F00] text-white border-[#F77F00]"
-                                                        : "border-gray-300 text-[#232323]"
-                                                        }`}
-                                                >
-                                                    {day}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {/* Latitude */}
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        id="latitude"
+                                        name="latitude"
+                                        value={formData.latitude}
+                                        disabled
+                                        placeholder="Address latitude"
+                                        className="block p-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border border-[#D9D9D9]"
+                                    />
                                     <label
-                                        htmlFor="days"
+                                        htmlFor="latitude"
                                         className="absolute text-sm ms-4 text-gray-500 -translate-y-4 scale-75 top-2 z-10 bg-white px-2"
                                     >
-                                        Store Availability Days
+                                        Latitude
                                     </label>
                                 </div>
-                                {selectedDaysDisplay && (
-                                    <p className="text-sm text-[#232323] mt-2">
-                                        Selected: <span className="font-medium">{selectedDaysDisplay}</span>
-                                    </p>
-                                )}
-                                {errors.days && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.days[0]}</p>
-                                )}
+
+                                {/* Longitude */}
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        id="longitude"
+                                        name="longitude"
+                                        value={formData.longitude}
+                                        disabled
+                                        placeholder="Address longitude"
+                                        className="block p-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border border-[#D9D9D9]"
+                                    />
+                                    <label
+                                        htmlFor="longitude"
+                                        className="absolute text-sm ms-4 text-gray-500 -translate-y-4 scale-75 top-2 z-10 bg-white px-2"
+                                    >
+                                        Longitude
+                                    </label>
+                                </div>
                             </div>
+
                         </div>
                     </div>
+
+
+                    <div>
+                        <StoreAvailabilityCard
+                            availability={availability}
+                            handleCheckboxChange={handleCheckboxChange}
+                            handleTimeChange={handleTimeChange}
+                        />
+                    </div>
+
+
                     <div
                         className="p-6 flex flex-col gap-6 rounded-lg bg-white"
                         style={{ boxShadow: "0px 0px 3px 0px #00000033" }}
@@ -509,6 +539,42 @@ const UpdatePartner = () => {
                         <h1 className="text-lg text-[#232323] fw6 leading-[150%] tracking-[-3%]">
                             Business Verification
                         </h1>
+
+                        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 fw4 leading-[100%] tracking-[-5%]">
+                            <div>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        id="tax_id"
+                                        name="tax_id"
+                                        value={formData.tax_id}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            if (/^\d*$/.test(value)) {
+                                                handleChange(e);
+                                            }
+                                        }}
+                                        onKeyPress={(e) => {
+                                            if (!/[0-9]/.test(e.key)) {
+                                                e.preventDefault();
+                                            }
+                                        }}
+                                        className="block p-4 pt-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border-1 border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
+                                        placeholder="e.g: 08796"
+                                    />
+                                    <label
+                                        htmlFor="tax_id"
+                                        className="absolute text-sm ms-4 text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
+                                    >
+                                        Tax ID
+                                    </label>
+                                </div>
+                                {errors.tax_id && (
+                                    <p className="text-red-500 text-xs mt-1">{errors.tax_id[0]}</p>
+                                )}
+                            </div>
+
+                        </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div
                                 className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center cursor-pointer"
@@ -597,62 +663,7 @@ const UpdatePartner = () => {
                                 )}
                             </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 fw4 leading-[100%] tracking-[-5%]">
-                            <div>
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        id="tax_id"
-                                        name="tax_id"
-                                        value={formData.tax_id}
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            if (/^\d*$/.test(value)) {
-                                                handleChange(e);
-                                            }
-                                        }}
-                                        onKeyPress={(e) => {
-                                            if (!/[0-9]/.test(e.key)) {
-                                                e.preventDefault();
-                                            }
-                                        }}
-                                        className="block p-4 pt-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border-1 border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
-                                        placeholder="e.g: 08796"
-                                    />
-                                    <label
-                                        htmlFor="tax_id"
-                                        className="absolute text-sm ms-4 text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
-                                    >
-                                        Tax ID
-                                    </label>
-                                </div>
-                                {errors.tax_id && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.tax_id[0]}</p>
-                                )}
-                            </div>
-                            <div>
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        id="location"
-                                        name="location"
-                                        value={formData.location}
-                                        onChange={handleChange}
-                                        className="block p-4 pt-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border-1 border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
-                                        placeholder=" "
-                                    />
-                                    <label
-                                        htmlFor="location"
-                                        className="absolute text-sm ms-4 text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
-                                    >
-                                        Location
-                                    </label>
-                                </div>
-                                {errors.location && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.location[0]}</p>
-                                )}
-                            </div>
-                        </div>
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                             <div
                                 className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center cursor-pointer"

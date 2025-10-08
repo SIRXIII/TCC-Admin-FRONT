@@ -18,10 +18,12 @@ const Details = ({rider}) => {
       { label: "Email", value: rider.email },
       { label: "Rider ID", value: rider.rider_id },
       { label: "Phone", value: rider.phone },
-      {
-        label: "Address",
-        value: rider?.address ?? "Random Federation 115302, Moscow ul. Varshavskaya, 15-2-178",
-      },
+      // {
+      //   label: "Address",
+      //   value: rider?.address ?? "Random Federation 115302, Moscow ul. Varshavskaya, 15-2-178",
+      // },
+      { label: "Address", value: rider?.address, latitude: rider?.latitude, longitude: rider?.longitude },
+
     ],
   },
 

@@ -11,6 +11,9 @@ import DefaultProfile from "../../assets/Images/trv_profile.jpg";
 import ImagePreviewGallery from "../../components/ImagePreviewGallery";
 import Breadcrumb from "../../components/Breadcrumb";
 
+const GEOAPIFY_KEY = import.meta.env.VITE_APP_GEOAPIFY_KEY;
+
+
 const RefundsDetail = () => {
   const { id } = useParams();
   const [refund, setRefund] = useState(null);
@@ -303,7 +306,19 @@ const RefundsDetail = () => {
                   </div>
                 </div>
                 <p className="w-[314px] text-xs text-[#232323]">
-                  {partner?.address}
+                  {/* {partner?.address} */}
+                   <a
+                href={
+                  partner?.latitude && partner?.longitude
+                    ? `https://www.google.com/maps?q=${partner?.latitude},${partner?.longitude}`
+                    : `https://www.google.com/maps/search/?api=${GEOAPIFY_KEY}&query=${encodeURIComponent(partner.address)}`
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                {partner.address}
+              </a>
                 </p>
               </div>
               <div className="flex flex-col bg-white p-6 gap-6 rounded-lg shadow-sm">
@@ -334,7 +349,20 @@ const RefundsDetail = () => {
                   </div>
                 </div>
                 <p className="w-[314px] text-xs text-[#232323]">
-                  {rider?.address}
+                  {/* {rider?.address} */}
+
+                    <a
+                href={
+                  rider?.latitude && rider?.longitude
+                    ? `https://www.google.com/maps?q=${rider?.latitude},${rider?.longitude}`
+                    : `https://www.google.com/maps/search/?api=${GEOAPIFY_KEY}&query=${encodeURIComponent(rider.address)}`
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                {rider.address}
+              </a>
                 </p>
               </div>
 
@@ -360,7 +388,18 @@ const RefundsDetail = () => {
                   <h2 className="text-lg fw6 text-[#232323]">Shipping Address</h2>
                   <p className="fw5 text-sm text-[#232323]">{shippingAddress?.name}</p>
                   <p className="text-sm fw4 text-[#232323]">
-                    {shippingAddress?.address}
+                    <a
+                href={
+                  shippingAddress.latitude && shippingAddress.longitude
+                    ? `https://www.google.com/maps?q=${shippingAddress.latitude},${shippingAddress.longitude}`
+                    : `https://www.google.com/maps/search/?api=${GEOAPIFY_KEY}&query=${encodeURIComponent(shippingAddress.address)}`
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                {shippingAddress?.address}
+              </a>
                   </p>
                 </div>
               ) : (
@@ -372,7 +411,18 @@ const RefundsDetail = () => {
                   <h2 className="text-lg fw6 text-[#232323]">Billing Address</h2>
                   <p className="fw5 text-sm text-[#232323]">{billingAddress?.name}</p>
                   <p className="text-sm fw4 text-[#232323]">
-                    {billingAddress?.address}
+                  <a
+                href={
+                  billingAddress.latitude && billingAddress.longitude
+                    ? `https://www.google.com/maps?q=${billingAddress.latitude},${billingAddress.longitude}`
+                    : `https://www.google.com/maps/search/?api=${GEOAPIFY_KEY}&query=${encodeURIComponent(billingAddress.address)}`
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                {billingAddress?.address}
+              </a>
                   </p>
                 </div>
               ) : (

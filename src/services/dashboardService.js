@@ -24,3 +24,10 @@ export const getOrderStats = async () => {
   return response.data;
 };
 
+
+
+export const latestNotification = async () => {
+  const response = await API.get("/notifications/latest");
+  return response.data;
+};
+

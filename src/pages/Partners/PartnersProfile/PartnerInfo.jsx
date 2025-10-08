@@ -4,6 +4,8 @@ import DefaultProfile from "../../../assets/Images/trv_profile.jpg"
 import ImagePreviewGallery from "../../../components/ImagePreviewGallery";
 import { useState } from "react";
 
+const GEOAPIFY_KEY = import.meta.env.VITE_APP_GEOAPIFY_KEY;
+
 
 const PartnerInfo = ({ items, partnerId }) => {
   const [previewImage, setPreviewImage] = useState(null);
@@ -72,6 +74,20 @@ const PartnerInfo = ({ items, partnerId }) => {
                   <a href={`tel:${item.value}`} className="hover:underline">
                     {item.value}
                   </a>
+                ) 
+                : item.label.toLowerCase().includes("address") ? (
+                   <a
+        href={
+          item.latitude && item.longitude
+            ? `https://www.google.com/maps?q=${item.latitude},${item.longitude}`
+            : `https://www.google.com/maps/search/?api=${GEOAPIFY_KEY}&query=${encodeURIComponent(item.value)}`
+        }
+        target="_blank"
+        rel="noopener noreferrer"
+        className="hover:underline"
+      >
+        {item.value}
+      </a>
                 ) : (
                   item.value
                 )}

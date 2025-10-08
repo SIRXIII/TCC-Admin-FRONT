@@ -9,6 +9,8 @@ import DefaultProfile from "../../assets/Images/trv_profile.jpg";
 import ImagePreviewGallery from "../../components/ImagePreviewGallery";
 import Breadcrumb from "../../components/Breadcrumb";
 
+const GEOAPIFY_KEY = import.meta.env.VITE_APP_GEOAPIFY_KEY;
+
 
 const OrdersDetail = () => {
 
@@ -260,7 +262,24 @@ const OrdersDetail = () => {
 
                   </div>
                 </div>
-                <p className="mt-3 text-xs text-[#232323]">{order?.partner.address}</p>
+                <p className="mt-3 text-xs text-[#232323]">
+                  
+                  {/* {order?.partner.address} */}
+
+                   <a
+                href={
+                  order?.partner?.latitude && order?.partner?.longitude
+                    ? `https://www.google.com/maps?q=${order?.partner?.latitude},${order?.partner?.longitude}`
+                    : `https://www.google.com/maps/search/?api=${GEOAPIFY_KEY}&query=${encodeURIComponent(order?.partner.address)}`
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                {order?.partner.address}
+              </a>
+                  
+                  </p>
               </div>
 
               {order?.rider && (
@@ -289,7 +308,22 @@ const OrdersDetail = () => {
 
                     </div>
                   </div>
-                  <p className="mt-3 text-xs text-[#232323]">{order?.rider.address}</p>
+                  <p className="mt-3 text-xs text-[#232323]">
+                    {/* {order?.rider.address} */}
+
+                     <a
+                href={
+                  order?.rider?.latitude && order?.rider?.longitude
+                    ? `https://www.google.com/maps?q=${order?.rider?.latitude},${order?.rider?.longitude}`
+                    : `https://www.google.com/maps/search/?api=${GEOAPIFY_KEY}&query=${encodeURIComponent(order?.rider.address)}`
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                {order?.rider.address}
+              </a>
+                  </p>
                 </div>
               )}
               <div className="flex flex-col bg-white p-6 gap-6 rounded-lg shadow-sm">
@@ -310,7 +344,19 @@ const OrdersDetail = () => {
                   <h2 className="text-lg fw6 text-[#232323]">Shipping Address</h2>
                   <p className="fw5 text-sm text-[#232323]">{shippingAddress?.name}</p>
                   <p className="text-sm fw4 text-[#232323]">
-                    {shippingAddress?.address}
+                    {/* {shippingAddress?.address} */}
+                     <a
+                href={
+                  shippingAddress.latitude && shippingAddress.longitude
+                    ? `https://www.google.com/maps?q=${shippingAddress.latitude},${shippingAddress.longitude}`
+                    : `https://www.google.com/maps/search/?api=${GEOAPIFY_KEY}&query=${encodeURIComponent(shippingAddress.address)}`
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                {shippingAddress?.address}
+              </a>
                   </p>
                 </div>
               ) : (
@@ -322,7 +368,18 @@ const OrdersDetail = () => {
                   <h2 className="text-lg fw6 text-[#232323]">Billing Address</h2>
                   <p className="fw5 text-sm text-[#232323]">{billingAddress?.name}</p>
                   <p className="text-sm fw4 text-[#232323]">
-                    {billingAddress?.address}
+                     <a
+                href={
+                  billingAddress.latitude && billingAddress.longitude
+                    ? `https://www.google.com/maps?q=${billingAddress.latitude},${billingAddress.longitude}`
+                    : `https://www.google.com/maps/search/?api=${GEOAPIFY_KEY}&query=${encodeURIComponent(billingAddress.address)}`
+                }
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                {billingAddress?.address}
+              </a>
                   </p>
                 </div>
               ) : (
