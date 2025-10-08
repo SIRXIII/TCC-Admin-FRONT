@@ -1,5 +1,6 @@
 // StoreAvailabilityCard.jsx
 import React from "react";
+import CustomTimePicker from "./CustomTimePicker";
 
 const StoreAvailabilityCard = ({ availability, handleCheckboxChange, handleTimeChange }) => {
   const days = Object.keys(availability);
@@ -26,18 +27,14 @@ const StoreAvailabilityCard = ({ availability, handleCheckboxChange, handleTimeC
 
             {availability[day].checked && (
               <div className="flex items-center gap-3 mt-3 sm:mt-0">
-                <input
-                  type="time"
+                <CustomTimePicker
                   value={availability[day].start_time}
-                  onChange={(e) => handleTimeChange(day, "start_time", e.target.value)}
-                  className="border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                  onChange={(newTime) => handleTimeChange(day, "start_time", newTime)}
                 />
                 <span className="text-gray-500 text-sm">to</span>
-                <input
-                  type="time"
+                <CustomTimePicker
                   value={availability[day].end_time}
-                  onChange={(e) => handleTimeChange(day, "end_time", e.target.value)}
-                  className="border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                  onChange={(newTime) => handleTimeChange(day, "end_time", newTime)}
                 />
               </div>
             )}
