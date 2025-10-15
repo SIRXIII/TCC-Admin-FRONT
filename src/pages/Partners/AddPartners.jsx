@@ -16,7 +16,6 @@ import StoreAvailabilityCard from "../../components/StoreAvailabilityCard";
 
 const GEOAPIFY_KEY = import.meta.env.VITE_APP_GEOAPIFY_KEY;
 
-console.log("adasdasdasdasdasdas", GEOAPIFY_KEY)
 
 const AddPartners = () => {
   const navigate = useNavigate();

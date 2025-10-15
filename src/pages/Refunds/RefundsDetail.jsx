@@ -311,13 +311,13 @@ const RefundsDetail = () => {
                 href={
                   partner?.latitude && partner?.longitude
                     ? `https://www.google.com/maps?q=${partner?.latitude},${partner?.longitude}`
-                    : `https://www.google.com/maps/search/?api=${GEOAPIFY_KEY}&query=${encodeURIComponent(partner.address)}`
+                    : `https://www.google.com/maps/search/?api=${GEOAPIFY_KEY}&query=${encodeURIComponent(partner?.address)}`
                 }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:underline"
               >
-                {partner.address}
+                {partner?.address}
               </a>
                 </p>
               </div>
@@ -355,13 +355,13 @@ const RefundsDetail = () => {
                 href={
                   rider?.latitude && rider?.longitude
                     ? `https://www.google.com/maps?q=${rider?.latitude},${rider?.longitude}`
-                    : `https://www.google.com/maps/search/?api=${GEOAPIFY_KEY}&query=${encodeURIComponent(rider.address)}`
+                    : `https://www.google.com/maps/search/?api=${GEOAPIFY_KEY}&query=${encodeURIComponent(rider?.address)}`
                 }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:underline"
               >
-                {rider.address}
+                {rider?.address}
               </a>
                 </p>
               </div>
