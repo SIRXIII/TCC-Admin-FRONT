@@ -36,8 +36,9 @@ const ProductReqInfo = ({ isOpen, product, onClose, onSend }) => {
     try {
       await API.post("/partners/request-information", {
         to: product?.partner?.email, 
-        businessName: product?.partner?.business_name,
+        businessName: product?.partner?.business_name || product?.partner?.businessName || 'Partner',
         message: formData.message,
+        deadline: null,
       });
 
       onSend();
