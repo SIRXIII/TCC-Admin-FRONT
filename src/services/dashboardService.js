@@ -20,7 +20,7 @@ export const getTopPartners = async () => {
 };
 
 export const getOrderStats = async () => {
-  const response = await API.get("/orders");
+  const response = await API.get("/dashboard/order-stats");
   return response.data;
 };
 

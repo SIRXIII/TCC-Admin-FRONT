@@ -46,40 +46,36 @@ export const useOrderStats = () => {
     queryKey: ["orderStats"],
     queryFn: getOrderStats,
     select: (res) => {
-      const orders = res.data || [];
+      // API returns: { success: true, data: { totalOrders, statusDistribution, orders: [...] }, message: "..." }
+      const orderData = res.data || {};
+      const orders = orderData.orders || [];
+      const statusDist = orderData.statusDistribution || {};
       
-      // Calculate order status distribution
-      const statusCounts = orders.reduce((acc, order) => {
-        const status = order.status || 'Unknown';
-        acc[status] = (acc[status] || 0) + 1;
-        return acc;
-      }, {});
-
       // Map to chart format with colors
       const orderStatusData = [
         { 
           label: "Completed", 
-          value: statusCounts['Completed'] || statusCounts['Delivered'] || 0, 
+          value: statusDist.completed || statusDist.delivered || 0, 
           color: "#F77F00" 
         },
         { 
           label: "Pending", 
-          value: statusCounts['Pending'] || 0, 
+          value: statusDist.pending || 0, 
           color: "#FF6B35" 
         },
         { 
           label: "Cancelled", 
-          value: statusCounts['Cancelled'] || 0, 
+          value: statusDist.cancelled || 0, 
           color: "#FFA500" 
         },
         { 
           label: "In Transit", 
-          value: statusCounts['In Transit'] || statusCounts['Processing'] || 0, 
+          value: statusDist.processing || statusDist.shipped || 0, 
           color: "#FFD700" 
         }
       ];
 
-      const totalOrders = orders.length;
+      const totalOrders = orderData.totalOrders || orders.length;
       
       return {
         orderStatusData,
