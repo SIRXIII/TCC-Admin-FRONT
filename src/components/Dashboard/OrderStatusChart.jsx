@@ -1,9 +1,22 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useOrderStats } from "../../hooks/useDashboard";
 
 const OrderStatusChart = () => {
   // Fetch dynamic order data from API
-  const { data: orderData, isLoading, error } = useOrderStats();
+  const { data: orderData, isLoading, error, refetch } = useOrderStats();
+  
+  // Debug: Log when component mounts or refetch happens
+  useEffect(() => {
+    console.log('OrderStatusChart mounted, isLoading:', isLoading, 'error:', error);
+  }, [isLoading, error]);
+  
+  // Force refetch if component is mounted but no data and not loading
+  useEffect(() => {
+    if (!isLoading && !error && !orderData) {
+      console.log('OrderStatusChart: No data, forcing refetch...');
+      refetch();
+    }
+  }, [isLoading, error, orderData, refetch]);
   
   // Loading state
   if (isLoading) {

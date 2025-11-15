@@ -44,15 +44,17 @@ export const useLatestNotification = () => {
 
 export const useOrderStats = () => {
   // Get authentication status from context (reactive)
-  const { token } = useAuth();
-  const isAuthenticated = !!token;
+  const { isAuthenticated, token } = useAuth();
+  const authCheck = isAuthenticated(); // Check authentication status
   
   return useQuery({
     queryKey: ["orderStats"],
     queryFn: getOrderStats,
-    enabled: isAuthenticated, // Only fetch when authenticated
+    enabled: authCheck && !!token, // Only fetch when authenticated and token exists
     refetchOnMount: true, // Always refetch when component mounts (especially after login)
     refetchOnWindowFocus: false, // Optional: disable refetch on window focus to avoid unnecessary calls
+    staleTime: 0, // Always consider data stale, so it refetches
+    retry: 1, // Retry once if it fails
     select: (res) => {
       // API returns: { success: true, data: { totalOrders, statusDistribution, orders: [...] }, message: "..." }
       const orderData = res.data || {};
