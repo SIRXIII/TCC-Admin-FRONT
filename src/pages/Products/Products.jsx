@@ -27,7 +27,7 @@ const Products = () => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: "asc" });
 
 
-  const currentData = products?.[activeTab];
+  const currentData = Array.isArray(products?.[activeTab]) ? products[activeTab] : [];
 
 
   const page =
@@ -59,9 +59,12 @@ const Products = () => {
         : setPerPageSuspended;
 
   const filteredProducts = useMemo(() => {
+    if (!Array.isArray(currentData)) {
+      return [];
+    }
     return currentData.filter((p) => {
-      const name = p.productName?.toLowerCase() || "";
-      const partner = p.partnerName?.toLowerCase() || "";
+      const name = p.name?.toLowerCase() || p.productName?.toLowerCase() || "";
+      const partner = p.partner?.business_name?.toLowerCase() || p.partnerName?.toLowerCase() || "";
       return (
         name.includes(search.toLowerCase()) ||
         partner.includes(search.toLowerCase())
@@ -79,6 +82,9 @@ const Products = () => {
   };
 
   const sortedProducts = useMemo(() => {
+    if (!Array.isArray(filteredProducts)) {
+      return [];
+    }
     let sorted = [...filteredProducts];
     if (sortConfig.key) {
       sorted.sort((a, b) => {
@@ -106,6 +112,9 @@ const Products = () => {
   }, [filteredProducts, sortConfig]);
 
   const paginatedProducts = useMemo(() => {
+    if (!Array.isArray(sortedProducts)) {
+      return [];
+    }
     const start = (page - 1) * perPage;
     return sortedProducts.slice(start, start + perPage);
   }, [sortedProducts, page, perPage]);
@@ -144,7 +153,7 @@ const Products = () => {
             : "text-gray-600"
             }`}
         >
-          Approved ({products.approved.length})
+          Approved ({Array.isArray(products.approved) ? products.approved.length : 0})
         </button>
         <button
           onClick={() => setActiveTab("pending")}
@@ -153,7 +162,7 @@ const Products = () => {
             : "text-gray-600"
             }`}
         >
-          Pending ({products.pending.length})
+          Pending ({Array.isArray(products.pending) ? products.pending.length : 0})
         </button>
         <button
           onClick={() => setActiveTab("suspended")}
@@ -162,7 +171,7 @@ const Products = () => {
             : "text-gray-600"
             }`}
         >
-          Suspended ({products.suspended.length})
+          Suspended ({Array.isArray(products.suspended) ? products.suspended.length : 0})
         </button>
       </div>
 

@@ -12,19 +12,29 @@ export const useProducts = () => {
       // or with pagination: { success: true, data: { products: [...], pagination: {...} }, message: "..." }
       let products = [];
       
-      if (res.data?.data) {
-        // Check if it's paginated response or direct array
-        if (Array.isArray(res.data.data)) {
-          products = res.data.data;
-        } else if (res.data.data.products && Array.isArray(res.data.data.products)) {
-          products = res.data.data.products;
+      try {
+        if (res?.data?.data) {
+          // Check if it's paginated response or direct array
+          if (Array.isArray(res.data.data)) {
+            products = res.data.data;
+          } else if (res.data.data?.products && Array.isArray(res.data.data.products)) {
+            products = res.data.data.products;
+          }
         }
+      } catch (error) {
+        console.error('Error parsing products data:', error);
+        products = [];
+      }
+      
+      // Ensure products is always an array before filtering
+      if (!Array.isArray(products)) {
+        products = [];
       }
       
       return {
-        approved: products.filter((p) => p.status === "Active" || p.status === "active"),
-        suspended: products.filter((p) => p.status === "Suspended" || p.status === "suspended"),
-        pending: products.filter((p) => p.status === "Pending" || p.status === "pending"),
+        approved: products.filter((p) => p?.status === "Active" || p?.status === "active") || [],
+        suspended: products.filter((p) => p?.status === "Suspended" || p?.status === "suspended") || [],
+        pending: products.filter((p) => p?.status === "Pending" || p?.status === "pending") || [],
       };
     },
   });
