@@ -73,7 +73,40 @@ const Password = () => {
     } catch (err) {
       console.log(err.response?.data || err);
       
-      toast.error("Something went wrong!")
+      // Extract error message from API response
+      let errorMessage = "Something went wrong!";
+      
+      if (err.response?.data) {
+        const errorData = err.response.data;
+        
+        // Check if it's a validation error with errors object
+        if (errorData.errors && typeof errorData.errors === 'object') {
+          // Get all error messages from validation errors
+          const errorMessages = [];
+          Object.keys(errorData.errors).forEach((field) => {
+            if (Array.isArray(errorData.errors[field])) {
+              errorMessages.push(...errorData.errors[field]);
+            } else {
+              errorMessages.push(errorData.errors[field]);
+            }
+          });
+          
+          // Show all error messages or fallback to message
+          errorMessage = errorMessages.length > 0 
+            ? errorMessages.join('. ') 
+            : errorData.message || errorMessage;
+        } 
+        // Check if there's a direct message (could be from status: 'error' format)
+        else if (errorData.message) {
+          errorMessage = errorData.message;
+        }
+        // Check for status: 'error' format
+        else if (errorData.status === 'error' && errorData.message) {
+          errorMessage = errorData.message;
+        }
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
