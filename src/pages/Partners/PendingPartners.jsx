@@ -1,9 +1,13 @@
 import React, { useState } from "react";
-import { FiArrowDown, FiArrowUp, FiMoreHorizontal } from "react-icons/fi";
+import { FiArrowDown, FiArrowUp, FiMoreHorizontal, FiTrash2 } from "react-icons/fi";
 import ActionMenu from "../../components/Partners/ActionMenu";
 import { Link, useNavigate } from "react-router-dom";
 import { useStatusUpdatePartner } from "../../hooks/usePartners";
 import RequestInformation from "../../components/Dialogs/RequestInformation";
+import ConfirmDialog from "../../components/Dialogs/ConfirmDialog";
+import API from "../../services/api";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 
 const PendingPartners = ({
   paginatedPartners,
@@ -13,12 +17,13 @@ const PendingPartners = ({
   sortConfig,
 }) => {
   const navigate = useNavigate();
-
+  const queryClient = useQueryClient();
   const { mutate: statusUpdate } = useStatusUpdatePartner();
 
   const [selected, setSelected] = useState([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedPartner, setSelectedPartner] = useState(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
@@ -38,8 +43,31 @@ const PendingPartners = ({
 
   const handleSuspendPartner = (id, status) => {
     statusUpdate({ id: id, status: status });
+  };
 
-  }
+  const handleBulkDelete = async () => {
+    if (selected.length === 0) {
+      toast.error("Please select at least one partner to delete");
+      return;
+    }
+
+    try {
+      const response = await API.post("/partners/bulk-delete", {
+        ids: selected,
+      });
+
+      if (response.data?.success) {
+        toast.success(response.data?.message || `${selected.length} partner(s) deleted successfully`);
+        setSelected([]);
+        queryClient.invalidateQueries({ queryKey: ["partners"] });
+        setShowDeleteDialog(false);
+      } else {
+        toast.error(response.data?.message || "Failed to delete partners");
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to delete partners");
+    }
+  };
 
   const renderSortIcon = (key) => {
     return (
@@ -63,8 +91,32 @@ const PendingPartners = ({
   };
 
   return (
-    <table className="w-full text-left text-sm leading-[150%] tracking-[-3%]">
-      <thead className="bg-[#F9F9F9] text-[#6C6C6C] fw5 justify-center ">
+    <>
+      {selected.length > 0 && (
+        <div className="flex items-center justify-between p-4 bg-orange-50 border border-orange-200 rounded-lg mb-4">
+          <span className="text-sm text-orange-800">
+            {selected.length} partner(s) selected
+          </span>
+          <button
+            onClick={() => setShowDeleteDialog(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-sm rounded-lg hover:bg-red-700 transition-colors"
+          >
+            <FiTrash2 size={16} />
+            Delete Selected
+          </button>
+        </div>
+      )}
+
+      <ConfirmDialog
+        isOpen={showDeleteDialog}
+        title="Delete Partners"
+        message={`Are you sure you want to delete ${selected.length} partner(s)? This action cannot be undone.`}
+        onConfirm={handleBulkDelete}
+        onCancel={() => setShowDeleteDialog(false)}
+      />
+
+      <table className="w-full text-left text-sm leading-[150%] tracking-[-3%]">
+        <thead className="bg-[#F9F9F9] text-[#6C6C6C] fw5 justify-center ">
         <tr>
           <th className="px-4 py-3">
             <input
@@ -199,6 +251,7 @@ const PendingPartners = ({
         ))}
       </tbody>
     </table>
+    </>
   );
 };
 
