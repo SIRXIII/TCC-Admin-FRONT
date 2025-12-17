@@ -11,7 +11,7 @@ const echo = new Echo({
   wssPort: import.meta.env.VITE_REVERB_PORT,
   forceTLS: false,
   enabledTransports: ["ws", "wss"],
-  authEndpoint: "http://tcc-admin-back.test/broadcasting/auth",
+  authEndpoint: "https://travelclothingclub-admin.online/broadcasting/auth",
   auth: {
     headers: {
       Authorization: `Bearer ${localStorage.getItem("auth_token")}`,

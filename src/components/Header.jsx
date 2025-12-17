@@ -76,17 +76,20 @@ const Header = ({ toggleSidebar }) => {
       };
     }
 
-    if (Array.isArray(data)) {
-      const normalized = { partners: [], travelers: [], riders: [] };
-      data.forEach((item) => {
-        const t = (item.type || "").toString().toLowerCase();
-        if (t.includes("partner")) normalized.partners.push(item);
-        else if (t.includes("traveler")) normalized.travelers.push(item);
-        else if (t.includes("rider")) normalized.riders.push(item);
-       
-      });
-      return normalized;
-    }
+        if (Array.isArray(data)) {
+          const normalized = { partners: [], travelers: [], riders: [] };
+          data.forEach((item) => {
+            // Safety check: ensure item exists before accessing its properties
+            if (!item) return;
+            
+            const t = (item.type || "").toString().toLowerCase();
+            if (t.includes("partner")) normalized.partners.push(item);
+            else if (t.includes("traveler")) normalized.travelers.push(item);
+            else if (t.includes("rider")) normalized.riders.push(item);
+           
+          });
+          return normalized;
+        }
 
     return { partners: [], travelers: [], riders: [] };
   };

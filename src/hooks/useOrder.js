@@ -8,11 +8,33 @@ export const useOrders = () => {
     queryKey: ["orders"],
     queryFn: getAllOrders,
     select: (res) => {
-      const orders = res.data?.data || [];
-      return {
+      // API response structure: { success: true, data: { orders: [...], pagination: {...} } }
+      let orders = [];
       
-        pending: orders.filter((o) => o.status === "Pending" && o.rider === null),
-        approved: orders.filter((o) => o.status !== "Pending" || o.rider !== null),
+      try {
+        if (res?.data?.data) {
+          // Check if it's paginated response with orders array
+          if (Array.isArray(res.data.data.orders)) {
+            orders = res.data.data.orders;
+          } 
+          // Check if data is directly an array (fallback)
+          else if (Array.isArray(res.data.data)) {
+            orders = res.data.data;
+          }
+        }
+      } catch (error) {
+        console.error('Error parsing orders data:', error);
+        orders = [];
+      }
+      
+      // Ensure orders is always an array before filtering
+      if (!Array.isArray(orders)) {
+        orders = [];
+      }
+      
+      return {
+        pending: orders.filter((o) => o?.status === "Pending" && (!o?.rider || o?.rider === null)),
+        approved: orders.filter((o) => o?.status !== "Pending" || (o?.rider && o?.rider !== null)),
       };
     },
   });

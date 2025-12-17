@@ -14,6 +14,8 @@ const PartnerInfo = ({ items, partnerId }) => {
   return (
     <div className="flex flex-col gap-4 ">
       {items.map((item, idx) => {
+        if (!item) return null;
+        
         if (item.image) {
           return (
             <div key={idx} className="flex items-center justify-between pb-3">
@@ -57,6 +59,10 @@ const PartnerInfo = ({ items, partnerId }) => {
           );
         }
 
+        if (!item.label) return null;
+
+        const labelLower = item.label.toLowerCase();
+        
         return (
           <div
             key={idx}
@@ -66,21 +72,21 @@ const PartnerInfo = ({ items, partnerId }) => {
               <span className="w-40 text-[#6C6C6C]">{item.label}</span>
               <span className=" text-[#9A9A9A] text-sm"> : </span>
               <span className="w-70 text-[#232323]">
-                {item.label.toLowerCase().includes("email") ? (
+                {labelLower.includes("email") ? (
                   <a href={`mailto:${item.value}`} className="hover:underline">
                     {item.value}
                   </a>
-                ) : item.label.toLowerCase().includes("phone") ? (
+                ) : labelLower.includes("phone") ? (
                   <a href={`tel:${item.value}`} className="hover:underline">
                     {item.value}
                   </a>
                 ) 
-                : item.label.toLowerCase().includes("address") ? (
+                : labelLower.includes("address") ? (
                    <a
         href={
           item.latitude && item.longitude
             ? `https://www.google.com/maps?q=${item.latitude},${item.longitude}`
-            : `https://www.google.com/maps/search/?api=${GEOAPIFY_KEY}&query=${encodeURIComponent(item.value)}`
+            : `https://www.google.com/maps/search/?api=${GEOAPIFY_KEY}&query=${encodeURIComponent(item.value || '')}`
         }
         target="_blank"
         rel="noopener noreferrer"

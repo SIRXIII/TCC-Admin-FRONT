@@ -12,6 +12,9 @@ const Refunds = () => {
   const statusRef = useRef(null);
   const actionRefs = useRef({});
   const { data: refunds = [], isLoading } = useRefunds();
+  
+  // Ensure refunds is always an array
+  const safeRefunds = Array.isArray(refunds) ? refunds : [];
 
   const [filteredRefunds, setFilteredRefunds] = useState([]);
   const [selected, setSelected] = useState([]);
@@ -47,29 +50,46 @@ const Refunds = () => {
   }, [openActionId]);
 
   useEffect(() => {
-    let temp = Array.isArray(refunds) ? [...refunds] : [];
+    // Ensure refunds is an array before processing
+    if (!Array.isArray(safeRefunds)) {
+      setFilteredRefunds([]);
+      return;
+    }
 
+    let temp = [...safeRefunds];
 
     if (status !== "Status") {
       temp = temp.filter(
-        (r) => r.status.toLowerCase() === status.toLowerCase()
+        (r) => r?.status?.toLowerCase() === status.toLowerCase()
       );
     }
 
     if (searchTerm.trim() !== "") {
       temp = temp.filter(
         (r) =>
-          r.id.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
-          r.orderId?.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
-          r.order?.traveler_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          r.order?.partner_name?.toLowerCase().includes(searchTerm.toLowerCase())
+          r?.id?.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
+          r?.order_id?.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
+          r?.order?.traveler?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          r?.order?.partner?.business_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          r?.refund_id?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
     if (sortConfig.key) {
       temp.sort((a, b) => {
-        const valA = (a[sortConfig.key] || "").toString().toLowerCase();
-        const valB = (b[sortConfig.key] || "").toString().toLowerCase();
+        // Handle nested keys like "order.traveler_name"
+        const keys = sortConfig.key.split('.');
+        let valA = a;
+        let valB = b;
+        
+        for (const key of keys) {
+          valA = valA?.[key];
+          valB = valB?.[key];
+        }
+        
+        valA = (valA || "").toString().toLowerCase();
+        valB = (valB || "").toString().toLowerCase();
+        
         if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
         if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
         return 0;
@@ -77,10 +97,17 @@ const Refunds = () => {
     }
 
     setFilteredRefunds(temp);
-    setPage(1);
-  }, [searchTerm, status, refunds, sortConfig]);
+    
+    // Only reset page when filters change, not on every render
+    if (searchTerm || status !== "Status") {
+      setPage(1);
+    }
+  }, [searchTerm, status, sortConfig, safeRefunds]); // Use safeRefunds to prevent infinite loop
 
   const paginatedRefunds = useMemo(() => {
+    if (!Array.isArray(filteredRefunds)) {
+      return [];
+    }
     const start = (page - 1) * perPage;
     return filteredRefunds.slice(start, start + perPage);
   }, [filteredRefunds, page, perPage]);

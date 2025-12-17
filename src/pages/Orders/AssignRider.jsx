@@ -211,7 +211,7 @@ const AssignRider = () => {
                 paginatedRiders.map((r) => (
                   <tr
                     key={r.id}
-                    onClick={() => navigate(`/orders/ordersdetail`)}
+                    onClick={() => handleSelectOne(r.id)}
                     className="text-sm bg-[#FFFFFF] hover:bg-[#FEF2E6] cursor-pointer transition-colors"
                   >
                     <td
@@ -220,9 +220,10 @@ const AssignRider = () => {
                     >
                       <input
                         type="checkbox"
-                        className="w-4 h-4 rounded-lg"
+                        className="w-4 h-4 rounded-lg cursor-pointer"
                         checked={selected === r.id}
                         onChange={() => handleSelectOne(r.id)}
+                        onClick={(e) => e.stopPropagation()}
                       />
                     </td>
                     <td className="px-4 py-3">{r.id}</td>

@@ -53,22 +53,38 @@ const location = useLocation();
     </span>
   );
 
-  // Data selection
-  const data = activeTab === "pending" ? orders?.pending : orders?.approved;
+  // Data selection - ensure arrays are always available
+  const data = useMemo(() => {
+    if (activeTab === "pending") {
+      return Array.isArray(orders?.pending) ? orders.pending : [];
+    }
+    return Array.isArray(orders?.approved) ? orders.approved : [];
+  }, [activeTab, orders]);
   const page = activeTab === "pending" ? pagePending : pageAssigned;
   const perPage = activeTab === "pending" ? perPagePending : perPageAssigned;
   const setPage = activeTab === "pending" ? setPagePending : setPageAssigned;
   const setPerPage = activeTab === "pending" ? setPerPagePending : setPerPageAssigned;
 
   // Filter
-  const filteredOrders = data?.filter((o) =>
-    `${o.orderId} ${o.traveler?.name || ""} ${o.partner?.name || ""} ${o.rider?.name || ""}`
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+  const filteredOrders = useMemo(() => {
+    if (!Array.isArray(data)) {
+      return [];
+    }
+    return data.filter((o) => {
+      const orderId = o?.order_id || o?.id || "";
+      const travelerName = o?.traveler_name || o?.traveler?.name || "";
+      const partnerName = o?.partner_name || o?.partner?.business_name || o?.partner?.name || "";
+      const riderName = o?.rider_name || o?.rider?.name || "";
+      const searchText = `${orderId} ${travelerName} ${partnerName} ${riderName}`.toLowerCase();
+      return searchText.includes(search.toLowerCase());
+    });
+  }, [data, search]);
 
 
   const sortedOrders = useMemo(() => {
+    if (!Array.isArray(filteredOrders)) {
+      return [];
+    }
     if (!sortConfig.key) return filteredOrders;
     return [...filteredOrders].sort((a, b) => {
       const aValue = getValueByPath(a, sortConfig.key)?.toString().toLowerCase() || "";
@@ -82,6 +98,9 @@ const location = useLocation();
 
 
   const paginatedOrders = useMemo(() => {
+    if (!Array.isArray(sortedOrders)) {
+      return [];
+    }
     const start = (page - 1) * perPage;
     return sortedOrders.slice(start, start + perPage);
   }, [sortedOrders, page, perPage]);
@@ -116,14 +135,14 @@ const location = useLocation();
           className={`px-3 py-1.5 rounded-md text-sm fw5 transition ${activeTab === "assigned" ? "bg-orange text-white shadow" : "text-gray-600"
             }`}
         >
-          Assigned ({orders.approved.length})
+          Assigned ({Array.isArray(orders?.approved) ? orders.approved.length : 0})
         </button>
         <button
           onClick={() => setActiveTab("pending")}
           className={`px-3 py-1.5 rounded-md text-sm fw5 transition ${activeTab === "pending" ? "bg-orange text-white shadow" : "text-gray-600"
             }`}
         >
-          Pending ({orders.pending.length})
+          Pending ({Array.isArray(orders?.pending) ? orders.pending.length : 0})
         </button>
       </div>
 
