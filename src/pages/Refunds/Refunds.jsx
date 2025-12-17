@@ -47,7 +47,8 @@ const Refunds = () => {
   }, [openActionId]);
 
   useEffect(() => {
-    let temp = [...refunds];
+    let temp = Array.isArray(refunds) ? [...refunds] : [];
+
 
     if (status !== "Status") {
       temp = temp.filter(
