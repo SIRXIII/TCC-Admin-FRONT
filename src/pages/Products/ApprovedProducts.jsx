@@ -85,7 +85,7 @@ const ApprovedProducts = ({ paginatedProducts = [], openActionId, setOpenActionI
     Suspended: "bg-[#FCECD6] text-[#CA4E2E]",
   };
 
-
+ console.log("first approve products are:", paginatedProducts);
   return (
     <table className="w-full text-left text-sm border-collapse leading-[150%] tracking-[-3%]">
       <thead className="bg-[#F9F9F9] text-[#6C6C6C]">
