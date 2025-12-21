@@ -13,6 +13,7 @@ import Breadcrumb from "../../components/Breadcrumb";
 
 
 const ProductsDetail = () => {
+  
   const { id } = useParams()
   const [product, setProduct] = React.useState(null);
   const [previewImage, setPreviewImage] = useState(null);
@@ -56,6 +57,9 @@ const ProductsDetail = () => {
     );
   };
 
+ const sizeOptions = product?.sizes?.map(size => size.size).join(', ') || '';
+
+
   const productDetails = {
     overview: {
       title: "Product Overview",
@@ -66,15 +70,16 @@ const ProductsDetail = () => {
           sub: product?.category,
           status: product?.status,
         },
-        { label: "Product Category", value: product?.category },
+        { label: "Product Category", value: product?.gender },
         { label: "Product Type", value: product?.type },
-        { label: "Price", value: product?.buy_price },
+        { label: "Price", value: product?.base_price },
         { label: "Security Deposit", value: product?.deposit },
         { label: "Availablity", value: product?.stock > 0 ? "In Stock" : "Out of Stock" },
         { label: "Partner Store", value: product?.partner?.business_name },
       ],
     },
 
+    
 
     rental:
       product?.type == "Rental"
@@ -90,7 +95,7 @@ const ProductsDetail = () => {
               label: "Late Fee",
               value: "$" + product?.late_fee + "/day after return date",
             },
-            { label: "Size Options", value: product?.size },
+            { label: "Size Options", value: sizeOptions },
             { label: "Color Options", value: product?.color },
             { label: "Fabric / Material", value: product?.material },
             {
