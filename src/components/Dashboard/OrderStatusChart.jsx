@@ -4,7 +4,7 @@ import { useOrderStats } from "../../hooks/useDashboard";
 const OrderStatusChart = () => {
   // Fetch dynamic order data from API
   const { data: orderData, isLoading, error } = useOrderStats();
-  
+
   // Loading state
   if (isLoading) {
     return (
@@ -44,10 +44,10 @@ const OrderStatusChart = () => {
   // Use dynamic data from API
   const orderStatusData = orderData?.orderStatusData || [];
   const total = orderData?.totalOrders || 0;
-  
+
   // Filter out zero values and calculate angles for pie chart
-  const filteredOrderData = orderStatusData.filter(item => item.value > 0);
-  
+  const filteredOrderData = orderStatusData.filter((item) => item.value > 0);
+
   let currentAngle = 0;
   const pieSlices = filteredOrderData.map((item) => {
     const percentage = (item.value / total) * 100;
@@ -76,13 +76,13 @@ const OrderStatusChart = () => {
       `M ${centerX} ${centerY}`,
       `L ${x1} ${y1}`,
       `A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2}`,
-      'Z'
-    ].join(' ');
+      "Z",
+    ].join(" ");
 
     return {
       ...item,
       pathData,
-      percentage: percentage.toFixed(1)
+      percentage: percentage.toFixed(1),
     };
   });
 
@@ -92,7 +92,7 @@ const OrderStatusChart = () => {
       <h2 className="text-lg font-roboto fw4 text-[#232323] leading-[150%] tracking-[-0.04em] mb-4">
         Order Status Distribution
       </h2>
-      
+
       <div className="flex-1 flex flex-col items-center justify-center">
         {/* Pie Chart - Larger and Centered */}
         <div className="relative mb-4">
@@ -109,7 +109,7 @@ const OrderStatusChart = () => {
               />
             ))}
           </svg>
-          
+
           {/* Center label - just the number */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="text-center">
@@ -128,7 +128,7 @@ const OrderStatusChart = () => {
           {filteredOrderData.map((item, index) => (
             <div key={index} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div 
+                <div
                   className="w-3 h-3 rounded-full flex-shrink-0"
                   style={{ backgroundColor: item.color }}
                 ></div>
@@ -136,9 +136,7 @@ const OrderStatusChart = () => {
                   {item.label}
                 </span>
               </div>
-              <div className="text-xs text-[#9A9A9A] ml-2">
-                {item.value}%
-              </div>
+              <div className="text-xs text-[#9A9A9A] ml-2">{item.value}%</div>
             </div>
           ))}
         </div>
