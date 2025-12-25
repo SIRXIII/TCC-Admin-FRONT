@@ -18,7 +18,7 @@ const GEOAPIFY_KEY = import.meta.env.VITE_APP_GEOAPIFY_KEY;
 
 console.log("GEOAPIFY_KEY update ", GEOAPIFY_KEY)
 const UpdatePartner = () => {
-    const { id } = useParams(); 
+    const { id } = useParams();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         businessName: "",
@@ -36,8 +36,8 @@ const UpdatePartner = () => {
         ownerIdImage: null,
     });
 
-      const [suggestions, setSuggestions] = useState([]);
-    
+    const [suggestions, setSuggestions] = useState([]);
+
     const [profileImage, setProfileImage] = useState(par_profile);
     const [licenseImages, setLicenseImages] = useState({ front: null, back: null });
     const [ownerIdImages, setOwnerIdImages] = useState({ front: null, back: null });
@@ -133,13 +133,13 @@ const UpdatePartner = () => {
         fetchPartner();
     }, [id]);
 
-  
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-  
+
 
     const handleFileChange = (e, type, side) => {
         const file = e.target.files[0];
@@ -178,8 +178,8 @@ const UpdatePartner = () => {
             });
 
             if (availability && typeof availability === "object") {
-        payload.append("availability", JSON.stringify(availability));
-      }
+                payload.append("availability", JSON.stringify(availability));
+            }
 
             if (profileImage && profileImage !== par_profile) {
                 const profileInput = document.getElementById("profileImage");
@@ -223,46 +223,46 @@ const UpdatePartner = () => {
     }
 
 
-      const handleAddressChange = async (e) => {
-    const value = e.target.value;
-    handleChange(e);
+    const handleAddressChange = async (e) => {
+        const value = e.target.value;
+        handleChange(e);
 
-    if (value.length < 3) {
-      setSuggestions([]);
-      return;
-    }
+        if (value.length < 3) {
+            setSuggestions([]);
+            return;
+        }
 
-    try {
+        try {
 
-      const res = await axios.get(
-        `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(
-          value
-        )}&apiKey=${GEOAPIFY_KEY}`
-      );
-      setSuggestions(res.data.features);
-    } catch (err) {
-      console.error("Geoapify error:", err);
-    }
-  };
+            const res = await axios.get(
+                `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(
+                    value
+                )}&apiKey=${GEOAPIFY_KEY}`
+            );
+            setSuggestions(res.data.features);
+        } catch (err) {
+            console.error("Geoapify error:", err);
+        }
+    };
 
-  const handleSelectAddress = (place) => {
-    const formatted = place.properties.formatted;
-    const lat = place.geometry.coordinates[1];
-    const lon = place.geometry.coordinates[0];
+    const handleSelectAddress = (place) => {
+        const formatted = place.properties.formatted;
+        const lat = place.geometry.coordinates[1];
+        const lon = place.geometry.coordinates[0];
 
-    setFormData({ ...formData, address: formatted, latitude: lat, longitude: lon });
-    setSuggestions([]);
+        setFormData({ ...formData, address: formatted, latitude: lat, longitude: lon });
+        setSuggestions([]);
 
-    // // Optional: Open in Google Maps
-    // window.open(`https://www.google.com/maps?q=${lat},${lon}`, "_blank");
-  };
+        // // Optional: Open in Google Maps
+        // window.open(`https://www.google.com/maps?q=${lat},${lon}`, "_blank");
+    };
 
     return (
         <form
             onSubmit={handleSubmit}
-            className="flex flex-col p-4 top-[120px] left-[281px] gap-6"
+            className="flex flex-col p-4 gap-6 md:p-6 lg:p-8 max-w-[1200px] mx-auto"
         >
-            <div className="flex flex-col p-4 top-[120px] left-[281px] gap-6">
+            <div className="flex flex-col gap-6">
                 <div className="flex flex-col gap-4">
                     <Breadcrumb
                         items={[
@@ -271,9 +271,9 @@ const UpdatePartner = () => {
                             { label: "Update Partner" },
                         ]}
                     />
-                    <div className="flex items-center justify-between">
-                        <div className="flex flex-col gap-1">
-                            <div className="flex gap-3 items-center">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0">
+                        <div className="flex flex-col gap-1 w-full md:w-auto">
+                            <div className="flex items-center gap-3">
                                 <Link to="/partners" className="group">
                                     <img
                                         src={backward}
@@ -289,7 +289,7 @@ const UpdatePartner = () => {
                                 Update partner details in the platform.
                             </p>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap md:flex-nowrap justify-end self-end">
                             <Link
                                 to="/partners"
                                 className="border border-[#F77F00] bg-[#FEF2E6] rounded-lg p-3 text-xs text-[#F77F00]"
@@ -302,10 +302,11 @@ const UpdatePartner = () => {
                         </div>
                     </div>
                 </div>
+
                 <div className="flex flex-col gap-6 flex-1">
+                    {/* Personal Information */}
                     <div
-                        className="p-6 flex flex-col gap-6 rounded-lg bg-white"
-                        style={{ boxShadow: "0px 0px 3px 0px #00000033" }}
+                        className="p-6 flex flex-col gap-6 rounded-lg bg-white shadow-sm"
                     >
                         <div>
                             <h2 className="text-lg text-[#232323] fw6 leading-[150%] tracking-[-3%]">
@@ -317,7 +318,7 @@ const UpdatePartner = () => {
                                     alt="Par_Profile"
                                     className="w-18 h-18 rounded-[10px]"
                                 />
-                                <div className="flex py-4 gap-2">
+                                <div className="flex flex-col sm:flex-row py-4 gap-2 sm:gap-2 w-full">
                                     <input
                                         type="file"
                                         name="profileImage"
@@ -325,26 +326,30 @@ const UpdatePartner = () => {
                                         className="hidden"
                                         onChange={(e) => handleFileChange(e, "profile")}
                                     />
+
                                     <label
                                         htmlFor="profileImage"
-                                        className="border border-[#F77F00] bg-[#F77F00] rounded-lg p-3 text-xs text-[#FEF2E6] cursor-pointer hover:bg-orange hover:text-white"
+                                        className="border border-[#F77F00] bg-[#F77F00] rounded-lg p-3 text-xs text-[#FEF2E6] cursor-pointer hover:bg-orange hover:text-white text-center w-full sm:w-auto"
                                     >
                                         Upload new picture
                                     </label>
+
                                     <button
                                         type="button"
-                                        className="border border-[#F77F00] rounded-lg p-3 text-xs bg-[#FEF2E6] text-[#F77F00]"
+                                        className="border border-[#F77F00] rounded-lg p-3 text-xs bg-[#FEF2E6] text-[#F77F00] w-full sm:w-auto"
                                         onClick={() => handleDelete("profile")}
                                     >
                                         Delete
                                     </button>
                                 </div>
+
                             </div>
                             {errors.profileImage && (
                                 <p className="text-red-500 text-xs mt-1">{errors.profileImage[0]}</p>
                             )}
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 leading-[100%] tracking-[-5%]">
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <div className="relative">
                                     <input
@@ -353,12 +358,12 @@ const UpdatePartner = () => {
                                         name="businessName"
                                         value={formData.businessName}
                                         onChange={handleChange}
-                                        className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border-1 border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
+                                        className="block p-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
                                         placeholder=" "
                                     />
                                     <label
                                         htmlFor="businessName"
-                                        className="absolute text-sm ms-4 text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
+                                        className="absolute text-sm ms-4 text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323] peer-placeholder-shown:scale-100 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
                                     >
                                         Business Name
                                     </label>
@@ -367,6 +372,7 @@ const UpdatePartner = () => {
                                     <p className="text-red-500 text-xs mt-1">{errors.businessName[0]}</p>
                                 )}
                             </div>
+
                             <div>
                                 <div className="relative">
                                     <input
@@ -375,12 +381,12 @@ const UpdatePartner = () => {
                                         name="email"
                                         value={formData.email}
                                         onChange={handleChange}
-                                        className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border-1 border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
+                                        className="block p-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
                                         placeholder=" "
                                     />
                                     <label
                                         htmlFor="email"
-                                        className="absolute text-sm ms-4 text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
+                                        className="absolute text-sm ms-4 text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323] peer-placeholder-shown:scale-100 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
                                     >
                                         Email
                                     </label>
@@ -389,6 +395,7 @@ const UpdatePartner = () => {
                                     <p className="text-red-500 text-xs mt-1">{errors.email[0]}</p>
                                 )}
                             </div>
+
                             <div>
                                 <div className="relative">
                                     <input
@@ -406,12 +413,12 @@ const UpdatePartner = () => {
                                             e.target.value = digits;
                                             handleChange(e);
                                         }}
-                                        className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border-1 border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
+                                        className="block p-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
                                         placeholder="Phone (e.g. 212-456-7890)"
                                     />
                                     <label
                                         htmlFor="phonenumber"
-                                        className="absolute text-sm ms-4 text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
+                                        className="absolute text-sm ms-4 text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323] peer-placeholder-shown:scale-100 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
                                     >
                                         Phone Number
                                     </label>
@@ -420,6 +427,7 @@ const UpdatePartner = () => {
                                     <p className="text-red-500 text-xs mt-1">{errors.phone[0]}</p>
                                 )}
                             </div>
+
                             <div>
                                 <div className="relative">
                                     <input
@@ -428,59 +436,55 @@ const UpdatePartner = () => {
                                         name="ownerName"
                                         value={formData.ownerName}
                                         onChange={handleChange}
-                                        className="block p-4 pt-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border-1 border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
+                                        className="block p-4 w-full text-sm text-[#121212] bg-transparent rounded-xl border border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
                                         placeholder=" "
                                     />
                                     <label
                                         htmlFor="ownerName"
-                                        className="absolute text-sm ms-4 text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
+                                        className="absolute text-sm ms-4 text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323] peer-placeholder-shown:scale-100 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
                                     >
                                         Owner Name
                                     </label>
                                 </div>
                                 {errors.ownerName && (
-                                    <p className="text-red-500 text-xs mt-1">{errors.ownerName[0]}</p>
+                                    <p className="text-red-500 text-xs ">{errors.ownerName[0]}</p>
                                 )}
                             </div>
 
-                            <div>
-                                <div className="relative md:col-span-2">
-                                    <input
-                                        type="text"
-                                        id="address"
-                                        name="address"
-                                        value={formData.address}
-                                        onChange={handleAddressChange}
-                                        className="block p-4 pt-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border-1 border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
-                                        placeholder=" "
-                                    />
-                                    <label
-                                        htmlFor="Address"
-                                        className="absolute text-sm ms-4 text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
-                                    >
-                                        Address
-                                    </label>
-
-                                      {suggestions.length > 0 && (
-                    <ul className="absolute z-50 bg-white border border-gray-300 rounded-lg shadow-md mt-1 w-full max-h-48 overflow-y-auto">
-                      {suggestions.map((s, i) => (
-                        <li
-                          key={i}
-                          onClick={() => handleSelectAddress(s)}
-                          className="px-3 py-2 hover:bg-orange-100 cursor-pointer text-sm"
-                        >
-                          {s.properties.formatted}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                                </div>
+                            <div className="col-span-1 sm:col-span-2 relative">
+                                <input
+                                    type="text"
+                                    id="address"
+                                    name="address"
+                                    value={formData.address}
+                                    onChange={handleAddressChange}
+                                    className="block p-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
+                                    placeholder=" "
+                                />
+                                <label
+                                    htmlFor="Address"
+                                    className="absolute text-sm ms-4 text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323] peer-placeholder-shown:scale-100 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
+                                >
+                                    Address
+                                </label>
+                                {suggestions.length > 0 && (
+                                    <ul className="absolute z-50 bg-white border border-gray-300 rounded-lg shadow-md mt-1 w-full max-h-48 overflow-y-auto">
+                                        {suggestions.map((s, i) => (
+                                            <li
+                                                key={i}
+                                                onClick={() => handleSelectAddress(s)}
+                                                className="px-3 py-2 hover:bg-orange-100 cursor-pointer text-sm"
+                                            >
+                                                {s.properties.formatted}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
                                 {errors.address && (
                                     <p className="text-red-500 text-xs mt-1">{errors.address[0]}</p>
                                 )}
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {/* Latitude */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 col-span-1 sm:col-span-2">
                                 <div className="relative">
                                     <input
                                         type="text"
@@ -498,8 +502,6 @@ const UpdatePartner = () => {
                                         Latitude
                                     </label>
                                 </div>
-
-                                {/* Longitude */}
                                 <div className="relative">
                                     <input
                                         type="text"
@@ -518,244 +520,155 @@ const UpdatePartner = () => {
                                     </label>
                                 </div>
                             </div>
-
                         </div>
                     </div>
 
+                    {/* StoreAvailabilityCard */}
+                    <StoreAvailabilityCard
+                        availability={availability}
+                        handleCheckboxChange={handleCheckboxChange}
+                        handleTimeChange={handleTimeChange}
+                    />
 
-                    <div>
-                        <StoreAvailabilityCard
-                            availability={availability}
-                            handleCheckboxChange={handleCheckboxChange}
-                            handleTimeChange={handleTimeChange}
-                        />
-                    </div>
-
-
+                    {/* Business Verification */}
                     <div
-                        className="p-6 flex flex-col gap-6 rounded-lg bg-white"
-                        style={{ boxShadow: "0px 0px 3px 0px #00000033" }}
+                        className="p-6 flex flex-col gap-6 rounded-lg bg-white shadow-sm"
                     >
                         <h1 className="text-lg text-[#232323] fw6 leading-[150%] tracking-[-3%]">
                             Business Verification
                         </h1>
-
-                        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 fw4 leading-[100%] tracking-[-5%]">
-                            <div>
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        id="tax_id"
-                                        name="tax_id"
-                                        value={formData.tax_id}
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            if (/^\d*$/.test(value)) {
-                                                handleChange(e);
-                                            }
-                                        }}
-                                        onKeyPress={(e) => {
-                                            if (!/[0-9]/.test(e.key)) {
-                                                e.preventDefault();
-                                            }
-                                        }}
-                                        className="block p-4 pt-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border-1 border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
-                                        placeholder="e.g: 08796"
-                                    />
-                                    <label
-                                        htmlFor="tax_id"
-                                        className="absolute text-sm ms-4 text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323] peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto start-1"
-                                    >
-                                        Tax ID
-                                    </label>
-                                </div>
+                        <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    id="tax_id"
+                                    name="tax_id"
+                                    value={formData.tax_id}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        if (/^\d*$/.test(value)) handleChange(e);
+                                    }}
+                                    onKeyPress={(e) => {
+                                        if (!/[0-9]/.test(e.key)) e.preventDefault();
+                                    }}
+                                    className="block p-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border border-[#D9D9D9] focus:outline-none focus:ring-0 focus:border-[#D9D9D9] peer"
+                                    placeholder="e.g: 08796"
+                                />
+                                <label
+                                    htmlFor="tax_id"
+                                    className="absolute text-sm ms-4 text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 bg-white px-2 peer-focus:px-2 peer-focus:text-[#232323] peer-placeholder-shown:scale-100 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4"
+                                >
+                                    Tax ID
+                                </label>
                                 {errors.tax_id && (
                                     <p className="text-red-500 text-xs mt-1">{errors.tax_id[0]}</p>
                                 )}
                             </div>
-
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div
-                                className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center cursor-pointer"
-                                onClick={() => document.getElementById("licenseFront").click()}
-                            >
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    id="licenseFront"
-                                    className="hidden"
-                                    onChange={(e) => handleFileChange(e, "license", "front")}
-                                />
-                                {licenseImages.front ? (
-                                    <div className="relative w-full">
-                                        <img
-                                            src={
-                                                licenseImages.front instanceof File
-                                                    ? URL.createObjectURL(licenseImages.front)
-                                                    : licenseImages.front
-                                            }
-                                            alt="License Front"
-                                            className="w-full h-48 object-cover rounded-lg border"
-                                        />
-                                        <button
-                                            type="button"
-                                            className="absolute -top-4 -right-4 bg-[#F77F00]/80 text-white text-xs rounded-full w-10 h-10 flex items-center justify-center"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDelete("license", "front");
-                                            }}
-                                        >
-                                            <FaTimes className="w-6 h-6" />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="cursor-pointer flex flex-col items-center">
-                                        <img src={Upload} alt="" className="w-8 h-8 mb-2" />
-                                        <p className="text-base fw6 text-[#6C6C6C]">
-                                            Upload license Front image.
-                                        </p>
-                                        <p className="text-xs text-[#9A9A9A]">Only PNG, JPG allowed.</p>
-                                    </div>
-                                )}
-                            </div>
-                            <div
-                                className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center cursor-pointer"
-                                onClick={() => document.getElementById("licenseBack").click()}
-                            >
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    id="licenseBack"
-                                    className="hidden"
-                                    onChange={(e) => handleFileChange(e, "license", "back")}
-                                />
-                                {licenseImages.back ? (
-                                    <div className="relative w-full">
-                                        <img
-                                            src={
-                                                licenseImages.back instanceof File
-                                                    ? URL.createObjectURL(licenseImages.back)
-                                                    : licenseImages.back
-                                            }
-                                            alt="License Back"
-                                            className="w-full h-48 object-cover rounded-lg border"
-                                        />
-                                        <button
-                                            type="button"
-                                            className="absolute -top-4 -right-4 bg-[#F77F00]/80 text-white text-xs rounded-full w-10 h-10 flex items-center justify-center"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDelete("license", "back");
-                                            }}
-                                        >
-                                            <FaTimes className="w-6 h-6" />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="cursor-pointer flex flex-col items-center">
-                                        <img src={Upload} alt="" className="w-8 h-8 mb-2" />
-                                        <p className="text-base fw6 text-[#6C6C6C]">
-                                            Upload license Back image.
-                                        </p>
-                                        <p className="text-xs text-[#9A9A9A]">Only PNG, JPG allowed.</p>
-                                    </div>
-                                )}
-                            </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                            <div
-                                className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center cursor-pointer"
-                                onClick={() => document.getElementById("ownerIdFront").click()}
-                            >
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    id="ownerIdFront"
-                                    className="hidden"
-                                    onChange={(e) => handleFileChange(e, "ownerId", "front")}
-                                />
-                                {ownerIdImages.front ? (
-                                    <div className="relative w-full">
-                                        <img
-                                            src={
-                                                ownerIdImages.front instanceof File
-                                                    ? URL.createObjectURL(ownerIdImages.front)
-                                                    : ownerIdImages.front
-                                            }
-                                            alt="Owner ID Front"
-                                            className="w-full h-48 object-cover rounded-lg border"
-                                        />
-                                        <button
-                                            type="button"
-                                            className="absolute -top-4 -right-4 bg-[#F77F00]/80 text-white text-xs rounded-full w-10 h-10 flex items-center justify-center"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDelete("ownerId", "front");
-                                            }}
-                                        >
-                                            <FaTimes className="w-6 h-6" />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="cursor-pointer flex flex-col items-center">
-                                        <img src={Upload} alt="" className="w-8 h-8 mb-2" />
-                                        <p className="text-base fw6 text-[#6C6C6C]">
-                                            Upload Owner ID Front image.
-                                        </p>
-                                        <p className="text-xs text-[#9A9A9A]">Only PNG, JPG allowed.</p>
-                                    </div>
-                                )}
-                            </div>
-                            <div
-                                className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center cursor-pointer"
-                                onClick={() => document.getElementById("ownerIdBack").click()}
-                            >
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    id="ownerIdBack"
-                                    className="hidden"
-                                    onChange={(e) => handleFileChange(e, "ownerId", "back")}
-                                />
-                                {ownerIdImages.back ? (
-                                    <div className="relative w-full">
-                                        <img
-                                            src={
-                                                ownerIdImages.back instanceof File
-                                                    ? URL.createObjectURL(ownerIdImages.back)
-                                                    : ownerIdImages.back
-                                            }
-                                            alt="Owner ID Back"
-                                            className="w-full h-48 object-cover rounded-lg border"
-                                        />
-                                        <button
-                                            type="button"
-                                            className="absolute -top-4 -right-4 bg-[#F77F00]/80 text-white text-xs rounded-full w-10 h-10 flex items-center justify-center"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleDelete("ownerId", "back");
-                                            }}
-                                        >
-                                            <FaTimes className="w-6 h-6" />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="cursor-pointer flex flex-col items-center">
-                                        <img src={Upload} alt="" className="w-8 h-8 mb-2" />
-                                        <p className="text-base fw6 text-[#6C6C6C]">
-                                            Upload Owner ID Back image.
-                                        </p>
-                                        <p className="text-xs text-[#9A9A9A]">Only PNG, JPG allowed.</p>
-                                    </div>
-                                )}
-                            </div>
+                        {/* License & Owner ID Uploads */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                            {/* License Front & Back */}
+                            {[["licenseFront", "front"], ["licenseBack", "back"]].map(([id, side]) => (
+                                <div
+                                    key={id}
+                                    className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center cursor-pointer"
+                                    onClick={() => document.getElementById(id).click()}
+                                >
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        id={id}
+                                        className="hidden"
+                                        onChange={(e) => handleFileChange(e, "license", side)}
+                                    />
+                                    {licenseImages[side] ? (
+                                        <div className="relative w-full">
+                                            <img
+                                                src={
+                                                    licenseImages[side] instanceof File
+                                                        ? URL.createObjectURL(licenseImages[side])
+                                                        : licenseImages[side]
+                                                }
+                                                alt={`License ${side}`}
+                                                className="w-full h-48 object-cover rounded-lg border"
+                                            />
+                                            <button
+                                                type="button"
+                                                className="absolute -top-4 -right-4 bg-[#F77F00]/80 text-white text-xs rounded-full w-10 h-10 flex items-center justify-center"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDelete("license", side);
+                                                }}
+                                            >
+                                                <FaTimes className="w-6 h-6" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="cursor-pointer flex flex-col items-center">
+                                            <img src={Upload} alt="" className="w-8 h-8 mb-2" />
+                                            <p className="text-base fw6 text-[#6C6C6C]">
+                                                Upload license {side} image.
+                                            </p>
+                                            <p className="text-xs text-[#9A9A9A]">Only PNG, JPG allowed.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+
+                            {/* Owner ID Front & Back */}
+                            {[["ownerIdFront", "front"], ["ownerIdBack", "back"]].map(([id, side]) => (
+                                <div
+                                    key={id}
+                                    className="border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center cursor-pointer"
+                                    onClick={() => document.getElementById(id).click()}
+                                >
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        id={id}
+                                        className="hidden"
+                                        onChange={(e) => handleFileChange(e, "ownerId", side)}
+                                    />
+                                    {ownerIdImages[side] ? (
+                                        <div className="relative w-full">
+                                            <img
+                                                src={
+                                                    ownerIdImages[side] instanceof File
+                                                        ? URL.createObjectURL(ownerIdImages[side])
+                                                        : ownerIdImages[side]
+                                                }
+                                                alt={`Owner ID ${side}`}
+                                                className="w-full h-48 object-cover rounded-lg border"
+                                            />
+                                            <button
+                                                type="button"
+                                                className="absolute -top-4 -right-4 bg-[#F77F00]/80 text-white text-xs rounded-full w-10 h-10 flex items-center justify-center"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDelete("ownerId", side);
+                                                }}
+                                            >
+                                                <FaTimes className="w-6 h-6" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="cursor-pointer flex flex-col items-center">
+                                            <img src={Upload} alt="" className="w-8 h-8 mb-2" />
+                                            <p className="text-base fw6 text-[#6C6C6C]">
+                                                Upload Owner ID {side} image.
+                                            </p>
+                                            <p className="text-xs text-[#9A9A9A]">Only PNG, JPG allowed.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
             </div>
         </form>
+
     );
 };
 

@@ -115,11 +115,10 @@ const Pagination = ({
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
             <button
               key={num}
-              className={`w-10 h-10 rounded-lg text-sm font-medium ${
-                num === page
+              className={`w-10 h-10 rounded-lg text-sm font-medium ${num === page
                   ? "bg-orange text-white border border-[#F77F00]"
                   : "border border-[#FEF2E6] hover:bg-[#FEF2E6]"
-              }`}
+                }`}
               onClick={() => setPage(num)}
             >
               {num}
@@ -176,11 +175,10 @@ const Pagination = ({
           {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
             <button
               key={num}
-              className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium transition ${
-                num === page
+              className={`w-9 h-9 flex items-center justify-center rounded-lg text-sm font-medium transition ${num === page
                   ? "bg-orange text-white border border-[#F77F00]"
                   : "border border-[#FEF2E6] hover:bg-[#FEF2E6]"
-              }`}
+                }`}
               onClick={() => setPage(num)}
             >
               {num}
@@ -195,35 +193,7 @@ const Pagination = ({
             <img src={arrow_right} alt="Next" className="w-4 h-4" />
           </button>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs fw5 text-[#232323]">Show</span>
-          <div className="relative w-[70px]">
-            <button
-              onClick={() => setOpen(!open)}
-              className="w-full h-9 px-3 border rounded-lg text-sm text-left"
-            >
-              {perPage}
-            </button>
 
-            {open && (
-              <div className="absolute top-full mt-1 w-full bg-white border rounded-lg shadow-lg z-10">
-                {options.map((n) => (
-                  <div
-                    key={n}
-                    onClick={() => {
-                      setPerPage(n);
-                      setOpen(false);
-                    }}
-                    className="px-3 py-2 text-sm hover:bg-[#FEF2E6] cursor-pointer"
-                  >
-                    {n}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-          <span className="text-xs fw5 text-[#232323]">entries</span>
-        </div>
       </div>
     </div>
   );

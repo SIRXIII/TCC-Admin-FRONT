@@ -184,7 +184,7 @@ const AddPartners = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col p-4 top-[120px] left-[281px] gap-6"
+      className="flex flex-col p-4 gap-6 md:p-6 lg:p-8 max-w-[1200px] mx-auto"
     >
       <div className="flex flex-col p-4 top-[120px] left-[281px] gap-6">
         <div className="flex flex-col gap-4">
@@ -197,9 +197,8 @@ const AddPartners = () => {
               { label: "Add Partner" },
             ]}
           />
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col gap-1">
-
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0">
+            <div className="flex flex-col gap-1 w-full md:w-auto">
               <div className="flex gap-3 items-center">
                 <Link to="/partners" className="group">
                   <img
@@ -219,7 +218,7 @@ const AddPartners = () => {
               </p>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 sm:justify-end sm: self-end">
               <Link to="/partners" className="border border-[#F77F00] bg-[#FEF2E6] rounded-lg p-3 text-xs text-[#F77F00]">
                 Cancle
               </Link>
@@ -245,8 +244,7 @@ const AddPartners = () => {
                   alt="Par_Profile"
                   className="w-18 h-18 rounded-[10px]"
                 />
-
-                <div className="flex py-4 gap-2">
+                <div className="flex flex-col sm:flex-row py-4 gap-2 sm:gap-2 w-full">
                   <input
                     type="file"
                     name="profileImage"

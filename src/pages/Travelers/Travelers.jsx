@@ -44,27 +44,27 @@
 //     suspended: "bg-[#FCECD6] text-[#CA4E2E]",
 //   };
 
-//   useEffect(() => {
-//     let temp = [...travelers];
+// useEffect(() => {
+//   let temp = [...travelers];
 
-//     if (status !== "Status") {
-//       temp = temp.filter(
-//         (t) => t.status.toLowerCase() === status.toLowerCase()
-//       );
-//     }
+//   if (status !== "Status") {
+//     temp = temp.filter(
+//       (t) => t.status.toLowerCase() === status.toLowerCase()
+//     );
+//   }
 
-//     if (searchTerm.trim() !== "") {
-//       temp = temp.filter(
-//         (t) =>
-//           t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//           t.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//           t.phone.includes(searchTerm)
-//       );
-//     }
+//   if (searchTerm.trim() !== "") {
+//     temp = temp.filter(
+//       (t) =>
+//         t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//         t.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//         t.phone.includes(searchTerm)
+//     );
+//   }
 
-//     setFilteredTravelers(temp);
-//     setPage(1);
-//   }, [searchTerm, status, travelers]);
+//   setFilteredTravelers(temp);
+//   setPage(1);
+// }, [searchTerm, status, travelers]);
 
 //   const sortedTravelers = useMemo(() => {
 //     let sortable = [...filteredTravelers];
@@ -559,7 +559,7 @@ const Travelers = () => {
         (t) =>
           t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           t.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          t.phone.includes(searchTerm)
+          (t.phone && t.phone.includes(searchTerm))
       );
     }
 
@@ -633,12 +633,6 @@ const Travelers = () => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setBulkOpen(false);
-      }
-      if (statusRef.current && !statusRef.current.contains(event.target)) {
-        setStatusOpen(false);
-      }
       if (
         actionOpen &&
         actionRefs.current[actionOpen] &&
@@ -646,12 +640,23 @@ const Travelers = () => {
       ) {
         setActionOpen(null);
       }
+
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setBulkOpen(false);
+      }
+
+      if (statusRef.current && !statusRef.current.contains(event.target)) {
+        setStatusOpen(false);
+      }
     };
-    document.addEventListener("mousedown", handleClickOutside);
+
+    document.addEventListener("pointerdown", handleClickOutside);
+
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("pointerdown", handleClickOutside);
     };
   }, [actionOpen]);
+
 
   const handleSort = (key) => {
     setSortConfig((prev) => {
@@ -707,7 +712,7 @@ const Travelers = () => {
             <input
               type="text"
               placeholder="Search travelers..."
-              className="pl-8 pr-2 px-4 py-2 gap-2 border border-gray-300 rounded-xl text-base w-full sm:w-[320px] leading-[150%] focus:outline-none focus:border-[#D9D9D9]"
+              className="pl-8 pr-2 px-4 py-2 gap-2 border border-gray-300 rounded-xl text-base w-[320px] leading-[150%] focus:outline-none focus:border-[#D9D9D9]"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -745,10 +750,9 @@ const Travelers = () => {
                 onClick={() => selected.length > 0 && setBulkOpen(!bulkOpen)}
                 disabled={selected.length === 0}
                 className={`flex items-center justify-between border rounded-md px-4 py-2 text-xs w-[127px] h-[42px]
-                  ${
-                    selected.length === 0
-                      ? "bg-[#FEF2E6] text-[#F77F00] cursor-not-allowed"
-                      : "bg-[#FEF2E6] text-[#F77F00] cursor-pointer "
+                  ${selected.length === 0
+                    ? "bg-[#FEF2E6] text-[#F77F00] cursor-not-allowed"
+                    : "bg-[#FEF2E6] text-[#F77F00] cursor-pointer "
                   }`}
               >
                 {bulk}
@@ -776,84 +780,95 @@ const Travelers = () => {
           {paginatedTravelers.map((t) => (
             <div
               key={t.id}
-              onClick={() => navigate(`/travelers/profile/${t.id}`)}
-              className="border rounded-xl p-4 bg-white shadow-sm hover:shadow-md transition cursor-pointer relative"
+              className="border-color rounded-xl px-2 py-3 bg-white  hover:shadow-md transition relative"
             >
-              {/* Top row */}
-              <div className="flex items-center gap-4 mb-3">
-                <img
-                  src={t.profile_photo}
-                  alt={t.name}
-                  className="w-10 h-10 rounded-full object-cover border"
-                  onError={(e) => (e.currentTarget.src = DefaultProfile)}
+              <div className="flex items-center gap-4 pb-3">
+                <input
+                  type="checkbox"
+                  checked={selected.includes(t.id)}
+                  onChange={() => handleSelectOne(t.id)}
+                  className="w-4 h-4 rounded-lg"
                 />
 
-                <div className="flex-1 min-w-0">
+                <img
+                  src={t.profile_photo || DefaultProfile}
+                  alt={t.name}
+                  className="w-10 h-10 rounded-full object-cover border"
+                />
+
+                <div
+                  className="flex-1 min-w-0 cursor-pointer"
+                  onClick={() => navigate(`/travelers/profile/${t.id}`)}
+                >
                   <p className="text-sm font-semibold text-[#232323] truncate">
                     {t.name}
                   </p>
                   <p className="text-xs text-[#6C6C6C] truncate">{t.email}</p>
                 </div>
 
-                {/* Status */}
                 <span
-                  className={`px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${
-                    t.status === "Active"
-                      ? "bg-[#E7F7ED] text-[#088B3A]"
-                      : "bg-[#FCECD6] text-[#ED6C3C]"
-                  }`}
+                  className={`px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${t.status === "Active"
+                    ? "bg-[#E7F7ED] text-[#088B3A]"
+                    : "bg-[#FCECD6] text-[#ED6C3C]"
+                    }`}
                 >
                   {t.status}
                 </span>
 
-                {/* Action menu */}
                 <div
                   className="relative"
                   ref={(el) => (actionRefs.current[t.id] = el)}
-                  onClick={(e) => e.stopPropagation()}
+                  onPointerDown={(e) => e.stopPropagation()}
                 >
                   <button
-                    onClick={() =>
-                      setActionOpen(actionOpen === t.id ? null : t.id)
-                    }
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActionOpen(actionOpen === t.id ? null : t.id);
+                    }}
                     className="p-1.5 rounded-lg border bg-[#FCECD6] text-[#CA4E2E]"
                   >
                     <FiMoreVertical size={16} />
                   </button>
 
                   {actionOpen === t.id && (
-                    <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-[#D9D9D9] rounded-md shadow-lg z-40">
+                    <div
+                      className="absolute right-0 top-full mt-1 w-32 bg-white border rounded-md shadow-lg z-50"
+                      onPointerDown={(e) => e.stopPropagation()}
+                    >
                       <Link
                         to={`/travelers/profile/${t.id}`}
                         onClick={(e) => e.stopPropagation()}
-                        className="block px-4 py-2 text-sm text-[#4F4F4F] hover:bg-[#FEF2E6]"
+                        className="block px-4 py-2 text-sm hover:bg-[#FEF2E6]"
                       >
                         View Profile
                       </Link>
 
                       {t.status === "Active" && (
                         <button
+                          type="button"
                           onClick={(e) => {
                             e.stopPropagation();
                             suspendedTraveler(t.id);
                             setActionOpen(null);
                           }}
-                          className="block w-full text-left px-4 py-2 text-sm text-[#4F4F4F] hover:bg-[#FEF2E6]"
+                          className="block w-full text-left px-4 py-2 text-sm hover:bg-[#FEF2E6]"
                         >
                           Suspend
                         </button>
                       )}
 
-                      <DeleteButton
-                        onDelete={() => handledeleteTraveler(t.id)}
-                      />
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <DeleteButton onDelete={() => handledeleteTraveler(t.id)} />
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
-
-              {/* Other columns */}
-              <div className="grid grid-cols-2 gap-y-2 text-xs text-[#4F4F4F]">
+              <div
+                onClick={() => navigate(`/travelers/profile/${t.id}`)}
+                className="grid grid-cols-2 gap-3  text-xs text-[#4F4F4F] cursor-pointer"
+              >
                 <div>
                   <span className="font-medium">Country:</span> {t.country}
                 </div>
@@ -864,8 +879,7 @@ const Travelers = () => {
                 </div>
 
                 <div className="col-span-2">
-                  <span className="font-medium">Last Active:</span>{" "}
-                  {t.last_active}
+                  <span className="font-medium">Last Active:</span> {t.last_active}
                 </div>
               </div>
             </div>
@@ -996,9 +1010,8 @@ const Travelers = () => {
                     </td>
                     <td className="px-4 py-3 text-[#232323]">
                       <span
-                        className={`px-2 py-1 rounded-md text-xs font-medium ${
-                          statusColors[t.status.toLowerCase()]
-                        }`}
+                        className={`px-2 py-1 rounded-md text-xs font-medium ${statusColors[t.status.toLowerCase()]
+                          }`}
                       >
                         {t.status}
                       </span>
@@ -1021,18 +1034,17 @@ const Travelers = () => {
                         </button>
                         {actionOpen === t.id && (
                           <div
-                            className={`absolute w-32 bg-white border border-[#D9D9D9] rounded-md shadow-lg z-40 ${
-                              [
-                                paginatedTravelers[
-                                  paginatedTravelers.length - 1
-                                ]?.id,
-                                paginatedTravelers[
-                                  paginatedTravelers.length - 2
-                                ]?.id,
-                              ].includes(t.id)
-                                ? "bottom-full mb-0.5"
-                                : "top-full mt-0.5"
-                            } right-0`}
+                            className={`absolute w-32 bg-white border border-[#D9D9D9] rounded-md shadow-lg z-40 ${[
+                              paginatedTravelers[
+                                paginatedTravelers.length - 1
+                              ]?.id,
+                              paginatedTravelers[
+                                paginatedTravelers.length - 2
+                              ]?.id,
+                            ].includes(t.id)
+                              ? "bottom-full mb-0.5"
+                              : "top-full mt-0.5"
+                              } right-0`}
                           >
                             <Link
                               to={`/travelers/profile/${t.id}`}
