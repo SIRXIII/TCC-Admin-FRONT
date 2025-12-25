@@ -59,7 +59,7 @@ const Riders = () => {
         let valA = a[sortConfig.key] ?? "";
         let valB = b[sortConfig.key] ?? "";
 
-        
+
         if (sortConfig.key === "rating" || sortConfig.key === "current_assigned_orders") {
           valA = Number(valA);
           valB = Number(valB);
@@ -150,15 +150,16 @@ const Riders = () => {
           <span className="mx-2 text-[#9A9A9A]">/</span>
           <p className="text-[#F77F00]">Riders</p>
         </div> */}
-         <Breadcrumb
+        <Breadcrumb
           items={[
             { label: "Dashboard", path: "/" },
-           
+
             { label: "Riders" },
           ]}
         />
-        <div className="flex justify-between   gap-4">
-          <div className="gap-2">
+        <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center">
+          {/* Left: Title and Description */}
+          <div className="flex flex-col gap-2 w-full sm:w-auto">
             <h2 className="text-2xl fw6 font-roboto text-[#232323] leading-[140%] tracking-[-3%]">
               Riders
             </h2>
@@ -168,9 +169,10 @@ const Riders = () => {
             </p>
           </div>
 
+          {/* Right: Add Rider Button */}
           <Link
-            to={`/riders/add-rider`}
-            className="flex items-center justify-center bg-[#F77F00] hover:bg-[#e27406] text-white text-xs font-semibold px-4 py-2 rounded-lg gap-2 w-[140px]"
+            to="/riders/add-rider"
+            className="flex items-center justify-center bg-[#F77F00] text-white text-xs font-semibold px-4 py-3 rounded-lg gap-2 w-full sm:w-[140px]"
           >
             <img src={Plus} alt="plus" className="w-4 h-4" />
             Add Riders
@@ -179,7 +181,7 @@ const Riders = () => {
       </div>
 
       <div className="bg-[#FFFFFF] rounded-lg border-color p-6 mt-4">
-        <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
+        <div className="flex  md:flex-row items-center justify-between mb-6 gap-4">
           <div className="relative text-[#9A9A9A] px-4 py-2 gap-3 text-xs leading-[150%] tracking-[-3%]">
             <span className="absolute inset-y-0 left-0 flex items-center pl-6">
               <Search size={16} />
@@ -187,7 +189,7 @@ const Riders = () => {
             <input
               type="text"
               placeholder="Search riders..."
-              className="pl-8 pr-2 px-4 py-2 gap-2 border border-gray-300 rounded-xl text-base w-[320px] leading-[150%] focus:outline-none focus:border-[#D9D9D9]"
+              className="pl-8 pr-2 px-4 py-2 gap-2 border border-gray-300 rounded-xl text-base w-full md:w-[320px] leading-[150%] focus:outline-none focus:border-[#D9D9D9]"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -222,7 +224,7 @@ const Riders = () => {
           </div>
         </div>
 
-        <div className="overflow-x-auto p-6">
+        <div className="hidden lg:block overflow-x-auto p-6">
           <table className="w-full border-collapse">
             <thead>
               <tr className="bg-[#F9F9F9] text-sm uppercase text-[#6C6C6C] cursor-pointer">
@@ -370,6 +372,74 @@ const Riders = () => {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* ================= MOBILE VIEW ================= */}
+        <div className="lg:hidden space-y-4 px-2">
+          {paginatedRiders.map((r) => (
+            <div
+              key={r.id}
+              onClick={() => navigate(`/riders/profile/${r.id}`)}
+              className="bg-white rounded-xl border p-4 shadow-sm active:bg-[#FEF2E6] transition cursor-pointer relative"
+            >
+              {/* Top Row */}
+              <div className="flex justify-between items-start">
+                <div className="flex gap-3 items-center">
+                  <img
+                    src={r.profile_photo}
+                    onError={(e) => (e.currentTarget.src = DefaultProfile)}
+                    className="w-12 h-12 rounded-xl object-cover"
+                    alt=""
+                  />
+                  <div>
+                    <span className="font-semibold text-[#232323]">{r.name}</span>
+                    <p className="text-xs text-[#6C6C6C]">{r.email}</p>
+                    <p className="text-xs text-[#9A9A9A]">ID: {r.rider_id}</p>
+                  </div>
+                </div>
+
+                {/* Status */}
+                <span
+                  className={`px-2 py-1 rounded-md text-xs font-medium ${statusColors[r.availability_status] || ""
+                    }`}
+                >
+                  {r.availability_status}
+                </span>
+              </div>
+
+              {/* Stats */}
+              <div className="flex justify-between mt-3 text-sm">
+                <div className="flex items-center gap-1">
+                  <span>Rating:</span>
+                  <img src={Rating} alt="" />
+                  {r.rating}
+                </div>
+                <div className="text-[#232323]">
+                  Orders: <span className="font-semibold">{r.current_assigned_orders}</span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div
+                className="flex justify-end gap-2 mt-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  onClick={() => navigate(`/riders/profile/${r.id}`)}
+                  className="p-2 rounded-lg bg-[#F77F00] hover:bg-[#e37704]"
+                >
+                  <img src={Eye} alt="" />
+                </button>
+
+                <button
+                  onClick={() => navigate(`/riders/update-rider/${r.id}`)}
+                  className="p-2 rounded-lg bg-[#FEF2E6] hover:bg-[#f8ca99]"
+                >
+                  <img src={Edit} alt="" />
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
 
         {paginatedRiders.length > 0 && (
