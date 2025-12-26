@@ -41,15 +41,6 @@ const ChatSupport = () => {
     return String(user?.id || '');
   };
 
-  // Use order_id as conversation ID (e.g., "ORD-RY4W4UUP8K")
-  const generateConversationId = useMemo(() => {
-    if (ticket?.order?.order_id) {
-      return ticket.order.order_id;
-    }
-    // Fallback to ticket ID if no order_id
-    return ticketId;
-  }, [ticket?.order?.order_id, ticketId]);
-
   // Check if chat should use Firebase
   // Logic: If order_id exists AND (traveler OR rider exists in order) → Firebase
   // Otherwise → MySQL/Reverb (current implementation)
@@ -69,11 +60,20 @@ const ChatSupport = () => {
     // Default: No order_id OR no traveler/rider → MySQL/Reverb
     return false;
   }, [ticket?.order_id, ticket?.order?.traveler_id, ticket?.order?.rider_id, ticket?.order?.traveler, ticket?.order?.rider]);
+
+  // Use order_id as conversation ID (e.g., "ORD-RY4W4UUP8K")
+  const generateConversationId = useMemo(() => {
+    if (ticket?.order?.order_id) {
+      return ticket.order.order_id;
+    }
+    // Fallback to ticket ID if no order_id
+    return ticketId;
+  }, [ticket?.order?.order_id, ticketId]);
   
   // Firebase real-time messages (only if order has traveler or rider)
-  // Use conversation ID instead of ticket ID
+  // Use conversation ID (order_id) instead of ticket ID
   const { messages: firebaseMessages, loading: firebaseLoading } = useFirebaseMessages(
-    useFirebase ? generateConversationId : null
+    useFirebase && generateConversationId ? generateConversationId : null
   );
 
   const handleSelect = async (option) => {
@@ -139,8 +139,11 @@ const ChatSupport = () => {
     const loadTicket = async () => {
       try {
         const res = await API.get(`/support-tickets/${ticketId}/messages`);
-        const ticketData = res.data.data || [];
+        const ticketData = res.data.data || res.data || {};
         setTicket(ticketData);
+        console.log('Ticket loaded:', ticketData);
+        console.log('Order ID:', ticketData?.order?.order_id);
+        console.log('Use Firebase:', ticketData?.order_id && (ticketData?.order?.traveler_id || ticketData?.order?.rider_id));
       } catch (error) {
         console.error("Error loading ticket:", error);
       }
@@ -204,7 +207,7 @@ const ChatSupport = () => {
       }
       
       return {
-        id: msg.id,
+        id: msg.id || `firebase-${timestamp}`,
         message: msg.message || msg.text || msg.content,
         sender_id: msg.sender_id || msg.senderId,
         receiver_id: msg.receiver_id || msg.receiverId,
@@ -218,30 +221,37 @@ const ChatSupport = () => {
       };
     }).filter(msg => msg.message); // Filter out messages without content
 
-    // Merge both sources
-    const allMessages = [...mysqlMessages, ...formattedFirebaseMessages];
-    
-    // Remove duplicates based on message content + timestamp (within 1 second)
-    const uniqueMessages = [];
-    const seen = new Set();
-    
-    allMessages.forEach(msg => {
-      const key = `${msg.message}_${Math.floor((msg.timestamp || 0) / 1000)}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        uniqueMessages.push(msg);
-      }
-    });
-    
-    // Sort by timestamp
-    uniqueMessages.sort((a, b) => {
-      const timeA = a.timestamp || safeDate(a.created_at).getTime() || 0;
-      const timeB = b.timestamp || safeDate(b.created_at).getTime() || 0;
-      return timeA - timeB;
-    });
-    
-    setMessages(uniqueMessages);
-  }, [firebaseMessages, mysqlMessages]);
+    // If using Firebase, prioritize Firebase messages but merge with MySQL
+    if (useFirebase) {
+      // Merge both sources
+      const allMessages = [...mysqlMessages, ...formattedFirebaseMessages];
+      
+      // Remove duplicates based on message ID or content + timestamp
+      const uniqueMessages = [];
+      const seen = new Set();
+      
+      allMessages.forEach(msg => {
+        // Use message ID if available, otherwise use content + timestamp
+        const key = msg.id || `${msg.message}_${Math.floor((msg.timestamp || 0) / 1000)}`;
+        if (!seen.has(key)) {
+          seen.add(key);
+          uniqueMessages.push(msg);
+        }
+      });
+      
+      // Sort by timestamp
+      uniqueMessages.sort((a, b) => {
+        const timeA = a.timestamp || safeDate(a.created_at).getTime() || 0;
+        const timeB = b.timestamp || safeDate(b.created_at).getTime() || 0;
+        return timeA - timeB;
+      });
+      
+      setMessages(uniqueMessages);
+    } else {
+      // If not using Firebase, just use MySQL messages
+      setMessages(mysqlMessages);
+    }
+  }, [firebaseMessages, mysqlMessages, useFirebase]);
 
   // Listen to conversation metadata for unread count and notifications (Firebase only)
   useEffect(() => {

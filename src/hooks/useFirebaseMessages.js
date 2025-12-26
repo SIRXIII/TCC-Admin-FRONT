@@ -14,16 +14,20 @@ export const useFirebaseMessages = (ticketId) => {
 
   useEffect(() => {
     if (!ticketId) {
+      setMessages([]);
       setLoading(false);
+      setError(null);
       return;
     }
 
+    console.log('Setting up Firebase listener for conversation:', ticketId);
     setLoading(true);
     setError(null);
 
     try {
       // Subscribe to Firebase messages
       const unsubscribe = listenToMessages(ticketId, (newMessages) => {
+        console.log('Firebase messages received:', newMessages.length, newMessages);
         setMessages(newMessages);
         setLoading(false);
       });
@@ -40,6 +44,7 @@ export const useFirebaseMessages = (ticketId) => {
       console.error('Error setting up Firebase listener:', err);
       setError(err.message);
       setLoading(false);
+      setMessages([]);
     }
   }, [ticketId]);
 

@@ -23,28 +23,37 @@ import {
  * @param {Function} callback - Callback function to handle new messages
  * @returns {Function} Unsubscribe function
  */
-export const listenToMessages = (ticketId, callback) => {
-  if (!ticketId) {
-    console.error('Ticket ID is required');
+export const listenToMessages = (conversationId, callback) => {
+  if (!conversationId) {
+    console.error('Conversation ID is required');
     return () => {};
   }
 
-  // Firestore path: conversations/{ticketId}/messages
-  const messagesRef = collection(db, `conversations/${ticketId}/messages`);
+  console.log('Listening to Firebase messages for conversation:', conversationId);
+  
+  // Firestore path: conversations/{conversationId}/messages
+  // conversationId should be order_id (e.g., "ORD-RY4W4UUP8K")
+  const messagesRef = collection(db, `conversations/${conversationId}/messages`);
   const messagesQuery = query(messagesRef, orderBy('timestamp', 'asc'));
   
   // Listen for real-time changes
   const unsubscribe = onSnapshot(
     messagesQuery,
     (snapshot) => {
-      const messagesArray = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      console.log('Firebase snapshot received:', snapshot.docs.length, 'messages');
+      const messagesArray = snapshot.docs.map(doc => {
+        const data = doc.data();
+        console.log('Message data:', data);
+        return {
+          id: doc.id,
+          ...data
+        };
+      });
       callback(messagesArray);
     },
     (error) => {
-      console.error('Error listening to messages:', error);
+      console.error('Error listening to Firebase messages:', error);
+      console.error('Conversation ID used:', conversationId);
       callback([]);
     }
   );
