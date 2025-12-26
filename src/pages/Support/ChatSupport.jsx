@@ -321,13 +321,87 @@ const ChatSupport = () => {
     setNewMessage("");
 
     try {
-      // Determine receiver ID (admin or ticket sender)
-      // If current user is admin, receiver is ticket sender, otherwise receiver is admin
-      const senderId = currentUser?.id?.toString() || currentUser?.partner_id?.toString() || currentUser?.rider_id?.toString() || '';
-      const receiverId = ticket?.sender?.id?.toString() || ticket?.sender_id?.toString() || '';
+      // Helper function to get Firebase-formatted user ID
+      const getFirebaseUserId = (user, userTypeStr) => {
+        if (!user) return '';
+        
+        // Check for specific user type IDs first
+        if (user.partner_id) return `PAR-${user.partner_id}`;
+        if (user.rider_id) return `RID-${user.rider_id}`;
+        if (user.traveler_id) return `TRAV-${user.traveler_id}`;
+        
+        // Check user type from localStorage or user object
+        const type = userTypeStr || user.type || userType || '';
+        const userId = user.id || user.user_id;
+        
+        if (userId) {
+          const typeLower = type.toLowerCase();
+          if (typeLower === 'partner') return `PAR-${userId}`;
+          if (typeLower === 'rider') return `RID-${userId}`;
+          if (typeLower === 'traveler') return `TRAV-${userId}`;
+          // For admin or unknown types, check if it's numeric (might be admin ID)
+          // Admin might not have a prefix, so return as-is
+          return userId.toString();
+        }
+        
+        return '';
+      };
+
+      // Get current user's Firebase ID
+      const senderId = getFirebaseUserId(currentUser, userType);
       
-      if (!senderId || !receiverId) {
-        throw new Error('Sender or receiver ID not found');
+      // Get ticket sender's Firebase ID
+      const ticketSenderType = ticket?.sender?.type || '';
+      const ticketSenderId = ticket?.sender?.id || ticket?.user_id || '';
+      const ticketSenderFirebaseId = ticketSenderId && ticketSenderType 
+        ? getFirebaseUserId({ id: ticketSenderId, type: ticketSenderType }, ticketSenderType)
+        : '';
+      
+      // Determine receiver ID
+      let receiverId = '';
+      
+      // If we have existing messages, use them to determine receiver
+      if (messages.length > 0) {
+        const lastMessage = messages[messages.length - 1];
+        // If last message sender is not current user, receiver is that sender
+        if (lastMessage.senderId && lastMessage.senderId !== senderId) {
+          receiverId = lastMessage.senderId;
+        } 
+        // If last message receiver is current user, sender of that message is the receiver
+        else if (lastMessage.receiverId && lastMessage.receiverId === senderId) {
+          receiverId = lastMessage.senderId;
+        }
+        // Otherwise use receiverId from last message
+        else if (lastMessage.receiverId) {
+          receiverId = lastMessage.receiverId;
+        }
+      }
+      
+      // If still no receiver, determine from ticket sender
+      if (!receiverId) {
+        if (senderId === ticketSenderFirebaseId) {
+          // Current user is the ticket sender, receiver should be admin
+          // For admin, we might use a default or check conversation participants
+          receiverId = 'ADMIN-1'; // Default admin ID, adjust based on your system
+        } else if (ticketSenderFirebaseId) {
+          // Current user is admin or different user, receiver is ticket sender
+          receiverId = ticketSenderFirebaseId;
+        }
+      }
+      
+      if (!senderId) {
+        console.error('Sender ID not found', { currentUser, userType });
+        throw new Error(`Sender ID not found. Current user: ${JSON.stringify(currentUser)}, User type: ${userType}`);
+      }
+      
+      if (!receiverId) {
+        console.error('Receiver ID not found', {
+          senderId,
+          ticket,
+          messages: messages.length,
+          ticketSenderFirebaseId
+        });
+        throw new Error(`Receiver ID not found. Sender: ${senderId}, Ticket sender: ${ticketSenderFirebaseId}`);
       }
 
       // Send message via Firebase
