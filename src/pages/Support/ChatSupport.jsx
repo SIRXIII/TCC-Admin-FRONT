@@ -41,32 +41,14 @@ const ChatSupport = () => {
     return String(user?.id || '');
   };
 
-  // Generate conversation ID based on participants (e.g., "PAR-2_RID-1")
+  // Use order_id as conversation ID (e.g., "ORD-RY4W4UUP8K")
   const generateConversationId = useMemo(() => {
-    if (!ticket?.order) {
-      return ticketId; // Fallback to ticket ID
+    if (ticket?.order?.order_id) {
+      return ticket.order.order_id;
     }
-    
-    const order = ticket.order;
-    const participants = [];
-    
-    // Add all participants
-    if (order.partner) {
-      participants.push(getUserFirebaseId(order.partner, 'App\\Models\\Partner'));
-    }
-    if (order.rider) {
-      participants.push(getUserFirebaseId(order.rider, 'App\\Models\\Rider'));
-    }
-    if (order.traveler) {
-      participants.push(getUserFirebaseId(order.traveler, 'App\\Models\\Traveler'));
-    }
-    
-    // Sort participants to ensure consistent ID
-    participants.sort();
-    
-    // Join with underscore
-    return participants.length > 0 ? participants.join('_') : ticketId;
-  }, [ticket?.order, ticketId]);
+    // Fallback to ticket ID if no order_id
+    return ticketId;
+  }, [ticket?.order?.order_id, ticketId]);
 
   // Check if chat should use Firebase
   // Logic: If order_id exists AND (traveler OR rider exists in order) → Firebase
