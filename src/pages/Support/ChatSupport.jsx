@@ -27,6 +27,47 @@ const ChatSupport = () => {
 
   const options = ["In Progress", "Rejected", "Pending"];
 
+  // Helper function to get user Firebase ID
+  const getUserFirebaseId = (user, userType) => {
+    if (userType === 'App\\Models\\Partner' || userType === 'partner') {
+      return `PAR-${user?.partner_id || user?.id || ''}`;
+    } else if (userType === 'App\\Models\\Rider' || userType === 'rider') {
+      return `RID-${user?.rider_id || user?.id || ''}`;
+    } else if (userType === 'App\\Models\\Traveler' || userType === 'traveler') {
+      return `TRA-${user?.traveler_id || user?.id || ''}`;
+    } else if (userType === 'App\\Models\\User' || userType === 'admin') {
+      return `ADM-${user?.id || ''}`;
+    }
+    return String(user?.id || '');
+  };
+
+  // Generate conversation ID based on participants (e.g., "PAR-2_RID-1")
+  const generateConversationId = useMemo(() => {
+    if (!ticket?.order) {
+      return ticketId; // Fallback to ticket ID
+    }
+    
+    const order = ticket.order;
+    const participants = [];
+    
+    // Add all participants
+    if (order.partner) {
+      participants.push(getUserFirebaseId(order.partner, 'App\\Models\\Partner'));
+    }
+    if (order.rider) {
+      participants.push(getUserFirebaseId(order.rider, 'App\\Models\\Rider'));
+    }
+    if (order.traveler) {
+      participants.push(getUserFirebaseId(order.traveler, 'App\\Models\\Traveler'));
+    }
+    
+    // Sort participants to ensure consistent ID
+    participants.sort();
+    
+    // Join with underscore
+    return participants.length > 0 ? participants.join('_') : ticketId;
+  }, [ticket?.order, ticketId]);
+
   // Check if chat should use Firebase
   // Logic: If order_id exists AND (traveler OR rider exists in order) → Firebase
   // Otherwise → MySQL/Reverb (current implementation)
@@ -48,8 +89,9 @@ const ChatSupport = () => {
   }, [ticket?.order_id, ticket?.order?.traveler_id, ticket?.order?.rider_id, ticket?.order?.traveler, ticket?.order?.rider]);
   
   // Firebase real-time messages (only if order has traveler or rider)
+  // Use conversation ID instead of ticket ID
   const { messages: firebaseMessages, loading: firebaseLoading } = useFirebaseMessages(
-    useFirebase ? ticketId : null
+    useFirebase ? generateConversationId : null
   );
 
   const handleSelect = async (option) => {
@@ -191,9 +233,9 @@ const ChatSupport = () => {
 
   // Listen to conversation metadata for unread count and notifications (Firebase only)
   useEffect(() => {
-    if (!useFirebase || !ticketId || !currentUser?.id) return;
+    if (!useFirebase || !generateConversationId || !currentUser?.id) return;
 
-    const unsubscribeConversation = listenToConversation(ticketId, (conversation) => {
+    const unsubscribeConversation = listenToConversation(generateConversationId, (conversation) => {
       if (conversation && conversation.unreadCount > 0) {
         if (conversation.lastMessage) {
           const notificationMessage = conversation.lastMessage.length > 50 
@@ -211,15 +253,15 @@ const ChatSupport = () => {
     return () => {
       unsubscribeConversation();
     };
-  }, [ticketId, currentUser?.id, useFirebase]);
+  }, [generateConversationId, currentUser?.id, useFirebase]);
 
   // Listen to new unread messages for real-time notifications (Firebase only)
   useEffect(() => {
-    if (!useFirebase || !ticketId || !currentUser?.id) return;
+    if (!useFirebase || !generateConversationId || !currentUser?.id) return;
 
-    const currentUserId = currentUser.id?.toString() || currentUser.rider_id || currentUser.partner_id || '';
+    const currentUserId = getUserFirebaseId(currentUser, userType);
     
-    const unsubscribeUnread = listenToUnreadMessages(ticketId, currentUserId, (newMessage) => {
+    const unsubscribeUnread = listenToUnreadMessages(generateConversationId, currentUserId, (newMessage) => {
       if (newMessage && newMessage.message) {
         const messageText = newMessage.message.length > 50 
           ? newMessage.message.substring(0, 50) + '...' 
@@ -235,7 +277,7 @@ const ChatSupport = () => {
     return () => {
       unsubscribeUnread();
     };
-  }, [ticketId, currentUser?.id, useFirebase]);
+  }, [generateConversationId, currentUser?.id, useFirebase, userType]);
 
   // Fallback: Keep Echo/Pusher for MySQL/Reverb conversations
   useEffect(() => {
