@@ -6,17 +6,21 @@ import Pagination from "../../components/Pagination";
 import DefaultProfile from "../../assets/Images/rid_profile.jpg";
 import API from "../../services/api";
 import Breadcrumb from "../../components/Breadcrumb";
+import { listenConversations } from "../../services/firebaseMessaging";
 
 const Support = () => {
   const navigate = useNavigate();
 
   const [supportTickets, setSupportTickets] = useState([]);
+  const [firebaseConversations, setFirebaseConversations] = useState([]);
   const [selected, setSelected] = useState([]);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [loading, setLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState({ key: "date", direction: "desc" });
+  
+  const currentUser = JSON.parse(localStorage.getItem("auth_user"));
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -35,6 +39,18 @@ const Support = () => {
 
     fetchTickets();
   }, []);
+
+  // Listen to Firebase conversations for realtime updates and unread badges
+  useEffect(() => {
+    if (!currentUser?.id) return;
+
+    const userId = currentUser.id.toString();
+    const unsubscribe = listenConversations(userId, (conversations) => {
+      setFirebaseConversations(conversations);
+    });
+
+    return () => unsubscribe();
+  }, [currentUser?.id]);
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
@@ -90,8 +106,21 @@ const Support = () => {
     </span>
   );
 
+  // Merge API tickets with Firebase conversation data (unread counts)
+  const mergedTickets = useMemo(() => {
+    return supportTickets.map(ticket => {
+      const firebaseConv = firebaseConversations.find(conv => conv.id === ticket.id?.toString());
+      return {
+        ...ticket,
+        unreadCount: firebaseConv?.unreadCount || 0,
+        lastMessage: firebaseConv?.lastMessage || ticket.message || '',
+        lastMessageTime: firebaseConv?.lastMessageTime || (ticket.created_at ? new Date(ticket.created_at).getTime() : 0)
+      };
+    });
+  }, [supportTickets, firebaseConversations]);
+
   const filteredTickets = useMemo(() => {
-    let result = supportTickets.filter((t) => {
+    let result = mergedTickets.filter((t) => {
       const ticketId = t.ticket_id || "";
       const name = t.sender?.name || "";
       const email = t.sender?.email || "";
@@ -270,7 +299,16 @@ const Support = () => {
                       />
                     </td>
                     
-                    <td className="p-2.5">{ticket.ticket_id}</td>
+                    <td className="p-2.5">
+                      <div className="flex items-center gap-2">
+                        <span>{ticket.ticket_id}</span>
+                        {ticket.unreadCount > 0 && (
+                          <span className="bg-[#F77F00] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                            {ticket.unreadCount > 99 ? '99+' : ticket.unreadCount}
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className="p-2.5">{ticket.sender?.type}</td>
                     <td className="px-2.5 py-4">
                       <div className="flex items-center gap-2.5">
@@ -287,7 +325,16 @@ const Support = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="p-2.5">{ticket.subject}</td>
+                    <td className="p-2.5">
+                      <div className="flex flex-col">
+                        <span>{ticket.subject}</span>
+                        {ticket.lastMessage && (
+                          <span className="text-xs text-[#9A9A9A] truncate max-w-[200px]">
+                            {ticket.lastMessage}
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className="p-2.5">{ticket.created_at}</td>
                     <td className="p-2.5">
                       <span
