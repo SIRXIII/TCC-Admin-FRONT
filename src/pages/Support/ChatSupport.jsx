@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FiChevronDown } from "react-icons/fi";
 import { Link, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 import API from "../../services/api";
 import echo from "../../../echo";
+import { useFirebaseMessages } from "../../hooks/useFirebaseMessages";
+import { listenToConversation, listenToUnreadMessages } from "../../services/firebaseMessaging";
 import DefaultProfile from "../../assets/Images/rid_profile.jpg";
 import backward from "../../assets/SVG/backward.svg";
 import notics from "../../assets/SVG/notics.svg";
@@ -18,7 +21,9 @@ const ChatSupport = () => {
   const [ticket, setTicket] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef(null);
-
+  
+  // Firebase real-time messages
+  const { messages: firebaseMessages, loading: firebaseLoading } = useFirebaseMessages(ticketId);
 
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState("In Progress");
@@ -74,8 +79,15 @@ const ChatSupport = () => {
 
   const groupMessagesByDate = (msgs) => {
     return msgs.reduce((groups, msg) => {
-      if (!msg.created_at) return groups;
-      const key = formatDate(msg.created_at);
+      const dateValue = msg.created_at || msg.timestamp;
+      if (!dateValue) return groups;
+      
+      // Handle timestamp (number) or date string
+      const dateStr = typeof dateValue === 'number' 
+        ? new Date(dateValue).toISOString() 
+        : dateValue;
+      
+      const key = formatDate(dateStr);
       if (!groups[key]) groups[key] = [];
       groups[key].push(msg);
       return groups;
@@ -83,22 +95,185 @@ const ChatSupport = () => {
   };
 
 
+  // Load ticket details and initial messages from API
   useEffect(() => {
-    const loadMessages = async () => {
+    const loadTicket = async () => {
       try {
         const res = await API.get(`/support-tickets/${ticketId}/messages`);
-        const ticket = res.data.data || [];
-        setTicket(ticket);
-        const sorted = (res.data.data.messages || [])
-
-          .filter((msg) => msg.message)
-          .sort((a, b) => safeDate(a.created_at) - safeDate(b.created_at));
-        setMessages(sorted);
+        const ticketData = res.data.data || [];
+        setTicket(ticketData);
       } catch (error) {
-        console.error(error);
+        console.error("Error loading ticket:", error);
       }
     };
-    loadMessages();
+    loadTicket();
+  }, [ticketId]);
+
+  // Merge Firebase messages with API messages
+  useEffect(() => {
+    if (firebaseMessages && firebaseMessages.length > 0) {
+      // Use Firebase messages as primary source for real-time updates
+      const formattedMessages = firebaseMessages.map(msg => {
+        // Handle Firestore Timestamp objects - convert to milliseconds
+        let timestamp = msg.timestamp;
+        if (!timestamp && msg.created_at) {
+          // Firestore Timestamp has toMillis() method
+          if (msg.created_at.toMillis) {
+            timestamp = msg.created_at.toMillis();
+          } else if (typeof msg.created_at === 'object' && msg.created_at.seconds) {
+            timestamp = msg.created_at.seconds * 1000;
+          } else {
+            timestamp = new Date(msg.created_at).getTime();
+          }
+        }
+        if (!timestamp) timestamp = Date.now();
+        
+        // Convert created_at to ISO string
+        let created_at = msg.created_at;
+        if (created_at && created_at.toMillis) {
+          created_at = new Date(created_at.toMillis()).toISOString();
+        } else if (created_at && typeof created_at === 'object' && created_at.seconds) {
+          created_at = new Date(created_at.seconds * 1000).toISOString();
+        } else if (!created_at || typeof created_at !== 'string') {
+          created_at = new Date(timestamp).toISOString();
+        }
+        
+        return {
+          id: msg.id,
+          message: msg.message || msg.text || msg.content,
+          sender_id: msg.sender_id || msg.senderId,
+          receiver_id: msg.receiver_id || msg.receiverId,
+          sender_type: msg.sender_type || msg.senderType,
+          type: msg.type || 'text',
+          isRead: msg.isRead !== undefined ? msg.isRead : false,
+          order_id: msg.order_id,
+          created_at: created_at,
+          timestamp: timestamp
+        };
+      }).filter(msg => msg.message); // Filter out messages without content
+      
+      setMessages(formattedMessages);
+    }
+  }, [firebaseMessages]);
+
+  // Listen to conversation metadata for unread count and notifications
+  useEffect(() => {
+    if (!ticketId || !currentUser?.id) return;
+
+    const unsubscribeConversation = listenToConversation(ticketId, (conversation) => {
+      if (conversation && conversation.unreadCount > 0) {
+        // Show notification if there are unread messages
+        if (conversation.lastMessage) {
+          const notificationMessage = conversation.lastMessage.length > 50 
+            ? conversation.lastMessage.substring(0, 50) + '...' 
+            : conversation.lastMessage;
+          
+          toast.info(`New message: ${notificationMessage}`, {
+            position: "top-right",
+            autoClose: 5000,
+          });
+
+          // Browser notification (if permission granted)
+          if ("Notification" in window && Notification.permission === "granted") {
+            new Notification("New Message", {
+              body: notificationMessage,
+              icon: "/favicon.ico",
+              tag: `message-${ticketId}`,
+            });
+          }
+        }
+      }
+    });
+
+    return () => {
+      unsubscribeConversation();
+    };
+  }, [ticketId, currentUser?.id]);
+
+  // Listen to new unread messages for real-time notifications
+  useEffect(() => {
+    if (!ticketId || !currentUser?.id) return;
+
+    // Get current user ID in different formats (RID-1, PAR-2, etc.)
+    const currentUserId = currentUser.id?.toString() || currentUser.rider_id || currentUser.partner_id || '';
+    
+    const unsubscribeUnread = listenToUnreadMessages(ticketId, currentUserId, (newMessage) => {
+      // Only show notification if message is not from current user
+      if (newMessage && newMessage.message) {
+        const messageText = newMessage.message.length > 50 
+          ? newMessage.message.substring(0, 50) + '...' 
+          : newMessage.message;
+        
+        // Get sender name - Parse PAR-2 to "Partner 2", RID-1 to "Rider 1"
+        const senderId = newMessage.senderId || newMessage.sender_id || 'Someone';
+        let senderName = 'Someone';
+        
+        if (senderId.startsWith('RID-')) {
+          const riderId = senderId.replace('RID-', '');
+          senderName = `Rider ${riderId}`;
+        } else if (senderId.startsWith('PAR-')) {
+          const partnerId = senderId.replace('PAR-', '');
+          senderName = `Partner ${partnerId}`;
+        } else if (senderId.startsWith('TRA-')) {
+          const travelerId = senderId.replace('TRA-', '');
+          senderName = `Traveler ${travelerId}`;
+        } else {
+          senderName = senderId;
+        }
+        
+        toast.info(`${senderName}: ${messageText}`, {
+          position: "top-right",
+          autoClose: 5000,
+        });
+
+        // Browser notification
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification(`Message from ${senderName}`, {
+            body: messageText,
+            icon: "/favicon.ico",
+            tag: `message-${ticketId}-${newMessage.id}`,
+          });
+        }
+      }
+    });
+
+    return () => {
+      unsubscribeUnread();
+    };
+  }, [ticketId, currentUser?.id]);
+
+  // Request browser notification permission on mount
+  useEffect(() => {
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission().then((permission) => {
+        if (permission === "granted") {
+          console.log("Browser notification permission granted");
+        }
+      });
+    }
+  }, []);
+
+  // Fallback: Keep Echo/Pusher for backward compatibility (optional)
+  useEffect(() => {
+    const channel = echo.channel(`support.ticket.${ticketId}`);
+    channel.listen(".SupportMessageSent", (msg) => {
+      // Only add if not already in Firebase messages
+      setMessages((prev) => {
+        const updated = prev.filter((m) => !(m.temp && m.tempId === msg.tempId));
+        if (!updated.find((m) => m.id === msg.id)) {
+          updated.push({
+            ...msg,
+            timestamp: msg.created_at ? new Date(msg.created_at.replace(" ", "T")).getTime() : Date.now()
+          });
+        }
+        return updated.sort((a, b) => {
+          const timeA = a.timestamp || safeDate(a.created_at).getTime() || 0;
+          const timeB = b.timestamp || safeDate(b.created_at).getTime() || 0;
+          return timeA - timeB;
+        });
+      });
+    });
+    return () => channel.stopListening(".SupportMessageSent");
   }, [ticketId]);
 
 
@@ -258,20 +433,43 @@ const ChatSupport = () => {
               {msgs.map((msg) => {
                 if (!msg.message) return null;
 
+                // Check if message is from current user
+                // Handle both numeric IDs and Firebase format (PAR-2, RID-1)
+                const msgSenderId = msg.sender_id || msg.senderId || '';
+                const currentUserFirebaseId = 
+                  currentUser?.partner_id ? `PAR-${currentUser.partner_id}` :
+                  currentUser?.rider_id ? `RID-${currentUser.rider_id}` :
+                  currentUser?.traveler_id ? `TRA-${currentUser.traveler_id}` :
+                  currentUser?.id && currentUser?.type === 'Partner' ? `PAR-${currentUser.id}` :
+                  currentUser?.id && currentUser?.type === 'Rider' ? `RID-${currentUser.id}` :
+                  currentUser?.id && currentUser?.type === 'Traveler' ? `TRA-${currentUser.id}` :
+                  currentUser?.id?.toString() || '';
+                
                 const isCurrentUser =
                   msg.temp ||
+                  (msgSenderId === currentUserFirebaseId) ||
+                  (msgSenderId === currentUser?.id?.toString()) ||
+                  (Number(msgSenderId) === Number(currentUser?.id)) ||
+                  (Number(msgSenderId) === Number(currentUser?.partner_id)) ||
+                  (Number(msgSenderId) === Number(currentUser?.rider_id)) ||
+                  (Number(msgSenderId) === Number(currentUser?.traveler_id)) ||
                   (Number(msg.sender_id) === Number(currentUser?.id) &&
                     String(msg.sender_type).toLowerCase() ===
                     String(userType).toLowerCase());
 
                 const timeText = msg.temp
                   ? "Just now"
-                  : msg.created_at
-                    ? new Date(msg.created_at.replace(" ", "T")).toLocaleTimeString(
+                  : msg.timestamp
+                    ? new Date(msg.timestamp).toLocaleTimeString(
                       [],
                       { hour: "2-digit", minute: "2-digit" }
                     )
-                    : "";
+                    : msg.created_at
+                      ? new Date(msg.created_at.replace(" ", "T")).toLocaleTimeString(
+                        [],
+                        { hour: "2-digit", minute: "2-digit" }
+                      )
+                      : "";
 
                 let tick = "";
                 if (msg.temp) tick = "⏳";
