@@ -22,8 +22,18 @@ const ChatSupport = () => {
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef(null);
   
-  // Firebase real-time messages
-  const { messages: firebaseMessages, loading: firebaseLoading } = useFirebaseMessages(ticketId);
+  // TCC-Admin-FRONT is admin website - always use Reverb/MySQL
+  // Check if user is admin (always website) or partner on website
+  const isWebsiteUser = userType === 'admin' || userType === 'Admin' || 
+                        currentUser?.type === 'admin' || currentUser?.type === 'Admin' ||
+                        (userType === 'partner' || userType === 'Partner'); // Partner on admin website uses Reverb
+  
+  const isMobileUser = !isWebsiteUser; // Only use Firestore if not website user
+  
+  // Firebase real-time messages (only for mobile users)
+  const { messages: firebaseMessages, loading: firebaseLoading } = useFirebaseMessages(
+    isMobileUser ? ticketId : null
+  );
 
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState("In Progress");
@@ -97,14 +107,22 @@ const ChatSupport = () => {
 
   // Load ticket details and initial messages from API
   useEffect(() => {
-    const loadTicket = async () => {
+    const loadMessages = async () => {
       try {
         const res = await API.get(`/support-tickets/${ticketId}/messages`);
         const ticketData = res.data.data || [];
         setTicket(ticketData);
         
-        // Mark messages as read when viewing conversation
-        if (currentUser?.id) {
+        // For website users (admin/partner), load messages from API
+        if (isWebsiteUser && res.data.data?.messages) {
+          const sorted = (res.data.data.messages || [])
+            .filter((msg) => msg.message)
+            .sort((a, b) => safeDate(a.created_at) - safeDate(b.created_at));
+          setMessages(sorted);
+        }
+        
+        // Mark messages as read when viewing conversation (only for mobile users with Firestore)
+        if (isMobileUser && currentUser?.id) {
           try {
             await markMessagesAsRead(ticketId, currentUser.id.toString());
           } catch (error) {
@@ -115,11 +133,13 @@ const ChatSupport = () => {
         console.error("Error loading ticket:", error);
       }
     };
-    loadTicket();
-  }, [ticketId, currentUser?.id]);
+    loadMessages();
+  }, [ticketId, currentUser?.id, isWebsiteUser, isMobileUser]);
 
-  // Merge Firebase messages with API messages
+  // Merge Firebase messages with API messages (only for mobile users)
   useEffect(() => {
+    if (!isMobileUser) return; // Skip Firebase for website users
+    
     if (firebaseMessages && firebaseMessages.length > 0) {
       // Use Firebase messages as primary source for real-time updates
       const formattedMessages = firebaseMessages.map(msg => {
@@ -165,9 +185,9 @@ const ChatSupport = () => {
     }
   }, [firebaseMessages]);
 
-  // Listen to conversation metadata for unread count and notifications
+  // Listen to conversation metadata for unread count and notifications (only for mobile users)
   useEffect(() => {
-    if (!ticketId || !currentUser?.id) return;
+    if (!isMobileUser || !ticketId || !currentUser?.id) return;
 
     const unsubscribeConversation = listenToConversation(ticketId, (conversation) => {
       if (conversation && conversation.unreadCount > 0) {
@@ -199,9 +219,9 @@ const ChatSupport = () => {
     };
   }, [ticketId, currentUser?.id]);
 
-  // Listen to new unread messages for real-time notifications
+  // Listen to new unread messages for real-time notifications (only for mobile users)
   useEffect(() => {
-    if (!ticketId || !currentUser?.id) return;
+    if (!isMobileUser || !ticketId || !currentUser?.id) return;
 
     // Get current user ID in different formats (RID-1, PAR-2, etc.)
     const currentUserId = currentUser.id?.toString() || currentUser.rider_id || currentUser.partner_id || '';
@@ -262,8 +282,27 @@ const ChatSupport = () => {
     }
   }, []);
 
-  // Fallback: Keep Echo/Pusher for backward compatibility (optional)
+  // Use Reverb/Echo for website users (admin/partner)
   useEffect(() => {
+    if (!isWebsiteUser || !ticketId) return;
+    
+    const channel = echo.channel(`support.ticket.${ticketId}`);
+    channel.listen(".SupportMessageSent", (msg) => {
+      setMessages((prev) => {
+        const updated = prev.filter((m) => !(m.temp && m.tempId === msg.tempId));
+        if (!updated.find((m) => m.id === msg.id)) {
+          updated.push(msg);
+        }
+        return updated.sort((a, b) => safeDate(a.created_at) - safeDate(b.created_at));
+      });
+    });
+    return () => channel.stopListening(".SupportMessageSent");
+  }, [ticketId, isWebsiteUser]);
+
+  // Fallback: Keep Echo/Pusher for mobile users (optional, for backward compatibility)
+  useEffect(() => {
+    if (!isMobileUser || !ticketId) return;
+    
     const channel = echo.channel(`support.ticket.${ticketId}`);
     channel.listen(".SupportMessageSent", (msg) => {
       // Only add if not already in Firebase messages
@@ -283,7 +322,7 @@ const ChatSupport = () => {
       });
     });
     return () => channel.stopListening(".SupportMessageSent");
-  }, [ticketId]);
+  }, [ticketId, isMobileUser]);
 
 
   useEffect(() => {
@@ -321,6 +360,22 @@ const ChatSupport = () => {
     setNewMessage("");
 
     try {
+      // For website users (admin/partner), use API only (Reverb/MySQL)
+      if (isWebsiteUser) {
+        const res = await API.post("/support-tickets/messages", {
+          ticket_id: ticketId,
+          message: messageText,
+        });
+        const realMessage = { ...res.data.message, sender_type: userType };
+        setMessages((prev) =>
+          prev.map((msgItem) =>
+            msgItem.tempId === tempMessage.tempId ? realMessage : msgItem
+          )
+        );
+        return;
+      }
+
+      // For mobile users (traveler/rider/partner), use Firestore
       // Helper function to get Firebase-formatted user ID
       const getFirebaseUserId = (user, userTypeStr) => {
         if (!user) return '';
@@ -404,23 +459,13 @@ const ChatSupport = () => {
         throw new Error(`Receiver ID not found. Sender: ${senderId}, Ticket sender: ${ticketSenderFirebaseId}`);
       }
 
-      // Send message via Firebase
+      // Send message via Firebase (mobile users only)
       await sendMessage(ticketId, {
         senderId: senderId,
         receiverId: receiverId,
         message: messageText,
         order_id: ticket?.order_id || null
       });
-
-      // Also send via API for backend sync (optional)
-      try {
-        await API.post("/support-tickets/messages", {
-          ticket_id: ticketId,
-          message: messageText,
-        });
-      } catch (apiError) {
-        console.warn("API send failed, but Firebase message sent:", apiError);
-      }
 
       // Remove temp message - Firebase listener will add the real one
       setMessages((prev) =>
