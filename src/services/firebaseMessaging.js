@@ -8,13 +8,8 @@ import {
   limit, 
   where,
   addDoc,
-  setDoc,
-  updateDoc,
   getDocs,
-  getDoc,
-  Timestamp,
-  serverTimestamp,
-  increment
+  Timestamp
 } from 'firebase/firestore';
 
 /**
@@ -23,19 +18,19 @@ import {
  */
 
 /**
- * Listen to messages for a specific conversation
- * @param {string} conversationId - The conversation ID
+ * Listen to messages for a specific ticket/chat
+ * @param {string} ticketId - The ticket/chat ID
  * @param {Function} callback - Callback function to handle new messages
  * @returns {Function} Unsubscribe function
  */
-export const listenMessages = (conversationId, callback) => {
-  if (!conversationId) {
-    console.error('Conversation ID is required');
+export const listenToMessages = (ticketId, callback) => {
+  if (!ticketId) {
+    console.error('Ticket ID is required');
     return () => {};
   }
 
-  // Firestore path: conversations/{conversationId}/messages
-  const messagesRef = collection(db, `conversations/${conversationId}/messages`);
+  // Firestore path: conversations/{ticketId}/messages
+  const messagesRef = collection(db, `conversations/${ticketId}/messages`);
   const messagesQuery = query(messagesRef, orderBy('timestamp', 'asc'));
   
   // Listen for real-time changes
@@ -56,14 +51,6 @@ export const listenMessages = (conversationId, callback) => {
 
   return unsubscribe;
 };
-
-/**
- * Listen to messages for a specific ticket/chat (alias for backward compatibility)
- * @param {string} ticketId - The ticket/chat ID
- * @param {Function} callback - Callback function to handle new messages
- * @returns {Function} Unsubscribe function
- */
-export const listenToMessages = listenMessages;
 
 /**
  * Listen to new messages only (for real-time updates)
@@ -104,98 +91,33 @@ export const listenToNewMessages = (ticketId, callback) => {
 
 /**
  * Send a message to Firestore
- * Writes message with docId = Date.now() and updates conversation metadata
- * @param {string} conversationId - The conversation ID
- * @param {Object} messageData - Message data object { senderId, receiverId, message, order_id? }
+ * Note: This should typically be done via your backend API
+ * This is a helper function if you want to write directly to Firestore
+ * @param {string} ticketId - The ticket/chat ID
+ * @param {Object} messageData - Message data object
  * @returns {Promise} Promise that resolves when message is sent
  */
-export const sendMessage = async (conversationId, messageData) => {
-  if (!conversationId) {
-    throw new Error('Conversation ID is required');
+export const sendMessageToFirebase = async (ticketId, messageData) => {
+  if (!ticketId) {
+    throw new Error('Ticket ID is required');
   }
 
-  if (!messageData.senderId || !messageData.receiverId || !messageData.message) {
-    throw new Error('senderId, receiverId, and message are required');
-  }
-
-  const timestamp = Date.now();
-  const messageId = timestamp.toString(); // Use timestamp as docId
+  const messagesRef = collection(db, `conversations/${ticketId}/messages`);
   
-  // Create message document
-  const messageDoc = {
-    senderId: messageData.senderId,
-    receiverId: messageData.receiverId,
-    message: messageData.message,
-    isRead: false,
-    timestamp: timestamp,
-    order_id: messageData.order_id || null,
-    created_at: Timestamp.fromMillis(timestamp)
+  const messageWithTimestamp = {
+    ...messageData,
+    timestamp: messageData.timestamp || Date.now(),
+    created_at: messageData.created_at || Timestamp.now()
   };
 
   try {
-    // Write message with specific docId
-    const messageRef = doc(db, `conversations/${conversationId}/messages/${messageId}`);
-    await setDoc(messageRef, messageDoc);
-
-    // Update conversation metadata
-    const conversationRef = doc(db, `conversations/${conversationId}`);
-    const conversationDoc = await getDoc(conversationRef);
-    
-    const updateData = {
-      lastMessage: messageData.message,
-      lastMessageTime: timestamp,
-      updatedAt: serverTimestamp()
-    };
-
-    if (conversationDoc.exists()) {
-      // Update existing conversation
-      const currentData = conversationDoc.data();
-      const unreadCount = currentData.unreadCount || {};
-      
-      // Increment receiver's unreadCount
-      const receiverId = messageData.receiverId.toString();
-      updateData.unreadCount = {
-        ...unreadCount,
-        [receiverId]: (unreadCount[receiverId] || 0) + 1
-      };
-
-      // Ensure participants array includes both users
-      const participants = currentData.participants || [];
-      if (!participants.includes(messageData.senderId)) {
-        participants.push(messageData.senderId);
-      }
-      if (!participants.includes(messageData.receiverId)) {
-        participants.push(messageData.receiverId);
-      }
-      updateData.participants = participants;
-
-      await updateDoc(conversationRef, updateData);
-    } else {
-      // Create new conversation
-      await setDoc(conversationRef, {
-        id: conversationId,
-        participants: [messageData.senderId, messageData.receiverId],
-        unreadCount: {
-          [messageData.receiverId.toString()]: 1
-        },
-        ...updateData
-      });
-    }
-
-    return { id: messageId, ...messageDoc };
+    const docRef = await addDoc(messagesRef, messageWithTimestamp);
+    return { id: docRef.id, ...messageWithTimestamp };
   } catch (error) {
     console.error('Error sending message to Firestore:', error);
     throw error;
   }
 };
-
-/**
- * Send a message to Firestore (alias for backward compatibility)
- * @param {string} ticketId - The ticket/chat ID
- * @param {Object} messageData - Message data object
- * @returns {Promise} Promise that resolves when message is sent
- */
-export const sendMessageToFirebase = sendMessage;
 
 /**
  * Get all messages for a ticket (one-time fetch)
@@ -479,113 +401,5 @@ export const listenToAllConversations = (user, callback) => {
     unsubscribes.forEach(({ unsubscribe }) => unsubscribe());
     unsubscribe();
   };
-};
-
-/**
- * Listen to all conversations for a user (realtime conversation list)
- * @param {string} userId - Current user ID
- * @param {Function} callback - Callback function to handle conversation updates
- * @returns {Function} Unsubscribe function
- */
-export const listenConversations = (userId, callback) => {
-  if (!userId) {
-    console.error('User ID is required');
-    return () => {};
-  }
-
-  const conversationsRef = collection(db, 'conversations');
-  
-  const unsubscribe = onSnapshot(
-    conversationsRef,
-    (snapshot) => {
-      const conversations = [];
-      
-      snapshot.docs.forEach(doc => {
-        const conversationData = doc.data();
-        const participants = conversationData.participants || [];
-        
-        // Check if current user is a participant
-        const isParticipant = 
-          participants.includes(userId) ||
-          participants.includes(userId.toString()) ||
-          participants.some(p => p.toString() === userId.toString());
-        
-        if (isParticipant) {
-          const unreadCount = conversationData.unreadCount || {};
-          const userUnreadCount = unreadCount[userId.toString()] || unreadCount[userId] || 0;
-          
-          conversations.push({
-            id: doc.id,
-            conversationId: doc.id,
-            lastMessage: conversationData.lastMessage || '',
-            lastMessageTime: conversationData.lastMessageTime || 0,
-            unreadCount: userUnreadCount,
-            participants: participants,
-            order_id: conversationData.order_id,
-            updatedAt: conversationData.updatedAt
-          });
-        }
-      });
-
-      // Sort by lastMessageTime descending
-      conversations.sort((a, b) => (b.lastMessageTime || 0) - (a.lastMessageTime || 0));
-      
-      callback(conversations);
-    },
-    (error) => {
-      console.error('Error listening to conversations:', error);
-      callback([]);
-    }
-  );
-
-  return unsubscribe;
-};
-
-/**
- * Mark messages as read and reset unreadCount for a user
- * @param {string} conversationId - The conversation ID
- * @param {string} userId - User ID to mark messages as read for
- * @returns {Promise} Promise that resolves when messages are marked as read
- */
-export const markMessagesAsRead = async (conversationId, userId) => {
-  if (!conversationId || !userId) {
-    throw new Error('Conversation ID and User ID are required');
-  }
-
-  try {
-    // Get all unread messages from other users
-    const messagesRef = collection(db, `conversations/${conversationId}/messages`);
-    const unreadQuery = query(
-      messagesRef,
-      where('isRead', '==', false),
-      where('receiverId', '==', userId.toString())
-    );
-    
-    const snapshot = await getDocs(unreadQuery);
-    const batch = [];
-    
-    // Update all unread messages
-    snapshot.docs.forEach(doc => {
-      batch.push(updateDoc(doc.ref, { isRead: true }));
-    });
-
-    // Reset unreadCount for this user in conversation
-    const conversationRef = doc(db, `conversations/${conversationId}`);
-    const conversationDoc = await getDoc(conversationRef);
-    
-    if (conversationDoc.exists()) {
-      const currentData = conversationDoc.data();
-      const unreadCount = currentData.unreadCount || {};
-      unreadCount[userId.toString()] = 0;
-      
-      batch.push(updateDoc(conversationRef, { unreadCount }));
-    }
-
-    await Promise.all(batch);
-    return { success: true, count: snapshot.docs.length };
-  } catch (error) {
-    console.error('Error marking messages as read:', error);
-    throw error;
-  }
 };
 

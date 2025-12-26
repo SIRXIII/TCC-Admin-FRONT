@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { FiChevronDown } from "react-icons/fi";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import API from "../../services/api";
 import echo from "../../../echo";
 import { useFirebaseMessages } from "../../hooks/useFirebaseMessages";
-import { listenToConversation, listenToUnreadMessages, sendMessage, markMessagesAsRead } from "../../services/firebaseMessaging";
+import { listenToConversation, listenToUnreadMessages } from "../../services/firebaseMessaging";
 import DefaultProfile from "../../assets/Images/rid_profile.jpg";
 import backward from "../../assets/SVG/backward.svg";
 import notics from "../../assets/SVG/notics.svg";
@@ -21,24 +21,36 @@ const ChatSupport = () => {
   const [ticket, setTicket] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef(null);
-  
-  // TCC-Admin-FRONT is admin website - always use Reverb/MySQL
-  // Check if user is admin (always website) or partner on website
-  const isWebsiteUser = userType === 'admin' || userType === 'Admin' || 
-                        currentUser?.type === 'admin' || currentUser?.type === 'Admin' ||
-                        (userType === 'partner' || userType === 'Partner'); // Partner on admin website uses Reverb
-  
-  const isMobileUser = !isWebsiteUser; // Only use Firestore if not website user
-  
-  // Firebase real-time messages (only for mobile users)
-  const { messages: firebaseMessages, loading: firebaseLoading } = useFirebaseMessages(
-    isMobileUser ? ticketId : null
-  );
 
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState("In Progress");
 
   const options = ["In Progress", "Rejected", "Pending"];
+
+  // Check if chat should use Firebase
+  // Logic: If order_id exists AND (traveler OR rider exists in order) → Firebase
+  // Otherwise → MySQL/Reverb (current implementation)
+  const useFirebase = useMemo(() => {
+    // Only check if ticket has order_id
+    if (ticket?.order_id) {
+      // Check if order has traveler OR rider
+      const hasTraveler = ticket?.order?.traveler_id || ticket?.order?.traveler;
+      const hasRider = ticket?.order?.rider_id || ticket?.order?.rider;
+      
+      // If traveler OR rider exists in order → use Firebase
+      if (hasTraveler || hasRider) {
+        return true;
+      }
+    }
+    
+    // Default: No order_id OR no traveler/rider → MySQL/Reverb
+    return false;
+  }, [ticket?.order_id, ticket?.order?.traveler_id, ticket?.order?.rider_id, ticket?.order?.traveler, ticket?.order?.rider]);
+  
+  // Firebase real-time messages (only if order has traveler or rider)
+  const { messages: firebaseMessages, loading: firebaseLoading } = useFirebaseMessages(
+    useFirebase ? ticketId : null
+  );
 
   const handleSelect = async (option) => {
     setStatus(option);
@@ -46,14 +58,11 @@ const ChatSupport = () => {
 
     try {
       await API.post(`/support-tickets/${ticketId}/status`, { status: option });
-
-     
       setTicket((prev) => ({ ...prev, status: option }));
     } catch (error) {
       console.error("Error updating status:", error);
       setStatus(ticket?.status || "In Progress");
     }
-
   };
 
   useEffect(() => {
@@ -62,8 +71,6 @@ const ChatSupport = () => {
     }
   }, [ticket]);
 
-
-  // console.log("tickets", ticket);
   const safeDate = (val) => {
     if (!val) return new Date(0);
     return new Date(val.replace(" ", "T"));
@@ -86,7 +93,6 @@ const ChatSupport = () => {
     });
   };
 
-
   const groupMessagesByDate = (msgs) => {
     return msgs.reduce((groups, msg) => {
       const dateValue = msg.created_at || msg.timestamp;
@@ -104,43 +110,41 @@ const ChatSupport = () => {
     }, {});
   };
 
-
-  // Load ticket details and initial messages from API
+  // Load ticket details from API
   useEffect(() => {
-    const loadMessages = async () => {
+    const loadTicket = async () => {
       try {
         const res = await API.get(`/support-tickets/${ticketId}/messages`);
         const ticketData = res.data.data || [];
         setTicket(ticketData);
-        
-        // For website users (admin/partner), load messages from API
-        if (isWebsiteUser && res.data.data?.messages) {
-          const sorted = (res.data.data.messages || [])
-            .filter((msg) => msg.message)
-            .sort((a, b) => safeDate(a.created_at) - safeDate(b.created_at));
-          setMessages(sorted);
-        }
-        
-        // Mark messages as read when viewing conversation (only for mobile users with Firestore)
-        if (isMobileUser && currentUser?.id) {
-          try {
-            await markMessagesAsRead(ticketId, currentUser.id.toString());
-          } catch (error) {
-            console.error("Error marking messages as read:", error);
-          }
-        }
       } catch (error) {
         console.error("Error loading ticket:", error);
       }
     };
-    loadMessages();
-  }, [ticketId, currentUser?.id, isWebsiteUser, isMobileUser]);
+    loadTicket();
+  }, [ticketId]);
 
-  // Merge Firebase messages with API messages (only for mobile users)
+  // Load MySQL messages if NOT using Firebase (after ticket is loaded)
   useEffect(() => {
-    if (!isMobileUser) return; // Skip Firebase for website users
-    
-    if (firebaseMessages && firebaseMessages.length > 0) {
+    if (!useFirebase && ticket && Object.keys(ticket).length > 0) {
+      const loadMySQLMessages = async () => {
+        try {
+          const res = await API.get(`/support-tickets/${ticketId}/messages`);
+          const sorted = (res.data.data?.messages || [])
+            .filter((msg) => msg.message)
+            .sort((a, b) => safeDate(a.created_at) - safeDate(b.created_at));
+          setMessages(sorted);
+        } catch (error) {
+          console.error("Error loading MySQL messages:", error);
+        }
+      };
+      loadMySQLMessages();
+    }
+  }, [ticketId, useFirebase, ticket]);
+
+  // Merge Firebase messages with API messages (only if order has traveler or rider)
+  useEffect(() => {
+    if (useFirebase && firebaseMessages && firebaseMessages.length > 0) {
       // Use Firebase messages as primary source for real-time updates
       const formattedMessages = firebaseMessages.map(msg => {
         // Handle Firestore Timestamp objects - convert to milliseconds
@@ -183,15 +187,14 @@ const ChatSupport = () => {
       
       setMessages(formattedMessages);
     }
-  }, [firebaseMessages]);
+  }, [firebaseMessages, useFirebase]);
 
-  // Listen to conversation metadata for unread count and notifications (only for mobile users)
+  // Listen to conversation metadata for unread count and notifications (Firebase only)
   useEffect(() => {
-    if (!isMobileUser || !ticketId || !currentUser?.id) return;
+    if (!useFirebase || !ticketId || !currentUser?.id) return;
 
     const unsubscribeConversation = listenToConversation(ticketId, (conversation) => {
       if (conversation && conversation.unreadCount > 0) {
-        // Show notification if there are unread messages
         if (conversation.lastMessage) {
           const notificationMessage = conversation.lastMessage.length > 50 
             ? conversation.lastMessage.substring(0, 50) + '...' 
@@ -201,15 +204,6 @@ const ChatSupport = () => {
             position: "top-right",
             autoClose: 5000,
           });
-
-          // Browser notification (if permission granted)
-          if ("Notification" in window && Notification.permission === "granted") {
-            new Notification("New Message", {
-              body: notificationMessage,
-              icon: "/favicon.ico",
-              tag: `message-${ticketId}`,
-            });
-          }
         }
       }
     });
@@ -217,95 +211,38 @@ const ChatSupport = () => {
     return () => {
       unsubscribeConversation();
     };
-  }, [ticketId, currentUser?.id]);
+  }, [ticketId, currentUser?.id, useFirebase]);
 
-  // Listen to new unread messages for real-time notifications (only for mobile users)
+  // Listen to new unread messages for real-time notifications (Firebase only)
   useEffect(() => {
-    if (!isMobileUser || !ticketId || !currentUser?.id) return;
+    if (!useFirebase || !ticketId || !currentUser?.id) return;
 
-    // Get current user ID in different formats (RID-1, PAR-2, etc.)
     const currentUserId = currentUser.id?.toString() || currentUser.rider_id || currentUser.partner_id || '';
     
     const unsubscribeUnread = listenToUnreadMessages(ticketId, currentUserId, (newMessage) => {
-      // Only show notification if message is not from current user
       if (newMessage && newMessage.message) {
         const messageText = newMessage.message.length > 50 
           ? newMessage.message.substring(0, 50) + '...' 
           : newMessage.message;
         
-        // Get sender name - Parse PAR-2 to "Partner 2", RID-1 to "Rider 1"
-        const senderId = newMessage.senderId || newMessage.sender_id || 'Someone';
-        let senderName = 'Someone';
-        
-        if (senderId.startsWith('RID-')) {
-          const riderId = senderId.replace('RID-', '');
-          senderName = `Rider ${riderId}`;
-        } else if (senderId.startsWith('PAR-')) {
-          const partnerId = senderId.replace('PAR-', '');
-          senderName = `Partner ${partnerId}`;
-        } else if (senderId.startsWith('TRA-')) {
-          const travelerId = senderId.replace('TRA-', '');
-          senderName = `Traveler ${travelerId}`;
-        } else {
-          senderName = senderId;
-        }
-        
-        toast.info(`${senderName}: ${messageText}`, {
+        toast.info(`New message: ${messageText}`, {
           position: "top-right",
           autoClose: 5000,
         });
-
-        // Browser notification
-        if ("Notification" in window && Notification.permission === "granted") {
-          new Notification(`Message from ${senderName}`, {
-            body: messageText,
-            icon: "/favicon.ico",
-            tag: `message-${ticketId}-${newMessage.id}`,
-          });
-        }
       }
     });
 
     return () => {
       unsubscribeUnread();
     };
-  }, [ticketId, currentUser?.id]);
+  }, [ticketId, currentUser?.id, useFirebase]);
 
-  // Request browser notification permission on mount
+  // Fallback: Keep Echo/Pusher for MySQL/Reverb conversations
   useEffect(() => {
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission().then((permission) => {
-        if (permission === "granted") {
-          console.log("Browser notification permission granted");
-        }
-      });
-    }
-  }, []);
-
-  // Use Reverb/Echo for website users (admin/partner)
-  useEffect(() => {
-    if (!isWebsiteUser || !ticketId) return;
+    if (useFirebase) return; // Skip Echo for Firebase conversations
     
     const channel = echo.channel(`support.ticket.${ticketId}`);
     channel.listen(".SupportMessageSent", (msg) => {
-      setMessages((prev) => {
-        const updated = prev.filter((m) => !(m.temp && m.tempId === msg.tempId));
-        if (!updated.find((m) => m.id === msg.id)) {
-          updated.push(msg);
-        }
-        return updated.sort((a, b) => safeDate(a.created_at) - safeDate(b.created_at));
-      });
-    });
-    return () => channel.stopListening(".SupportMessageSent");
-  }, [ticketId, isWebsiteUser]);
-
-  // Fallback: Keep Echo/Pusher for mobile users (optional, for backward compatibility)
-  useEffect(() => {
-    if (!isMobileUser || !ticketId) return;
-    
-    const channel = echo.channel(`support.ticket.${ticketId}`);
-    channel.listen(".SupportMessageSent", (msg) => {
-      // Only add if not already in Firebase messages
       setMessages((prev) => {
         const updated = prev.filter((m) => !(m.temp && m.tempId === msg.tempId));
         if (!updated.find((m) => m.id === msg.id)) {
@@ -322,49 +259,46 @@ const ChatSupport = () => {
       });
     });
     return () => channel.stopListening(".SupportMessageSent");
-  }, [ticketId, isMobileUser]);
-
-
-  useEffect(() => {
-    const channel = echo.channel(`support.ticket.${ticketId}`);
-    channel.listen(".SupportMessageSent", (msg) => {
-      setMessages((prev) => {
-        const updated = prev.filter((m) => !(m.temp && m.tempId === msg.tempId));
-        if (!updated.find((m) => m.id === msg.id)) updated.push(msg);
-        return updated.sort((a, b) => safeDate(a.created_at) - safeDate(b.created_at));
-      });
-    });
-    return () => channel.stopListening(".SupportMessageSent");
-  }, [ticketId]);
-
+  }, [ticketId, useFirebase]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-
   const handleSend = async () => {
-    if (!newMessage.trim() || !ticketId) return;
+    if (!newMessage.trim()) return;
 
     const tempMessage = {
       tempId: `temp-${Date.now()}`,
       message: newMessage,
       sender_id: currentUser?.id,
-      senderId: currentUser?.id?.toString(),
       sender_type: userType,
       created_at: new Date().toISOString(),
       temp: true,
     };
     setMessages((prev) => [...prev, tempMessage]);
-    const messageText = newMessage;
+    const messageToSend = newMessage;
     setNewMessage("");
 
     try {
-      // For website users (admin/partner), use API only (Reverb/MySQL)
-      if (isWebsiteUser) {
+      // Check if we should use Firebase based on order (traveler OR rider)
+      if (useFirebase) {
+        // Use Firebase for order-based chats with traveler or rider
         const res = await API.post("/support-tickets/messages", {
           ticket_id: ticketId,
-          message: messageText,
+          message: messageToSend,
+          use_firebase: true, // Flag to indicate Firebase storage
+        });
+        
+        // The message will appear via Firebase listener, so we can remove temp message
+        setMessages((prev) =>
+          prev.filter((msgItem) => msgItem.tempId !== tempMessage.tempId)
+        );
+      } else {
+        // Use MySQL/Reverb for other conversations
+        const res = await API.post("/support-tickets/messages", {
+          ticket_id: ticketId,
+          message: messageToSend,
         });
         const realMessage = { ...res.data.message, sender_type: userType };
         setMessages((prev) =>
@@ -372,112 +306,9 @@ const ChatSupport = () => {
             msgItem.tempId === tempMessage.tempId ? realMessage : msgItem
           )
         );
-        return;
       }
-
-      // For mobile users (traveler/rider/partner), use Firestore
-      // Helper function to get Firebase-formatted user ID
-      const getFirebaseUserId = (user, userTypeStr) => {
-        if (!user) return '';
-        
-        // Check for specific user type IDs first
-        if (user.partner_id) return `PAR-${user.partner_id}`;
-        if (user.rider_id) return `RID-${user.rider_id}`;
-        if (user.traveler_id) return `TRAV-${user.traveler_id}`;
-        
-        // Check user type from localStorage or user object
-        const type = userTypeStr || user.type || userType || '';
-        const userId = user.id || user.user_id;
-        
-        if (userId) {
-          const typeLower = type.toLowerCase();
-          if (typeLower === 'partner') return `PAR-${userId}`;
-          if (typeLower === 'rider') return `RID-${userId}`;
-          if (typeLower === 'traveler') return `TRAV-${userId}`;
-          // For admin or unknown types, check if it's numeric (might be admin ID)
-          // Admin might not have a prefix, so return as-is
-          return userId.toString();
-        }
-        
-        return '';
-      };
-
-      // Get current user's Firebase ID
-      const senderId = getFirebaseUserId(currentUser, userType);
-      
-      // Get ticket sender's Firebase ID
-      const ticketSenderType = ticket?.sender?.type || '';
-      const ticketSenderId = ticket?.sender?.id || ticket?.user_id || '';
-      const ticketSenderFirebaseId = ticketSenderId && ticketSenderType 
-        ? getFirebaseUserId({ id: ticketSenderId, type: ticketSenderType }, ticketSenderType)
-        : '';
-      
-      // Determine receiver ID
-      let receiverId = '';
-      
-      // If we have existing messages, use them to determine receiver
-      if (messages.length > 0) {
-        const lastMessage = messages[messages.length - 1];
-        // If last message sender is not current user, receiver is that sender
-        if (lastMessage.senderId && lastMessage.senderId !== senderId) {
-          receiverId = lastMessage.senderId;
-        } 
-        // If last message receiver is current user, sender of that message is the receiver
-        else if (lastMessage.receiverId && lastMessage.receiverId === senderId) {
-          receiverId = lastMessage.senderId;
-        }
-        // Otherwise use receiverId from last message
-        else if (lastMessage.receiverId) {
-          receiverId = lastMessage.receiverId;
-        }
-      }
-      
-      // If still no receiver, determine from ticket sender
-      if (!receiverId) {
-        if (senderId === ticketSenderFirebaseId) {
-          // Current user is the ticket sender, receiver should be admin
-          // For admin, we might use a default or check conversation participants
-          receiverId = 'ADMIN-1'; // Default admin ID, adjust based on your system
-        } else if (ticketSenderFirebaseId) {
-          // Current user is admin or different user, receiver is ticket sender
-          receiverId = ticketSenderFirebaseId;
-        }
-      }
-      
-      if (!senderId) {
-        console.error('Sender ID not found', { currentUser, userType });
-        throw new Error(`Sender ID not found. Current user: ${JSON.stringify(currentUser)}, User type: ${userType}`);
-      }
-      
-      if (!receiverId) {
-        console.error('Receiver ID not found', {
-          senderId,
-          ticket,
-          messages: messages.length,
-          ticketSenderFirebaseId
-        });
-        throw new Error(`Receiver ID not found. Sender: ${senderId}, Ticket sender: ${ticketSenderFirebaseId}`);
-      }
-
-      // Send message via Firebase (mobile users only)
-      await sendMessage(ticketId, {
-        senderId: senderId,
-        receiverId: receiverId,
-        message: messageText,
-        order_id: ticket?.order_id || null
-      });
-
-      // Remove temp message - Firebase listener will add the real one
-      setMessages((prev) =>
-        prev.filter((msgItem) => msgItem.tempId !== tempMessage.tempId)
-      );
     } catch (error) {
-      console.error("Error sending message:", error);
-      toast.error("Failed to send message. Please try again.", {
-        position: "top-right",
-        autoClose: 3000,
-      });
-
+      console.error(error);
       setMessages((prev) =>
         prev.filter((msgItem) => msgItem.tempId !== tempMessage.tempId)
       );
@@ -486,31 +317,26 @@ const ChatSupport = () => {
 
   return (
     <div className="flex flex-col gap-6 p-3">
-
       <Breadcrumb
-                  items={[
-                    { label: "Dashboard", path: "/" },
-                    { label: "Support Ticket", path: "/support" },
-      
-                    { label: "Details" },
-                  ]}
-                />
-
+        items={[
+          { label: "Dashboard", path: "/" },
+          { label: "Support Ticket", path: "/support" },
+          { label: "Details" },
+        ]}
+      />
 
       <div className="flex gap-2 items-center">
-       
         <Link to="/support" className="group">
-              <img
-                src={backward}
-                alt="backward"
-                className="w-6 h-6 transform transition-transform duration-300 group-hover:-translate-x-1"
-              />
-            </Link>
+          <img
+            src={backward}
+            alt="backward"
+            className="w-6 h-6 transform transition-transform duration-300 group-hover:-translate-x-1"
+          />
+        </Link>
         <h2 className="text-xl fw6 font-roboto text-[#232323]">{ticket?.ticket_id}</h2>
       </div>
 
       <div className="bg-[#FFFFFF] rounded-lg border border-[#00000033] p-4 flex flex-col gap-3">
-
         <div className="flex justify-between items-center gap-3 border-b-[0.6px] border-[#D9D9D9] p-4">
           <div className="flex gap-3">
             <div className="relative">
@@ -526,31 +352,31 @@ const ChatSupport = () => {
               <p className="text-xs text-[#9A9A9A] fw5">Online</p>
             </div>
           </div>
-         {!(ticket?.order_id && userType === "User") && (
-          <div className="relative inline-block">
-            <button
-              onClick={() => setOpen(!open)}
-              className="flex items-center gap-2 rounded-md px-3 py-1 text-sm text-[#B2A23F] bg-[#FEFCDD]"
-            >
-              {status}
-              <FiChevronDown size={16} />
-            </button>
+          {!(ticket?.order_id && userType === "User") && (
+            <div className="relative inline-block">
+              <button
+                onClick={() => setOpen(!open)}
+                className="flex items-center gap-2 rounded-md px-3 py-1 text-sm text-[#B2A23F] bg-[#FEFCDD]"
+              >
+                {status}
+                <FiChevronDown size={16} />
+              </button>
 
-            {open && (
-              <div className="absolute right-0 mt-2 w-40 rounded-md bg-white shadow-md border border-gray-200 z-50">
-                {options.map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => handleSelect(option)}
-                    className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-         )}
+              {open && (
+                <div className="absolute right-0 mt-2 w-40 rounded-md bg-white shadow-md border border-gray-200 z-50">
+                  {options.map((option) => (
+                    <button
+                      key={option}
+                      onClick={() => handleSelect(option)}
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col gap-3">
@@ -570,7 +396,6 @@ const ChatSupport = () => {
           </div>
         </div>
 
-
         <div className="flex flex-col gap-3">
           {messages.length === 0 && (
             <p className="text-center text-sm text-gray-400">No messages yet</p>
@@ -578,7 +403,6 @@ const ChatSupport = () => {
 
           {Object.entries(groupMessagesByDate(messages)).map(([date, msgs]) => (
             <div key={date} className="flex flex-col gap-3">
-
               <div className="flex items-center my-2">
                 <div className="flex-grow border-t border-gray-300"></div>
                 <span className="px-3 text-xs text-gray-500">{date}</span>
@@ -588,8 +412,6 @@ const ChatSupport = () => {
               {msgs.map((msg) => {
                 if (!msg.message) return null;
 
-                // Check if message is from current user
-                // Handle both numeric IDs and Firebase format (PAR-2, RID-1)
                 const msgSenderId = msg.sender_id || msg.senderId || '';
                 const currentUserFirebaseId = 
                   currentUser?.partner_id ? `PAR-${currentUser.partner_id}` :
@@ -654,26 +476,24 @@ const ChatSupport = () => {
           <div ref={messagesEndRef} />
         </div>
 
-
-      {!(ticket?.order_id && userType === "User") && (
-  <div className="flex items-center gap-3 p-4">
-    <input
-      type="text"
-      placeholder="Type something here"
-      value={newMessage}
-      onChange={(e) => setNewMessage(e.target.value)}
-      onKeyDown={(e) => e.key === "Enter" && handleSend()}
-      className="flex-1 bg-[#F4F4F4] text-[#9A9A9A] rounded-lg px-4 py-3 text-sm focus:outline-none"
-    />
-    <button
-      onClick={handleSend}
-      className="bg-[#F77F00] text-[#FFFFFF] p-3 gap-2 text-xs rounded-xl h-[42px] w-[80px] transition hover:bg-[#e66f00]"
-    >
-      Send
-    </button>
-  </div>
-)}
-
+        {!(ticket?.order_id && userType === "User") && (
+          <div className="flex items-center gap-3 p-4">
+            <input
+              type="text"
+              placeholder="Type something here"
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              className="flex-1 bg-[#F4F4F4] text-[#9A9A9A] rounded-lg px-4 py-3 text-sm focus:outline-none"
+            />
+            <button
+              onClick={handleSend}
+              className="bg-[#F77F00] text-[#FFFFFF] p-3 gap-2 text-xs rounded-xl h-[42px] w-[80px] transition hover:bg-[#e66f00]"
+            >
+              Send
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
