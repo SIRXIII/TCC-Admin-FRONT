@@ -148,70 +148,100 @@ const ChatSupport = () => {
     loadTicket();
   }, [ticketId]);
 
-  // Load MySQL messages if NOT using Firebase (after ticket is loaded)
+  // State to store MySQL messages
+  const [mysqlMessages, setMysqlMessages] = useState([]);
+
+  // Load MySQL messages (always load, regardless of Firebase usage)
   useEffect(() => {
-    if (!useFirebase && ticket && Object.keys(ticket).length > 0) {
+    if (ticket && Object.keys(ticket).length > 0) {
       const loadMySQLMessages = async () => {
         try {
           const res = await API.get(`/support-tickets/${ticketId}/messages`);
           const sorted = (res.data.data?.messages || [])
             .filter((msg) => msg.message)
+            .map(msg => ({
+              ...msg,
+              source: 'mysql',
+              timestamp: msg.created_at ? new Date(msg.created_at.replace(" ", "T")).getTime() : Date.now()
+            }))
             .sort((a, b) => safeDate(a.created_at) - safeDate(b.created_at));
-          setMessages(sorted);
+          setMysqlMessages(sorted);
         } catch (error) {
           console.error("Error loading MySQL messages:", error);
+          setMysqlMessages([]);
         }
       };
       loadMySQLMessages();
     }
-  }, [ticketId, useFirebase, ticket]);
+  }, [ticketId, ticket]);
 
-  // Merge Firebase messages with API messages (only if order has traveler or rider)
+  // Merge Firebase messages with MySQL messages
   useEffect(() => {
-    if (useFirebase && firebaseMessages && firebaseMessages.length > 0) {
-      // Use Firebase messages as primary source for real-time updates
-      const formattedMessages = firebaseMessages.map(msg => {
-        // Handle Firestore Timestamp objects - convert to milliseconds
-        let timestamp = msg.timestamp;
-        if (!timestamp && msg.created_at) {
-          // Firestore Timestamp has toMillis() method
-          if (msg.created_at.toMillis) {
-            timestamp = msg.created_at.toMillis();
-          } else if (typeof msg.created_at === 'object' && msg.created_at.seconds) {
-            timestamp = msg.created_at.seconds * 1000;
-          } else {
-            timestamp = new Date(msg.created_at).getTime();
-          }
+    // Format Firebase messages
+    const formattedFirebaseMessages = (firebaseMessages || []).map(msg => {
+      // Handle Firestore Timestamp objects - convert to milliseconds
+      let timestamp = msg.timestamp;
+      if (!timestamp && msg.created_at) {
+        // Firestore Timestamp has toMillis() method
+        if (msg.created_at.toMillis) {
+          timestamp = msg.created_at.toMillis();
+        } else if (typeof msg.created_at === 'object' && msg.created_at.seconds) {
+          timestamp = msg.created_at.seconds * 1000;
+        } else {
+          timestamp = new Date(msg.created_at).getTime();
         }
-        if (!timestamp) timestamp = Date.now();
-        
-        // Convert created_at to ISO string
-        let created_at = msg.created_at;
-        if (created_at && created_at.toMillis) {
-          created_at = new Date(created_at.toMillis()).toISOString();
-        } else if (created_at && typeof created_at === 'object' && created_at.seconds) {
-          created_at = new Date(created_at.seconds * 1000).toISOString();
-        } else if (!created_at || typeof created_at !== 'string') {
-          created_at = new Date(timestamp).toISOString();
-        }
-        
-        return {
-          id: msg.id,
-          message: msg.message || msg.text || msg.content,
-          sender_id: msg.sender_id || msg.senderId,
-          receiver_id: msg.receiver_id || msg.receiverId,
-          sender_type: msg.sender_type || msg.senderType,
-          type: msg.type || 'text',
-          isRead: msg.isRead !== undefined ? msg.isRead : false,
-          order_id: msg.order_id,
-          created_at: created_at,
-          timestamp: timestamp
-        };
-      }).filter(msg => msg.message); // Filter out messages without content
+      }
+      if (!timestamp) timestamp = Date.now();
       
-      setMessages(formattedMessages);
-    }
-  }, [firebaseMessages, useFirebase]);
+      // Convert created_at to ISO string
+      let created_at = msg.created_at;
+      if (created_at && created_at.toMillis) {
+        created_at = new Date(created_at.toMillis()).toISOString();
+      } else if (created_at && typeof created_at === 'object' && created_at.seconds) {
+        created_at = new Date(created_at.seconds * 1000).toISOString();
+      } else if (!created_at || typeof created_at !== 'string') {
+        created_at = new Date(timestamp).toISOString();
+      }
+      
+      return {
+        id: msg.id,
+        message: msg.message || msg.text || msg.content,
+        sender_id: msg.sender_id || msg.senderId,
+        receiver_id: msg.receiver_id || msg.receiverId,
+        sender_type: msg.sender_type || msg.senderType,
+        type: msg.type || 'text',
+        isRead: msg.isRead !== undefined ? msg.isRead : false,
+        order_id: msg.order_id,
+        created_at: created_at,
+        timestamp: timestamp,
+        source: 'firebase'
+      };
+    }).filter(msg => msg.message); // Filter out messages without content
+
+    // Merge both sources
+    const allMessages = [...mysqlMessages, ...formattedFirebaseMessages];
+    
+    // Remove duplicates based on message content + timestamp (within 1 second)
+    const uniqueMessages = [];
+    const seen = new Set();
+    
+    allMessages.forEach(msg => {
+      const key = `${msg.message}_${Math.floor((msg.timestamp || 0) / 1000)}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        uniqueMessages.push(msg);
+      }
+    });
+    
+    // Sort by timestamp
+    uniqueMessages.sort((a, b) => {
+      const timeA = a.timestamp || safeDate(a.created_at).getTime() || 0;
+      const timeB = b.timestamp || safeDate(b.created_at).getTime() || 0;
+      return timeA - timeB;
+    });
+    
+    setMessages(uniqueMessages);
+  }, [firebaseMessages, mysqlMessages]);
 
   // Listen to conversation metadata for unread count and notifications (Firebase only)
   useEffect(() => {
