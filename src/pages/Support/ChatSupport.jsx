@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FiChevronDown } from "react-icons/fi";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import API from "../../services/api";
 import echo from "../../../echo";
@@ -13,6 +13,7 @@ import Breadcrumb from "../../components/Breadcrumb";
 
 const ChatSupport = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const ticketId = id;
   const currentUser = JSON.parse(localStorage.getItem("auth_user"));
   const userType = localStorage.getItem("type");
@@ -21,6 +22,8 @@ const ChatSupport = () => {
   const [ticket, setTicket] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef(null);
+  const [ticketNotFound, setTicketNotFound] = useState(false);
+  const [loadingTicket, setLoadingTicket] = useState(true);
   
   // Firebase real-time messages
   const { messages: firebaseMessages, loading: firebaseLoading } = useFirebaseMessages(ticketId);
@@ -98,12 +101,32 @@ const ChatSupport = () => {
   // Load ticket details and initial messages from API
   useEffect(() => {
     const loadTicket = async () => {
+      if (!ticketId) return;
+      
+      setLoadingTicket(true);
+      setTicketNotFound(false);
       try {
         const res = await API.get(`/support-tickets/${ticketId}/messages`);
         const ticketData = res.data.data || [];
         setTicket(ticketData);
+        setTicketNotFound(false);
       } catch (error) {
         console.error("Error loading ticket:", error);
+        // Check if it's a 404 error (ticket not found)
+        if (error.response?.status === 404 || error.response?.status === 500) {
+          setTicketNotFound(true);
+          toast.error("Support ticket not found or has been deleted", {
+            position: "top-right",
+            autoClose: 5000,
+          });
+        } else {
+          toast.error("Failed to load ticket. Please try again.", {
+            position: "top-right",
+            autoClose: 5000,
+          });
+        }
+      } finally {
+        setLoadingTicket(false);
       }
     };
     loadTicket();
@@ -255,6 +278,8 @@ const ChatSupport = () => {
 
   // Fallback: Keep Echo/Pusher for backward compatibility (optional)
   useEffect(() => {
+    if (!ticketId) return;
+    
     const channel = echo.channel(`support.ticket.${ticketId}`);
     channel.listen(".SupportMessageSent", (msg) => {
       // Only add if not already in Firebase messages
@@ -271,19 +296,6 @@ const ChatSupport = () => {
           const timeB = b.timestamp || safeDate(b.created_at).getTime() || 0;
           return timeA - timeB;
         });
-      });
-    });
-    return () => channel.stopListening(".SupportMessageSent");
-  }, [ticketId]);
-
-
-  useEffect(() => {
-    const channel = echo.channel(`support.ticket.${ticketId}`);
-    channel.listen(".SupportMessageSent", (msg) => {
-      setMessages((prev) => {
-        const updated = prev.filter((m) => !(m.temp && m.tempId === msg.tempId));
-        if (!updated.find((m) => m.id === msg.id)) updated.push(msg);
-        return updated.sort((a, b) => safeDate(a.created_at) - safeDate(b.created_at));
       });
     });
     return () => channel.stopListening(".SupportMessageSent");
@@ -328,6 +340,73 @@ const ChatSupport = () => {
       );
     }
   };
+
+  // Show error message if ticket not found
+  if (ticketNotFound) {
+    return (
+      <div className="flex flex-col gap-6 p-3">
+        <Breadcrumb
+          items={[
+            { label: "Dashboard", path: "/" },
+            { label: "Support Ticket", path: "/support" },
+            { label: "Details" },
+          ]}
+        />
+
+        <div className="flex gap-2 items-center">
+          <Link to="/support" className="group">
+            <img
+              src={backward}
+              alt="backward"
+              className="w-6 h-6 transform transition-transform duration-300 group-hover:-translate-x-1"
+            />
+          </Link>
+          <h2 className="text-xl fw6 font-roboto text-[#232323]">Ticket Not Found</h2>
+        </div>
+
+        <div className="bg-[#FFFFFF] rounded-lg border border-[#00000033] p-8 flex flex-col items-center justify-center gap-4">
+          <div className="text-center">
+            <h3 className="text-xl fw6 text-[#232323] mb-2">Support Ticket Not Found</h3>
+            <p className="text-sm text-[#9A9A9A] mb-6">
+              The support ticket you're looking for doesn't exist or may have been deleted.
+            </p>
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => navigate("/support")}
+                className="bg-[#F77F00] text-[#FFFFFF] px-6 py-2 rounded-lg text-sm hover:bg-[#e66f00] transition"
+              >
+                Go to Support Tickets
+              </button>
+              <button
+                onClick={() => navigate(-1)}
+                className="bg-[#F4F4F4] text-[#232323] px-6 py-2 rounded-lg text-sm hover:bg-[#E4E4E4] transition"
+              >
+                Go Back
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show loading state
+  if (loadingTicket) {
+    return (
+      <div className="flex flex-col gap-6 p-3">
+        <Breadcrumb
+          items={[
+            { label: "Dashboard", path: "/" },
+            { label: "Support Ticket", path: "/support" },
+            { label: "Details" },
+          ]}
+        />
+        <div className="bg-[#FFFFFF] rounded-lg border border-[#00000033] p-8 flex items-center justify-center">
+          <p className="text-[#9A9A9A]">Loading ticket...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6 p-3">
