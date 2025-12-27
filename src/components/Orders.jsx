@@ -403,7 +403,7 @@ const Orders = ({ order }) => {
           {currentPageData.length === 0 ? (
             <div className="flex flex-col items-center justify-center text-center bg-gray-50 rounded-xl border border-dashed border-gray-300 p-6">
               <p className="text-orange-500 font-semibold text-lg">No orders found</p>
-              <p className="text-sm text-gray-500 mt-1">Try adjusting filters or check back later.</p>
+              <p className="text-sm text-gray-500 pt-1 ">Try adjusting filters or check back later.</p>
             </div>
           ) : (
             currentPageData.map((o) => (

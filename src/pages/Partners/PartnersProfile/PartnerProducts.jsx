@@ -13,7 +13,6 @@ const PartnerProducts = ({ partner }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
-
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null });
 
   const products = partner.products || [];
@@ -24,15 +23,10 @@ const PartnerProducts = ({ partner }) => {
     Suspended: "bg-[#FCECD6] text-[#CA4E2E]",
   };
 
-  
   const handleSort = (key) => {
     setSortConfig((prev) => {
       if (prev.key === key) {
-       
-        return {
-          key,
-          direction: prev.direction === "asc" ? "desc" : "asc",
-        };
+        return { key, direction: prev.direction === "asc" ? "desc" : "asc" };
       }
       return { key, direction: "asc" };
     });
@@ -57,18 +51,14 @@ const PartnerProducts = ({ partner }) => {
     </span>
   );
 
-  
   const filteredProducts = useMemo(() => {
     let data = [...products];
-
-    
     data = data.filter(
       (p) =>
         p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.product_id?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    
     if (sortConfig.key) {
       data.sort((a, b) => {
         let aVal = a[sortConfig.key];
@@ -94,18 +84,17 @@ const PartnerProducts = ({ partner }) => {
   }, [filteredProducts, currentPage, itemsPerPage]);
 
   useEffect(() => {
-    setCurrentPage(1); 
+    setCurrentPage(1);
   }, [filteredProducts]);
 
   return (
     <div className="flex flex-col gap-6">
       <div className="bg-white rounded-lg border border-[#D9D9D9] p-6 flex flex-col gap-6 min-h-[400px]">
-      
+        {/* Header */}
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold text-[#232323]">Products</h2>
           <span className="text-sm text-[#9A9A9A]">
-            Total products{" "}
-            <span className="fw6 text-[#232323]">{products.length}</span>
+            Total products <span className="fw6 text-[#232323]">{products.length}</span>
           </span>
         </div>
 
@@ -123,7 +112,8 @@ const PartnerProducts = ({ partner }) => {
           />
         </div>
 
-        <div className="overflow-x-auto overflow-y-auto min-h-[200px]">
+        {/* Desktop Table */}
+        <div className="hidden sm:block overflow-x-auto overflow-y-auto min-h-[200px]">
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="bg-[#F9F9F9] uppercase text-[#6C6C6C]">
@@ -162,21 +152,15 @@ const PartnerProducts = ({ partner }) => {
             </thead>
             <tbody>
               {currentPageData.length === 0 ? (
-               
-                 <tr>
+                <tr>
                   <td colSpan={6} className="h-[200px]">
                     <div className="flex flex-col items-center justify-center h-full text-center bg-gray-50 rounded-xl border border-dashed border-gray-300 p-6">
-                     
-
-                   
                       <p className="text-orange-500 font-semibold text-lg">
                         No products found.
                       </p>
                       <p className="text-sm text-gray-500 mt-1">
                         Try adjusting filters or check back later.
                       </p>
-
-                     
                     </div>
                   </td>
                 </tr>
@@ -188,7 +172,6 @@ const PartnerProducts = ({ partner }) => {
                     onClick={() => navigate(`/products/productsdetail/${p.id}`)}
                   >
                     <td className="px-4 py-3">{p.product_id}</td>
-
                     <td className="px-4 py-3 flex items-center gap-2">
                       <img
                         src={p.primary_image}
@@ -198,10 +181,8 @@ const PartnerProducts = ({ partner }) => {
                       />
                       <span>{p.name}</span>
                     </td>
-
                     <td className="px-4 py-3">{p.condition_grade}</td>
                     <td className="px-4 py-3">{p.stock}</td>
-
                     <td className="px-4 py-3">
                       <span
                         className={`px-2 py-1 rounded-md text-xs font-medium ${statusColors[p.status] || "bg-gray-100 text-gray-600"
@@ -210,7 +191,6 @@ const PartnerProducts = ({ partner }) => {
                         {p.status}
                       </span>
                     </td>
-
                     <td className="px-4 py-3">${p.buy_price}</td>
                   </tr>
                 ))
@@ -219,14 +199,56 @@ const PartnerProducts = ({ partner }) => {
           </table>
         </div>
 
-        {totalPages > 1 && (
+        {/* Mobile Cards */}
+        <div className="flex flex-col gap-4 sm:hidden">
+          {currentPageData.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-[200px] text-center bg-gray-50 rounded-xl border border-dashed border-gray-300 p-6">
+              <p className="text-orange-500 font-semibold text-lg">No products found.</p>
+              <p className="text-sm text-gray-500 mt-1">Try adjusting filters or check back later.</p>
+            </div>
+          ) : (
+            currentPageData.map((p) => (
+              <div
+                key={p.id}
+                className="bg-white border rounded-xl p-4 shadow-sm hover:shadow-md transition cursor-pointer"
+                onClick={() => navigate(`/products/productsdetail/${p.id}`)}
+              >
+                <div className="flex justify-between items-start mb-2">
+                  <span className="text-xs text-gray-500 font-medium">{p.product_id}</span>
+                  <span
+                    className={`px-2 py-1 rounded-md text-xs font-medium ${statusColors[p.status] || "bg-gray-100 text-gray-600"
+                      }`}
+                  >
+                    {p.status}
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 mb-2">
+                  <img
+                    src={p.primary_image}
+                    alt={p.name}
+                    className="w-12 h-12 rounded object-cover"
+                    onError={(e) => (e.currentTarget.src = DefaultProfile)}
+                  />
+                  <div className="flex flex-col gap-1">
+                    <span className="font-medium text-sm">{p.name}</span>
+                    <span className="text-xs text-gray-500">Grade: {p.condition_grade}</span>
+                    <span className="text-xs text-gray-500">Stock: {p.stock}</span>
+                    <span className="text-xs text-gray-500">Price: ${p.buy_price}</span>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
 
+        {/* Pagination */}
+        {totalPages > 1 && (
           <Pagination
             page={currentPage}
             setPage={setCurrentPage}
             perPage={itemsPerPage}
             setPerPage={setItemsPerPage}
-            totalItems={filteredOrders.length}
+            totalItems={filteredProducts.length}
             options={[5, 10, 25, 50]}
             fullWidth={true}
           />
