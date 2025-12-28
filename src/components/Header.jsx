@@ -146,7 +146,7 @@ const Header = ({ toggleSidebar }) => {
         className="relative text-gray-400 w-full max-w-[380px] mr-4"
       >
         <span className="absolute inset-y-0 left-0 flex items-center pl-2">
-          <Search size={18} />
+          <Search size={16} />
         </span>
         <input
           type="text"
@@ -320,7 +320,7 @@ const Header = ({ toggleSidebar }) => {
           )}
         </div>
 
-        <div className=" items-center gap-3 relative hidden md:block" ref={profileRef}>
+        <div className="flex items-center gap-2 relative" ref={profileRef}>
           <button
             onClick={toggleDropdown}
             className="flex items-center gap-2 focus:outline-none hover:bg-gray-50 p-2 rounded-lg transition-colors"
@@ -328,17 +328,17 @@ const Header = ({ toggleSidebar }) => {
             <img
               src={user?.profile_photo || DefaultProfile}
               alt="Profile"
-              className="w-12 h-12 rounded-[10px]"
+              className="w-10 h-10 md:w-12 md:h-12 rounded-[10px] object-cover"
             />
-            <span className="text-base font-medium text-left text-[#232323] hidden md:inline leading-[150%]">
+            <span className="text-base font-medium text-left text-[#232323] hidden lg:inline leading-[150%]">
               {user?.name || `${user?.first_name || ""} ${user?.last_name || ""}`.trim() || "User"}
               <br />
-              <span className="text-xs font-medium text-[#9A9A9A] hidden md:inline leading-[150%]">
+              <span className="text-xs font-medium text-[#9A9A9A] hidden lg:inline leading-[150%]">
                 {user?.email || "user@example.com"}
               </span>
             </span>
             <ChevronDown
-              className={`w-4 h-4 text-gray-600 transition-transform duration-200 ${profileDropdown ? "rotate-180" : ""
+              className={`w-5 h-5 text-gray-700 transition-transform duration-200 flex-shrink-0 ${profileDropdown ? "rotate-180" : ""
                 }`}
               strokeWidth={2.5}
             />

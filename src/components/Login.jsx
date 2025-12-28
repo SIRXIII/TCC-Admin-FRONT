@@ -122,34 +122,30 @@ const Login = () => {
   }, []);
 
   return (
-
-
     <div
-      className="min-h-screen flex bg-contain relative"
+      className="min-h-screen flex flex-col md:flex-row bg-contain relative"
       style={{ backgroundImage: `url(${TCCImage})` }}
     >
-      <div className="w-1/2 relative flex flex-col  justify-between text-white p-5">
-        <div className="font-bold text-2xl top-[40px] left-[40.28px]">
-          <img src={logo} alt="" />
-        </div>
-        <div className="bg-gradient-to-b from-[#F77F00]/40 to-[#666666]/40 p-8 rounded-lg">
-          <h2 className="text-7xl font-semibold font-roboto">
+      <div className="w-full md:w-1/2 relative flex flex-col justify-between text-white p-5">
+        <img src={logo} alt="Logo" className="w-15 md:w-40 mb-6" />
+        <div className="bg-gradient-to-b from-[#F77F00]/40 to-[#666666]/40 p-6 md:p-8 rounded-lg">
+          <h2 className="text-4xl md:text-6xl font-semibold font-roboto">
             <span className="text-orange-400">Grow</span> with every traveler
           </h2>
-          <p className="mt-3 text-lg text-gray-200 font-inter">
+          <p className="mt-3 text-base md:text-lg text-gray-200 font-inter">
             Reach high-value guests where they stay. List your best pieces and
-            get paid without adding headcount
+            get paid without adding headcount.
           </p>
         </div>
       </div>
 
-      <div className="w-1/2 bg-white flex items-center justify-center">
-        <div className="w-full max-w-[480px]  ">
-          <h2 className="text-[42px] font-medium font-roboto text-[#232323] mb-2 flex items-center justify-center leading-[130%]">
+      <div className="w-full md:w-1/2 bg-white flex items-center justify-center px-6 md:px-10 py-10">
+        <div className="w-full max-w-[480px]">
+          <h2 className="text-[22px] md:text-[42px] font-medium font-roboto text-[#232323] mb-2 flex items-center justify-center leading-[130%]">
             Welcome back!
           </h2>
-          <p className="text-[#6C6C6C] text-base mb-10 flex items-center justify-center pt-3">
-            Let’s get back to your business!
+          <p className="text-[#6C6C6C] md:text-base mb-10 flex items-center justify-center pt-3">
+            Let's get back to your business!
           </p>
           <form className="space-y-3" onSubmit={handleSubmit}>
             {/* <form className="space-y-3"> */}
@@ -276,11 +272,11 @@ const Login = () => {
               </span>
             </button>
 
-            <div className="flex space-x-4">
+            <div className="flex flex-col md:flex-row gap-y-3 space-x-0 md:space-x-4">
               <button 
                 onClick={handleAppleLogin}
                 disabled={oauthLoading !== null}
-                className="w-1/2 border border-[#D9D9D9] py-4 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="w-full md:w-1/2 border border-[#D9D9D9] py-4 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 {oauthLoading === 'apple' ? (
                   <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
@@ -294,7 +290,7 @@ const Login = () => {
               <button 
                 onClick={handleShopifyLogin}
                 disabled={oauthLoading !== null}
-                className="w-1/2 border border-[#D9D9D9] py-4 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                className="w-full md:w-1/2 border border-[#D9D9D9] py-4 rounded-lg flex items-center justify-center gap-3 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 {oauthLoading === 'shopify' ? (
                   <div className="w-5 h-5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin"></div>
