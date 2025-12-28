@@ -181,7 +181,7 @@ const PartnerProfile = () => {
   };
 
   return (
-    <div className="flex flex-col p-4 md:p-6 gap-6 max-w-[1200px] mx-auto">
+    <div className="flex flex-col p-3 gap-6">
       <Breadcrumb
         items={[
           { label: "Dashboard", path: "/" },

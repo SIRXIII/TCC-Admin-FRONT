@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import SettingSidebar from "./SettingSidebar";
 import PersonalInfo from "./PersonalInfo";
 import Password from "./Password";
@@ -12,6 +12,21 @@ import FA from "../../assets/SVG/FA.svg";
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState(null);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+      // On desktop, set default tab if not set
+      if (window.innerWidth >= 1024 && !activeTab) {
+        setActiveTab("personal");
+      }
+    };
+
+    checkScreenSize();
+    window.addEventListener("resize", checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, [activeTab]);
 
   const settingsCards = [
     {
@@ -49,9 +64,9 @@ const Settings = () => {
         </p>
       </div>
 
-      {!activeTab ? (
-        // Overview Cards
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Overview Cards - Only visible on mobile when no activeTab */}
+      {!activeTab && (
+        <div className="lg:hidden grid grid-cols-1 gap-6">
           {settingsCards.map((card) => (
             <div
               key={card.id}
@@ -79,28 +94,31 @@ const Settings = () => {
             </div>
           ))}
         </div>
-      ) : (
-        // Detail Page
-        <div className="flex flex-col lg:flex-row gap-6 w-full">
-          <div className="lg:flex w-full lg:w-[330px] lg:gap-6 hidden lg:block">
-            <SettingSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-          </div>
-
-          <div className="flex-1 w-full">
-            <button
-              onClick={() => setActiveTab(null)}
-              className="mb-4 text-sm fw4 font-inter text-[#F77F00] flex items-center gap-2 hover:underline"
-            >
-              <img src={backward} alt="backward" className="w-4 h-4" />
-              Back to Settings
-            </button>
-
-            {activeTab === "personal" && <PersonalInfo />}
-            {activeTab === "password" && <Password />}
-            {activeTab === "2fa" && <TwoFA />}
-          </div>
-        </div>
       )}
+
+      {/* Detail Page - Always visible on desktop (with default), visible on mobile when activeTab is set */}
+      <div className={`flex flex-col lg:flex-row gap-6 w-full ${!activeTab ? 'hidden lg:flex' : ''}`}>
+        <div className="lg:flex w-full lg:w-[330px] lg:gap-6 hidden lg:block">
+          <SettingSidebar 
+            activeTab={activeTab || "personal"} 
+            setActiveTab={setActiveTab} 
+          />
+        </div>
+
+        <div className="flex-1 w-full">
+          <button
+            onClick={() => setActiveTab(null)}
+            className="lg:hidden mb-4 text-sm fw4 font-inter text-[#F77F00] flex items-center gap-2 hover:underline"
+          >
+            <img src={backward} alt="backward" className="w-4 h-4" />
+            Back to Settings
+          </button>
+
+          {(activeTab === "personal" || (!activeTab && isDesktop)) && <PersonalInfo />}
+          {activeTab === "password" && <Password />}
+          {activeTab === "2fa" && <TwoFA />}
+        </div>
+      </div>
     </div>
   );
 };
