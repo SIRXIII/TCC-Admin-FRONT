@@ -44,6 +44,9 @@ export const AuthProvider = ({ children }) => {
             url: notification.data?.url || notification.url || null
           }
         };
+
+            console.log("normalizedNotification", normalizedNotification);
+
         setNotifications((prev) => [normalizedNotification, ...prev]);
       });
 
@@ -52,6 +55,38 @@ export const AuthProvider = ({ children }) => {
       };
     }
   }, [user, token]);
+
+  useEffect(() => {
+  if (!user) return;
+
+  const channel = echo.private(`App.Models.${user.type}.${user.id}`);
+
+  const listener = (notification) => {
+    const normalizedNotification = {
+      id: notification.id,
+      read_at: notification.read_at || null,
+      data: {
+        title: notification.data?.title || notification.title,
+        message: notification.data?.message || notification.message,
+        url: notification.data?.url || notification.url,
+        type: notification.data?.type || 'info',
+      },
+    };
+
+    console.log("Notification received:", normalizedNotification);
+
+    setNotifications((prev) => [normalizedNotification, ...prev]);
+  };
+
+  channel.notification(listener);
+
+  return () => {
+    // Clean up listener
+    channel.stopListening('.Illuminate\\Notifications\\Events\\BroadcastNotificationCreated');
+    echo.leave(`App.Models.${user.type}.${user.id}`);
+  };
+}, [user]);
+
 
 
 
