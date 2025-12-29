@@ -9,7 +9,7 @@ const Widgets = () => {
   if (error) return <p>Error loading States</p>;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 h-[130px]">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {widgetData.map((item) => {
         const linkConfigs = {
           "Active Partners": { path: "/partners" },

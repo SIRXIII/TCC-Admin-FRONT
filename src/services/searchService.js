@@ -10,7 +10,7 @@ export const globalSearch = async (query) => {
   if (!query.trim()) return { partners: [], travelers: [], riders: [], orders: [] };
 
   try {
-    const { data } = await API.get(`/search?query=${encodeURIComponent(query)}`);
+    const { data } = await API.post(`/search`, { query: query.trim() });
     return data;
   } catch (error) {
     console.error("Global search error:", error);

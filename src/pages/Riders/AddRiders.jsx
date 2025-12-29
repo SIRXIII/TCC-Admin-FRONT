@@ -39,36 +39,39 @@ const Dropdown = ({
   const displayValue = multiple ? value.join(", ") || label : value || label;
 
   return (
-    <div
-      className="relative"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
+    <div className="relative">
       <div
-        className={`flex items-center border border-[#afaaaa89] rounded-lg px-4 py-4 cursor-pointer bg-white ${triggerClass}`}
+        className={`flex items-center justify-between border border-[#afaaaa89] rounded-lg px-4 py-4 cursor-pointer bg-white ${triggerClass}`}
         onClick={() => setOpen((prev) => !prev)}
       >
         <span className="text-[#121212] text-sm flex-1">{displayValue}</span>
         <FiChevronDown
-          className={`transform transition-transform duration-300 w-5 h-5 ${open ? "rotate-180" : "rotate-0"
+          className={`ml-2 h-5 w-5 text-[#121212] transition-transform duration-300 ${open ? "rotate-180" : "rotate-0"
             }`}
         />
       </div>
+
       {open && (
         <div
-          className={`absolute top-full left-0 bg-[#FFFFFF] border border-[#D9D9D9] rounded-lg shadow-md z-10 ${dropdownClass}`}
+          className={`absolute top-full left-0 w-full bg-[#FFFFFF] border border-[#D9D9D9] rounded-lg shadow-md z-50 mt-1 ${dropdownClass}`}
         >
           {options.map((opt, index) => (
             <span
               key={index}
               onClick={() => handleSelect(opt)}
-              className={`block hover:bg-[#F77F00] hover:text-[#FFFFFF] p-1 rounded cursor-pointer text-[#121212] py-2 px-4 ${multiple && value.includes(opt) ? "bg-[#f6a34b] text-white mb-1" : ""
+              className={`block hover:bg-[#F77F00] hover:text-[#FFFFFF] p-1 rounded cursor-pointer text-[#121212] py-2 px-4 ${multiple && value.includes(opt) ? "bg-[#f6a34b] text-white" : ""
                 }`}
             >
               {opt}
             </span>
           ))}
         </div>
+      )}
+      {open && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setOpen(false)}
+        />
       )}
     </div>
   );
@@ -165,7 +168,7 @@ const AddRiders = () => {
   };
 
 
-    const handleAddressChange = async (e) => {
+  const handleAddressChange = async (e) => {
     const value = e.target.value;
     handleChange(e);
 
@@ -206,15 +209,15 @@ const AddRiders = () => {
     >
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-4">
-         
-           <Breadcrumb
-        items={[
-          { label: "Dashboard", path: "/" },
-          { label: "Riders", path: "/riders" },
 
-          { label: "Add Rider" },
-        ]}
-      />
+          <Breadcrumb
+            items={[
+              { label: "Dashboard", path: "/" },
+              { label: "Riders", path: "/riders" },
+
+              { label: "Add Rider" },
+            ]}
+          />
           <div className="flex items-center justify-between">
             <div className="flex flex-col gap-2.5">
               <div className="flex gap-3 items-center">
@@ -262,7 +265,7 @@ const AddRiders = () => {
                 className="w-18 h-18 rounded-[10px]"
               />
 
-              <div className="flex py-4 gap-2">
+              <div className="flex flex-col sm:flex-row py-4 gap-2 sm:gap-2 w-full">
                 <input
                   type="file"
                   name="profileImage"
@@ -438,62 +441,62 @@ const AddRiders = () => {
                 </label>
 
                 {suggestions.length > 0 && (
-                    <ul className="absolute z-50 bg-white border border-gray-300 rounded-lg shadow-md mt-1 w-full max-h-48 overflow-y-auto">
-                      {suggestions.map((s, i) => (
-                        <li
-                          key={i}
-                          onClick={() => handleSelectAddress(s)}
-                          className="px-3 py-2 hover:bg-orange-100 cursor-pointer text-sm"
-                        >
-                          {s.properties.formatted}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  <ul className="absolute z-50 bg-white border border-gray-300 rounded-lg shadow-md mt-1 w-full max-h-48 overflow-y-auto">
+                    {suggestions.map((s, i) => (
+                      <li
+                        key={i}
+                        onClick={() => handleSelectAddress(s)}
+                        className="px-3 py-2 hover:bg-orange-100 cursor-pointer text-sm"
+                      >
+                        {s.properties.formatted}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
               {errors.address && (
                 <p className="text-red-500 text-xs mt-1 ms-2">{errors.address[0]}</p>
               )}
             </div>
-             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Latitude */}
-                <div className="relative">
-                  <input
-                    type="text"
-                    id="latitude"
-                    name="latitude"
-                    value={formData.latitude}
-                    disabled
-                    placeholder="Address latitude"
-                    className="block p-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border border-[#D9D9D9]"
-                  />
-                  <label
-                    htmlFor="latitude"
-                    className="absolute text-sm ms-4 text-gray-500 -translate-y-4 scale-75 top-2 z-10 bg-white px-2"
-                  >
-                    Latitude
-                  </label>
-                </div>
-
-                {/* Longitude */}
-                <div className="relative">
-                  <input
-                    type="text"
-                    id="longitude"
-                    name="longitude"
-                    value={formData.longitude}
-                    disabled
-                    placeholder="Address longitude"
-                    className="block p-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border border-[#D9D9D9]"
-                  />
-                  <label
-                    htmlFor="longitude"
-                    className="absolute text-sm ms-4 text-gray-500 -translate-y-4 scale-75 top-2 z-10 bg-white px-2"
-                  >
-                    Longitude
-                  </label>
-                </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Latitude */}
+              <div className="relative">
+                <input
+                  type="text"
+                  id="latitude"
+                  name="latitude"
+                  value={formData.latitude}
+                  disabled
+                  placeholder="Address latitude"
+                  className="block p-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border border-[#D9D9D9]"
+                />
+                <label
+                  htmlFor="latitude"
+                  className="absolute text-sm ms-4 text-gray-500 -translate-y-4 scale-75 top-2 z-10 bg-white px-2"
+                >
+                  Latitude
+                </label>
               </div>
+
+              {/* Longitude */}
+              <div className="relative">
+                <input
+                  type="text"
+                  id="longitude"
+                  name="longitude"
+                  value={formData.longitude}
+                  disabled
+                  placeholder="Address longitude"
+                  className="block p-4 w-full text-sm text-[#232323] bg-transparent rounded-xl border border-[#D9D9D9]"
+                />
+                <label
+                  htmlFor="longitude"
+                  className="absolute text-sm ms-4 text-gray-500 -translate-y-4 scale-75 top-2 z-10 bg-white px-2"
+                >
+                  Longitude
+                </label>
+              </div>
+            </div>
 
             <div>
               <div className="relative">

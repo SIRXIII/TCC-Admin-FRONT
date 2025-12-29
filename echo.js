@@ -32,7 +32,8 @@ const echo = new Echo({
   cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
   forceTLS: true,
 
-  authEndpoint: "http://tcc-admin-back.test/broadcasting/auth",
+  authEndpoint: "https://travelclothingclub-admin.online/broadcasting/auth",
+  // authEndpoint: "http://tcc-admin-back.test/broadcasting/auth",
   auth: {
     withCredentials: true,
   },
