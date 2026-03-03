@@ -5,6 +5,7 @@ import PartnerAction from "./PartnersProfile/PartnerAction";
 import Details from "./PartnersProfile/Details";
 import PartnerOrders from "./PartnersProfile/PartnerOrders";
 import PartnerProducts from "./PartnersProfile/PartnerProducts";
+import PartnerStripeConnect from "./PartnersProfile/PartnerStripeConnect";
 import backward from "../../assets/SVG/backward.svg";
 import { getPartnerById } from "../../services/partnerService";
 import { useStatusUpdatePartner } from "../../hooks/usePartners";
@@ -116,9 +117,12 @@ useEffect(() => {
 
       <PartnerTab activeTab={activeTab} setActiveTab={setActiveTab} partner={partner} />
 
-      {activeTab === "details" && <Details partner={partner} />}
+      {activeTab === "details"  && <Details partner={partner} />}
       {activeTab === "products" && <PartnerProducts partner={partner} />}
-      {activeTab === "orders" && <Orders order={partner} />}
+      {activeTab === "orders"   && <Orders order={partner} />}
+      {activeTab === "stripe"   && (
+        <PartnerStripeConnect partner={partner} onStatusRefreshed={fetchPartner} />
+      )}
     </div>
   );
 };

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import Paypal from "../../assets/SVG/paypal.svg";
-import { orderData } from "../../data/OrderData";
 import backward from "../../assets/SVG/backward.svg";
 import { Link, useParams } from "react-router-dom";
 import { getOrderById } from "../../services/orderService";
@@ -8,6 +7,7 @@ import productImg from "../../assets/Images/Pro_img.jpg";
 import DefaultProfile from "../../assets/Images/trv_profile.jpg";
 import ImagePreviewGallery from "../../components/ImagePreviewGallery";
 import Breadcrumb from "../../components/Breadcrumb";
+import StripePaymentPanel from "../../components/Stripe/StripePaymentPanel";
 
 const GEOAPIFY_KEY = import.meta.env.VITE_APP_GEOAPIFY_KEY;
 
@@ -46,12 +46,9 @@ const OrdersDetail = () => {
     (addr) => addr?.type === "billing"
   );
 
-
-  const {
-
-    transactions,
-
-  } = orderData;
+  const hasStripePayment = !!order?.payment_intent_id;
+  // Transaction block – sab API se (order.transaction)
+  const tx = order?.transaction;
 
   return (
     <div className="flex flex-col p-2">
@@ -189,27 +186,29 @@ const OrdersDetail = () => {
                 <div className="flex  justify-between text-sm fw5">
                   <div className="flex flex-cols-3 items-center justify-between gap-3">
                     <img src={Paypal} alt="" className="flex justify-center" />
-
                     <div className="flex flex-col gap-1 ">
                       <span className="text-[#232323]">
-                        Payment via
-                        {transactions.method}
+                        Payment via {tx?.payment_via ?? "—"}
                       </span>
-                      <p className="text-xs text-[#9A9A9A] fw4">
-                        Paypal fees: ${transactions.fees}
-                      </p>
                     </div>
                   </div>
                   <div className="text-[#9A9A9A]">
                     <p>Date</p>
-                    <p className="text-[#232323]">{transactions.date}</p>
+                    <p className="text-[#232323]">{tx?.date ?? "—"}</p>
                   </div>
                   <div className="text-[#9A9A9A] ">
                     <p>Total</p>
-                    <p className="text-[#232323]">${order?.total_price}</p>
+                    <p className="text-[#232323]">
+                      {tx?.total != null ? `$${tx.total}` : order?.total_price != null ? `$${order.total_price}` : "—"}
+                    </p>
                   </div>
                 </div>
               </div>
+
+              {/* Stripe Payment Panel – shown when order has Stripe payment data */}
+              {order?.payment_intent_id && (
+                <StripePaymentPanel order={order} onActionComplete={fetchOrder} />
+              )}
             </div>
 
             <div className="space-y-6">

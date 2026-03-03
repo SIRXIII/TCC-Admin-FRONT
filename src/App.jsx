@@ -13,6 +13,7 @@ import Orders from "./pages/Orders/Orders";
 import Settings from "./pages/Settings/Settings";
 import Support from "./pages/Support/Support";
 import Refunds from "./pages/Refunds/Refunds";
+import StripePayments from "./pages/StripePayments";
 import TravelerProfile from "./pages/Travelers/TravelerProfile";
 import { AuthProvider } from "./context/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -64,6 +65,7 @@ const App = () => {
             <Route path="/products" element={<Products />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/refund" element={<Refunds />} />
+            <Route path="/card-payments" element={<StripePayments />} />
             <Route path="/support" element={<Support />} />
             <Route path="/settings" element={<Settings />} />
 

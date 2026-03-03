@@ -6,6 +6,7 @@ const tabs = [
   { key: "details", label: "Details" },
   { key: "products", label: `Products (${partner?.products?.length || 0})` },
   { key: "orders", label: `Orders (${partner?.order?.length || 0})` },
+  { key: "stripe", label: "Stripe" },
 ];
 
   return (
