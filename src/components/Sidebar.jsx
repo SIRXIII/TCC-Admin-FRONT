@@ -62,6 +62,12 @@ const navLinks = [
         label: "Card payments",
         link: "/card-payments",
       },
+      {
+        icon: payout,
+        iconActive: payoutwhite,
+        label: "Payout Holds",
+        link: "/payout-holds",
+      },
     ],
   },
   {
