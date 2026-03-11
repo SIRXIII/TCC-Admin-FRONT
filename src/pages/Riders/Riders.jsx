@@ -76,7 +76,6 @@ const Riders = () => {
   };
 
   const handleBulkAction = (action) => {
-    console.log("Bulk action:", action, selected);
     setBulk(action);
     setBulkOpen(false);
   };

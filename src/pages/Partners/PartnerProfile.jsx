@@ -77,7 +77,6 @@ useEffect(() => {
                 className="w-6 h-6 transform transition-transform duration-300 group-hover:-translate-x-1"
               />
             </Link>
-            {/* <img src={backward} alt="" /> */}
             <h1 className="text-2xl  font-roboto fw6 text-[#232323]">
               Partner Details
             </h1>
@@ -86,7 +85,6 @@ useEffect(() => {
             Detailed profile, activity, and preferences of the partner.
           </p>
         </div>
-        {/* <PartnerAction /> */}
         <div className="flex gap-2">
           <button
             onClick={() => handlePartnerStatus(partner)}
@@ -98,9 +96,6 @@ useEffect(() => {
             {partner && partner?.status === "Active" ? "Suspended" : "Activate"}
           </button>
 
-          {/* <button className="border border-[#F77F00] bg-[#FEF2E6] rounded-lg px-4 py-2 text-sm text-[#F77F00] hover:bg-orange hover:text-white transition">
-        Edit Partner Information
-      </button> */}
         </div>
       </div>
 

@@ -71,7 +71,6 @@ const Login = () => {
             Let’s get back to your business!
           </p>
           <form className="space-y-3" onSubmit={handleSubmit}>
-            {/* <form className="space-y-3"> */}
 
             {error && Object.keys(fieldErrors).length === 0 && (
               <div className="p-4 mb-4 text-smrounded-lg bg-red-500/60 text-white" role="alert">

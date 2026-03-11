@@ -15,18 +15,8 @@ import order from "../assets/SVG/order.svg";
 import orderwhite from "../assets/SVG/orderwhite.svg";
 import refund from "../assets/SVG/refund.svg";
 import refundwhite from "../assets/SVG/refundwhite.svg";
-// import returns from "../assets/SVG/returns.svg";
-// import returnswhite from "../assets/SVG/returnswhite.svg";
-// import review from "../assets/SVG/review.svg";
-// import reviewwhite from "../assets/SVG/reviewwhite.svg";
-// import payout from "../assets/SVG/payout.svg";
-// import payoutwhite from "../assets/SVG/payoutwhite.svg";
-// import report from "../assets/SVG/report.svg";
-// import reportwhite from "../assets/SVG/reportwhite.svg";
 import support from "../assets/SVG/support.svg";
 import supportwhite from "../assets/SVG/supportwhite.svg";
-// import help from "../assets/SVG/help.svg";
-// import helpwhite from "../assets/SVG/helpwhite.svg";
 import setting from "../assets/SVG/setting.svg";
 import settingwhite from "../assets/SVG/settingwhite.svg";
 import logout from "../assets/SVG/logout.svg";
@@ -65,30 +55,6 @@ const navLinks = [
         label: "Refund",
         link: "/refund",
       },
-      // {
-      //   icon: returns,
-      //   iconActive: returnswhite,
-      //   label: "Returns",
-      //   link: "/returns",
-      // },
-      // {
-      //   icon: review,
-      //   iconActive: reviewwhite,
-      //   label: "Reviews",
-      //   link: "/reviews",
-      // },
-      // {
-      //   icon: payout,
-      //   iconActive: payoutwhite,
-      //   label: "Payouts",
-      //   link: "/payouts",
-      // },
-      // {
-      //   icon: report,
-      //   iconActive: reportwhite,
-      //   label: "Reports",
-      //   link: "/reports",
-      // },
     ],
   },
   {
@@ -101,7 +67,6 @@ const navLinks = [
         link: "/support",
       },
 
-      // { icon: help, iconActive: helpwhite, label: "Help", link: "/help" },
       {
         icon: setting,
         iconActive: settingwhite,

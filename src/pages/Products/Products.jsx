@@ -45,11 +45,6 @@ const Products = () => {
     return filteredProducts.slice(start, start + perPage);
   }, [filteredProducts, page, perPage]);
 
-  console.log("Active Tab:", activeTab);
-  console.log("Current Data:", currentData);
-  console.log("Filtered Products:", filteredProducts);
-  console.log("Paginated Products:", paginatedProducts);
-
   return (
     <div className="flex flex-col gap-6 p-3">
       <div className="flex flex-col gap-4">

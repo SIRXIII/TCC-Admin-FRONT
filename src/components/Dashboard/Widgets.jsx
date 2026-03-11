@@ -1,6 +1,5 @@
 import React from "react";
 import { useWidgets } from "../../hooks/useDashboard";
-// import widgetData from '../../data/widgetData.js'; 
 
 const Widgets = () => {
 

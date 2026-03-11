@@ -98,7 +98,6 @@ const Travelers = () => {
     deleteTraveler(id);
   }
   const handleBulkAction = (action) => {
-    console.log("Bulk action:", action, selected);
     if (action === "Activate" || action === "Deactivate") {
       bulkUpdate({ ids: selected, status: action });
     }
