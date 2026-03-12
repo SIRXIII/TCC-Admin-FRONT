@@ -93,7 +93,6 @@ const AddRiders = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      console.log("Rider Added:", res.data);
       alert("Rider added successfully!");
     } catch (err) {
       console.error("Error adding Rider:", err);

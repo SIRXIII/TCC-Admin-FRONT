@@ -24,7 +24,6 @@ const Partners = () => {
   const [perPageSuspended, setPerPageSuspended] = useState(10);
 
   const [openActionId, setOpenActionId] = useState(null);
-  // const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
 
   const currentData = partners?.[activeTab];

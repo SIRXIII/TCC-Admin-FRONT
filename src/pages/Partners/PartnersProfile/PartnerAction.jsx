@@ -6,9 +6,6 @@ const PartnerAction = () => {
       <button className="border border-[#F77F00] bg-[#FEF2E6] rounded-lg px-4 py-2 text-sm text-[#F77F00] hover:bg-orange hover:text-white transition">
         Suspend
       </button>
-      {/* <button className="border border-[#F77F00] bg-[#FEF2E6] rounded-lg px-4 py-2 text-sm text-[#F77F00] hover:bg-orange hover:text-white transition">
-        Edit Partner Information
-      </button> */}
     </div>
   );
 };
