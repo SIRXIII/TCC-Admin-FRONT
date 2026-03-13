@@ -21,11 +21,13 @@ import RiderProfile from "./pages/Riders/RiderProfile";
 import OrdersDetail from "./pages/Orders/OrdersDetail";
 import AssignRider from "./pages/Orders/AssignRider";
 import ProductsDetail from "./pages/Products/ProductsDetail";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   return (
+    <ErrorBoundary>
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
         <Routes>
@@ -71,6 +73,7 @@ const App = () => {
         </Routes>
       </QueryClientProvider>
     </AuthProvider>
+    </ErrorBoundary>
   );
 };
 
